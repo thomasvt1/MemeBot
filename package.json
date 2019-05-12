@@ -1,7 +1,7 @@
 {
-  "name": "guidebot",
-  "version": "2.3.5",
-  "description": "A boilerplate example bot with command handler and reloadable commands. Updated and Maintained by the Idiot's Guide Community",
+  "name": "memecord",
+  "version": "1.0.0",
+  "description": "Discord client for MemeBot",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -12,24 +12,30 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/An-Idiots-Guide/guidebot.git"
+    "url": "git+https://github.com/thomasvt1/MemeCord.git"
   },
-  "author": "Evelyne Lachance <eslachance@gmail.com> (http://evie.codes)",
+  "author": "Thomas van Tilburg (https://github.com/thomasvt1)",
   "contributors": [
-    "York (http://anidiots.guide)"
+    "Keanu73 <guestone63@gmail.com> (https://github.com/Keanu73)"
   ],
-  "license": "MIT",
+  "license": "ISC",
   "bugs": {
-    "url": "https://github.com/An-Idiots-Guide/guidebot/issues"
+    "url": "https://github.com/thomasvt1/MemeCord/issues"
   },
-  "homepage": "https://github.com/An-Idiots-Guide/guidebot#readme",
+  "homepage": "https://github.com/thomasvt1/MemeCord#readme",
   "dependencies": {
     "better-sqlite-pool": "^0.1.2",
+    "bufferutil": "^4.0.1",
     "chalk": "^2.3.0",
-    "discord.js": "^11.4.2",
+    "discord.js": "^11.5.0",
     "enmap": "^4.8.5",
     "inquirer": "^6.3.1",
+    "lru-cache": "^5.1.1",
     "moment": "^2.20.1",
-    "moment-duration-format": "^2.2.0"
+    "moment-duration-format": "^2.2.0",
+    "mysql2": "^1.6.5",
+    "request-promise": "^4.2.4",
+    "snoowrap": "^1.15.2",
+    "uws": "^100.0.1"
   }
 }
