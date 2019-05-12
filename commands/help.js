@@ -5,38 +5,76 @@ command is also filtered by level, so if a user does not have access to
 a command, it is not shown to them. If a command name is given with the
 help command, its extended help is shown.
 */
-
+const { RichEmbed } = require("discord.js")
 exports.run = (client, message, args, level) => {
 	// If no specific command is called, show all filtered commands.
-	if (!args[0]) {
-		// Filter all commands by which are available for the user's level, using the <Collection>.filter() method.
-		const myCommands = message.guild ? client.commands.filter(cmd => client.levelCache[cmd.conf.permLevel] <= level) : client.commands.filter(cmd => client.levelCache[cmd.conf.permLevel] <= level &&  cmd.conf.guildOnly !== true)
+	if (!client.checkEmbed(message.guild.me)) {
+		if (!args[0]) {
+			// Filter all commands by which are available for the user's level, using the <Collection>.filter() method.
+			const myCommands = message.guild ? client.commands.filter(cmd => client.levelCache[cmd.conf.permLevel] <= level) : client.commands.filter(cmd => client.levelCache[cmd.conf.permLevel] <= level && cmd.conf.guildOnly !== true)
 
-		// Here we have to get the command names only, and we use that array to get the longest name.
-		// This make the help commands "aligned" in the output.
-		const commandNames = myCommands.keyArray()
-		const longest = commandNames.reduce((long, str) => Math.max(long, str.length), 0)
+			// Here we have to get the command names only, and we use that array to get the longest name.
+			// This make the help commands "aligned" in the output.
+			const commandNames = myCommands.keyArray()
+			const longest = commandNames.reduce((long, str) => Math.max(long, str.length), 0)
 
-		let currentCategory = ""
-		console.log(message.settings)
-		let output = `= Command List =\n\n[Use ${message.settings.prefix}help <commandname> for details]\n`
-		const sorted = myCommands.array().sort((p, c) => p.help.category > c.help.category ? 1 :  p.help.name > c.help.name && p.help.category === c.help.category ? 1 : -1 )
-		sorted.forEach( c => {
-			const cat = c.help.category.toProperCase()
-			if (currentCategory !== cat) {
-				output += `\u200b\n== ${cat} ==\n`
-				currentCategory = cat
+			let currentCategory = ""
+			console.log(message.settings)
+			let output = `= Command List =\n\n[Use ${message.settings.prefix}help <commandname> for details]\n`
+			const sorted = myCommands.array().sort((p, c) => p.help.category > c.help.category ? 1 : p.help.name > c.help.name && p.help.category === c.help.category ? 1 : -1)
+			sorted.forEach(c => {
+				const cat = c.help.category.toProperCase()
+				if (currentCategory !== cat) {
+					output += `\u200b\n== ${cat} ==\n`
+					currentCategory = cat
+				}
+				output += `${message.settings.prefix}${c.help.name}${" ".repeat(longest - c.help.name.length)} :: ${c.help.description}\n`
+			})
+			output += "\nYou can set a default account to run these commands with by using $setname."
+			message.channel.send(output, { code: "asciidoc", split: { char: "\u200b" } })
+		} else {
+			// Show individual command's help.
+			let command = args[0]
+			if (client.commands.has(command)) {
+				command = client.commands.get(command)
+				if (level < client.levelCache[command.conf.permLevel]) return
+				message.channel.send(`= ${command.help.name} = \n${command.help.description}\nusage:: ${command.help.usage}\naliases:: ${command.conf.aliases.join(", ")}\n= ${command.help.name} =`, { code: "asciidoc" })
 			}
-			output += `${message.settings.prefix}${c.help.name}${" ".repeat(longest - c.help.name.length)} :: ${c.help.description}\n`
-		})
-		message.channel.send(output, {code: "asciidoc", split: { char: "\u200b" }})
+		}
 	} else {
-		// Show individual command's help.
-		let command = args[0]
-		if (client.commands.has(command)) {
-			command = client.commands.get(command)
-			if (level < client.levelCache[command.conf.permLevel]) return
-			message.channel.send(`= ${command.help.name} = \n${command.help.description}\nusage:: ${command.help.usage}\naliases:: ${command.conf.aliases.join(", ")}\n= ${command.help.name} =`, {code:"asciidoc"})
+		if (!args[0]) {
+			const help = new RichEmbed()
+				.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeCord")
+				.setColor("BLUE")
+				.setFooter("Made by Thomas van Tilburg with ❤️", client.users.get(client.config.ownerID).avatarURL)
+				.setTimestamp()
+				.setThumbnail(client.user.avatarURL)
+				.setTitle("List of Commands")
+				.setDescription("You can set a default account to run these commands with by using $setname.")
+			// Filter all commands by which are available for the user's level, using the <Collection>.filter() method.
+			const myCommands = message.guild ? client.commands.filter(cmd => client.levelCache[cmd.conf.permLevel] <= level) : client.commands.filter(cmd => client.levelCache[cmd.conf.permLevel] <= level && cmd.conf.guildOnly !== true)
+			myCommands.forEach(c => {
+				help.addField(c.help.name, c.help.description, false)
+			})
+			message.channel.send({ embed: help })
+		} else {
+			// Show individual command's help.
+			let command = args[0]
+			if (client.commands.has(command)) {
+				command = client.commands.get(command)
+				if (level < client.levelCache[command.conf.permLevel]) return
+				const help = new RichEmbed()
+					.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeCord")
+					.setColor("GOLD")
+					.setFooter("Made by Thomas van Tilburg with ❤️", client.users.get(client.config.ownerID).avatarURL)
+					.setTimestamp()
+					.setThumbnail(client.user.avatarURL)
+					.setTitle(command.help.name)
+					.setDescription(command.help.description)
+					.addField("Usage", command.help.usage, true)
+					.addField("Aliases", command.conf.aliases.join(", "), true)
+				message.channel.send({ embed: help })
+			}
 		}
 	}
 }

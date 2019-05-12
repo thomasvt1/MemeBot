@@ -9,6 +9,7 @@ const Discord = require("discord.js")
 const { promisify } = require("util")
 const readdir = promisify(require("fs").readdir)
 const Enmap = require("enmap")
+const mysql = require("mysql2/promise")
 
 // This is your client. Some people call it `bot`, some people call it `self`,
 // some might call it `cootchie`. Either way, when you see `client.something`,
@@ -35,7 +36,18 @@ client.aliases = new Enmap()
 // Now we integrate the use of Evie's awesome Enhanced Map module, which
 // essentially saves a collection to disk. This is great for per-server configs,
 // and makes things extremely easy for this purpose.
-client.settings = new Enmap({name: "settings"})
+client.settings = new Enmap({ name: "settings" })
+
+client.pool = mysql.createPool({
+	host: client.config.mysql.host,
+	port: client.config.mysql.port,
+	user: client.config.mysql.user,
+	password: client.config.mysql.password,
+	database: client.config.mysql.database,
+	waitForConnections: true,
+	connectionLimit: 10,
+	queueLimit: 0
+})
 
 // We're doing real fancy node 8 async/await stuff here, and to do that
 // we need to wrap stuff in an anonymous function. It's annoying but it works.

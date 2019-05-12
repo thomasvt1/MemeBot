@@ -17,6 +17,26 @@ const config = {
 		"mention-everyone": "false"
 	},
 
+	// Websocket settings for future plans
+	"websocket": {
+        "port": 3210
+    },
+	//MySQL DB for storing reddit usernames
+    "mysql": {
+		"host": "127.0.0.1",
+		"port": 3306,
+		"user": "user",
+		"password": "password",
+		"database": "memecord"
+    },
+	// What we use to fetch submissions, etc
+    "reddit": {
+        "clientId": "clientId",
+        "clientSecret": "clientSecret",
+        "refreshToken": "refreshToken",
+        "userAgent": "userAgent"
+    }
+
 	// PERMISSION LEVEL DEFINITIONS.
 
 	permLevels: [
