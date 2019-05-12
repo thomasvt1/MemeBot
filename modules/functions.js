@@ -1,6 +1,19 @@
 /* eslint-disable no-undef */
+const rp = require("request-promise")
 module.exports = (client) => {
 
+	/*
+   CHECK EMBED FUNCTION
+
+   This is just a nifty little snippet to check whether you can send
+   lovely embeds or you are denied le permission.
+
+*/
+	client.checkEmbed = guild => {
+		if (!guild.me.hasPermission("EMBED_LINKS")) return false
+		else return true
+	}
+	
 	/*
   PERMISSION LEVEL FUNCTION
 
