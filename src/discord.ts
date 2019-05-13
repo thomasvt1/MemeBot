@@ -317,7 +317,7 @@ async function active(msg: Discord.Message, args: string[]) {
 
     reply += "**Returns**\n"
     reply += `Invested: ${numberWithCommas(history[0].amount)} M$\n`;
-    reply += `Profit: ${numberWithCommas(Math.trunc(investment_return / 100 * history[0].amount))} (${investment_return}%)`;
+    reply += `Profit: ${numberWithCommas(Math.trunc(investment_return / 100 * history[0].amount))} M$ (${investment_return}%)\n`;
     if (investment_return < 1) {
         const break_even = Math.round(calculateBreakEvenPoint(history[0].upvotes));
         reply += `Break even at ${break_even} upvotes (${break_even - await investment.score} upvotes to go)\n`
