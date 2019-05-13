@@ -38,6 +38,8 @@ client.aliases = new Enmap()
 // and makes things extremely easy for this purpose.
 client.settings = new Enmap({ name: "settings" })
 
+client.api = require("./api.js")
+
 client.pool = mysql.createPool({
 	host: client.config.mysql.host,
 	port: client.config.mysql.port,
