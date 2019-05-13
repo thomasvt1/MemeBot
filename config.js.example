@@ -19,7 +19,8 @@ const config = {
 
 	// Websocket settings for future plans
 	"websocket": {
-        "port": 3210
+        "enabled": false,
+		"url": "ws://yourip:port"
     },
 	//MySQL DB for storing reddit usernames
     "mysql": {
