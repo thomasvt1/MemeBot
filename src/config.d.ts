@@ -6,7 +6,8 @@ declare namespace config {
         token: string,
         channels: string[]
         websocket: {
-            port: number
+            enabled: boolean;
+            url: string;
         },
         mysql: {
             host: string;

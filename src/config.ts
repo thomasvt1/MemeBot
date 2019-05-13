@@ -7,7 +7,8 @@ let config = {
         "channel-id"
     ],
     "websocket": {
-        "port": 3210
+        "enabled": false,
+        "url": "ws://yourip:port"
     },
     "mysql": {
 		"host": "127.0.0.1",
