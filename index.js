@@ -38,8 +38,14 @@ client.aliases = new Enmap()
 // and makes things extremely easy for this purpose.
 client.settings = new Enmap({ name: "settings" })
 
+// Add Meme.Market and Reddity related functions into codebase
 client.api = require("./api.js")
 
+// Add investment calculating crap and whatever in
+client.math = require("./math.js")
+
+// Add MySQL database for storing links, probably going to be deprecated
+// in favour of enmap @thomasvt1?
 client.pool = mysql.createPool({
 	host: client.config.mysql.host,
 	port: client.config.mysql.port,

@@ -1,7 +1,7 @@
 {
   "name": "memecord",
-  "version": "1.0.0",
-  "description": "Discord client for MemeBot",
+  "version": "2.0.0",
+  "description": "A Discord bot which gives you daily investments and statistics on the Meme Economy.",
   "main": "index.js",
   "scripts": {
     "build": "echo \"Error: no test specified\" && exit 1",
@@ -14,9 +14,9 @@
     "type": "git",
     "url": "git+https://github.com/thomasvt1/MemeCord.git"
   },
-  "author": "Thomas van Tilburg (https://github.com/thomasvt1)",
+  "author": "Thomas van Tilburg (https://thomasvt.xyz)",
   "contributors": [
-    "Keanu73 <guestone63@gmail.com> (https://github.com/Keanu73)"
+    "Keanu <guestone63@gmail.com> (https://github.com/Keanu73)"
   ],
   "license": "ISC",
   "bugs": {

@@ -1,7 +1,17 @@
 // Interface with Meme.Market API
-const bot = require("./index.js")
+// Most of these functions are self-explanatory
+// and further explanation for the
+// MemeEconomy related functions are given on the API page (https://github.com/thecsw/memeinvestor_bot/tree/master/api)
+const client = require("./index.js").client
 const rp = require("request-promise")
-module.exports = async (client) => {
+const snoowrap = require("snoowrap")
+const r = new snoowrap({
+	userAgent: client.config.reddit.userAgent,
+	clientId: client.config.reddit.clientId,
+	clientSecret: client.config.reddit.clientSecret,
+	refreshToken: client.config.reddit.refreshToken
+})
+module.exports = async () => {
 	async function getInvestorProfile(name) {
 		const options = {
 			uri: "https://meme.market/api/investor/" + name,
@@ -62,6 +72,14 @@ module.exports = async (client) => {
 		})
 	}
 
+	async function getRedditLink(reddit_name) {
+		const [link] = await client.pool.execute("SELECT discord_id FROM reddit_link WHERE reddit_name = ?", [reddit_name])
+
+		if (!link[0]) return false
+
+		return link[0].discord_id
+	}
+
 	async function getLink(discord_id) {
 		const [link] = await client.pool.execute("SELECT reddit_name FROM reddit_link WHERE discord_id = ?", [discord_id])
 
@@ -84,5 +102,14 @@ module.exports = async (client) => {
 		if (!res) return false
 
 		return res
+	}
+
+	// Some hacky regex to make numbers look nicer
+	function numberWithCommas(x) {
+		return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+	}
+
+	async function getSubmission(submid) {
+		return r.getSubmission(submid)
 	}
 }
