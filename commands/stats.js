@@ -1,18 +1,18 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 exports.run = (client, message, [name], level) => {
-	if (name.length < 3) {
-		message.reply(":thinking: Something tells me that is not a Reddit username")
-	}
-	
 	const check = client.api.getLink(message.author.id)
 	let user
+
+	if (name.length < 3 && !check) {
+		message.reply(":thinking: Something tells me that is not a Reddit username")
+	}
 
 	client.api.getInvestorProfile(check ? check : name).then(body => {
 		if (body.id === 0) return message.reply(":question: I couldn't find that user. Sorry")
 		if (body.name === name.toLowerCase() || body.name === check.toLowerCase()) user = body
 	})
-
+	
 	const history = client.api.getInvestorHistory(check ? check : name.toLowerCase())
 
 	// Calculate profit %
