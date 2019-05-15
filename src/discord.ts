@@ -208,7 +208,7 @@ async function average_investments(msg: Discord.Message, args: string[]) {
         return;
     }
 
-    const days = 30;
+    const days = 7;
 
     let invest_days = new Map<number, number>();
     const history = await getInvestorHistory(profile.name, days);
