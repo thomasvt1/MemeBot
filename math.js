@@ -126,4 +126,37 @@ module.exports = async () => {
 
 		return x
 	}
+	// Have to hold off on firm payouts for now until my PR is accepted
+	/*function calculateFirmPayout(balance, size, cfo, coo, execs, assocs, floorts) {
+		balance -= 0.1 * balance
+
+		// 50 % of remaining firm coins are paid out
+		payout_amount = 0.5 * firm.balance
+
+		// 30 % paid to board members(CEO, COO, CFO)(30 % of total payroll)
+		board_total = payout_amount * 0.3
+		board_members = 1 + firm.coo + firm.cfo
+		board_amount = int(board_total / board_members)
+
+		remaining_amount = payout_amount - board_total
+
+		// 40 % of remaining paid to executives(28 % of total payroll)
+		exec_amount = 0
+		exec_total = 0
+		if (execs > 0) exec_total = remaining_amount * 0.4
+		exec_amount = int(exec_total / firm.execs)
+		remaining_amount -= exec_total
+
+		// 50 % of remaining paid to associates(21 % of total payroll)
+		assoc_amount = 0
+		assoc_total = 0
+		if (assocs > 0) assoc_total = remaining_amount * 0.5
+		assoc_amount = assoc_total / assocs)
+		remaining_amount -= assoc_total
+
+		// 100 % of remaining paid to associates(21 % of total payroll)
+		trader_total = remaining_amount
+		tradernbr = firm.size - firm.execs - firm.assocs - firm.ceo - firm.cfo - firm.coo
+		trader_amount = int(trader_total / max(tradernbr, 1))
+	}*/
 }

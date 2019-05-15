@@ -1,6 +1,6 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
-exports.run = (client, message, [name], level) => {
+exports.run = (client, message, [name], _level) => {
 	const check = client.api.getLink(message.author.id)
 	let user
 
@@ -112,7 +112,7 @@ exports.run = (client, message, [name], level) => {
 exports.conf = {
 	enabled: true,
 	guildOnly: false,
-	aliases: ["h", "halp"],
+	aliases: [],
 	permLevel: "User"
 }
 
