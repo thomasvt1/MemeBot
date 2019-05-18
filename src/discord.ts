@@ -208,10 +208,10 @@ async function average_investments(msg: Discord.Message, args: string[]) {
         return;
     }
 
-    const days = 7;
+    const amount = 14; //TODO: Get only a fixed amount of days instead of the last x investments
 
     let invest_days = new Map<number, number>();
-    const history = await getInvestorHistory(profile.name, days);
+    const history = await getInvestorHistory(profile.name, amount);
 
 
     for (const inv of history) {
@@ -292,7 +292,7 @@ async function active(msg: Discord.Message, args: string[]) {
     const profile = await getUserProfile(msg, args);
     const history = await getInvestorHistory(profile.name, 1);
 
-    if (history[0].success === true) {
+    if (history[0].done === true) {
         msg.reply("You currently don't have any active investments");
         return;
     }
