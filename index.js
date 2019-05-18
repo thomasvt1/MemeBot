@@ -44,18 +44,10 @@ client.api = require("./api.js")
 // Add investment calculating crap and whatever in
 client.math = require("./math.js")
 
-// Add MySQL database for storing links, probably going to be deprecated
-// in favour of enmap @thomasvt1?
-client.pool = mysql.createPool({
-	host: client.config.mysql.host,
-	port: client.config.mysql.port,
-	user: client.config.mysql.user,
-	password: client.config.mysql.password,
-	database: client.config.mysql.database,
-	waitForConnections: true,
-	connectionLimit: 10,
-	queueLimit: 0
-})
+// Storing Discord + Reddit links
+// They are more of a "favourite" option rather than 
+// a strict OAuth2 verification link
+client.links = new Enmap({ name: "links" })
 
 // We're doing real fancy node 8 async/await stuff here, and to do that
 // we need to wrap stuff in an anonymous function. It's annoying but it works.

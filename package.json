@@ -35,8 +35,11 @@
     "moment": "^2.20.1",
     "moment-duration-format": "^2.2.0",
     "mysql2": "^1.6.5",
+    "plotly": "^1.0.6",
+    "pngjs": "^3.4.0",
     "request-promise": "^4.2.4",
     "snoowrap": "^1.15.2",
     "ws": "^7.0.0"
-  }
+  },
+  "devDependencies": {}
 }

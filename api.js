@@ -13,6 +13,16 @@ const r = new snoowrap({
 })
 module.exports = async () => {
 	async function getInvestorProfile(name) {
+		/**
+		* This gets the investor profile of a Reddit user.
+		*
+		* @param {string} name - The user's Reddit username
+		* @return {InvestorProfile} See more at https://meme.market/api/investor/Keanu73
+		*
+		* @example
+		*
+		*     getInvestorProfile("Keanu73")
+		*/
 		const options = {
 			uri: "https://meme.market/api/investor/" + name,
 			json: true

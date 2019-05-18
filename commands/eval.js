@@ -64,7 +64,7 @@ exports.run = async (client, message, args, level) => { // eslint-disable-line n
 			hastebin(`// Eval results: \n//${moment().format("DD/MM/YYYY HH:mm:ss")}\n${await client.clean(client, err)}`).then(r => {
 				const emb = new Discord.RichEmbed()
 					.setTitle("The eval results were too large")
-					.setDescription(`So I uploaded them to Hastebin!`)
+					.setDescription("So I uploaded them to Hastebin!")
 					.setAuthor(client.user.username, client.user.avatarURL)
 					.setColor(0x3669FA)
 					.setFooter("Sorry for the inconvenience", client.user.avatarURL)
