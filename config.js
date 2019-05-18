@@ -2,8 +2,11 @@ const config = {
 	// Development environment for testing
 	"node_env": "DEVELOPMENT",
 	
-	// Bot Owner, level 2 by default. A User ID. Should never be anything else than the bot owner's ID.
+	// Bot Owner, Thomasvt
 	"ownerID": "213704185517047808",
+
+	// Bot Co-Owner, Keanu73
+	"coownerID": "115156616256552962",
 
 	// Your Bot's Token. Available on https://discordapp.com/developers/applications/me
 	"token": "mfa.VkO_2G4Qv3T--NO--lWetW_tjND--TOKEN--QFTm6YGtzq9PH--4U--tG0",
@@ -66,7 +69,7 @@ const config = {
 		{ level: 2,
 			name: "Owner", 
 			// Another simple check, compares the message author id to the one stored in the config file.
-			check: (message) => message.client.config.ownerID === message.author.id
+			check: (message) => (message.client.config.ownerID || message.client.config.coownerID) === message.author.id
 		}
 	]
 }
