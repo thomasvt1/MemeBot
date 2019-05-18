@@ -1,5 +1,5 @@
 {
-  "name": "memecord",
+  "name": "memebot",
   "version": "2.0.0",
   "description": "A Discord bot which gives you daily investments and statistics on the Meme Economy.",
   "main": "index.js",
@@ -40,6 +40,5 @@
     "request-promise": "^4.2.4",
     "snoowrap": "^1.15.2",
     "ws": "^7.0.0"
-  },
-  "devDependencies": {}
+  }
 }
