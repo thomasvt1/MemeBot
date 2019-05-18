@@ -1,5 +1,6 @@
 exports.run = (client, message, [name], level) => {
-	
+	if (client.config.node_env === "DEVELOPMENT") return false
+
 	const check = client.api.getLink(message.author.id)
 
 	if (!name) message.reply(":question: I don't remember your name, and you haven't given me one.\n```Use $setname RedditName to set your name```")

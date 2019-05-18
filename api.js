@@ -83,6 +83,8 @@ module.exports = async () => {
 	}
 
 	async function getRedditLink(reddit_name) {
+		if (client.config.node_env === "DEVELOPMENT") return false
+
 		const [link] = await client.pool.execute("SELECT discord_id FROM reddit_link WHERE reddit_name = ?", [reddit_name])
 
 		if (!link[0]) return false
@@ -91,6 +93,8 @@ module.exports = async () => {
 	}
 
 	async function getLink(discord_id) {
+		if (client.config.node_env === "DEVELOPMENT") return false
+
 		const [link] = await client.pool.execute("SELECT reddit_name FROM reddit_link WHERE discord_id = ?", [discord_id])
 
 		if (!link[0]) return false
@@ -99,6 +103,8 @@ module.exports = async () => {
 	}
 
 	async function setLink(discord_id, reddit_name) {
+		if (client.config.node_env === "DEVELOPMENT") return false
+
 		const res = await client.pool.execute("INSERT INTO reddit_link (discord_id, reddit_name) VALUES (?, ?)", [discord_id, reddit_name])
 
 		if (!res) return false
@@ -107,6 +113,8 @@ module.exports = async () => {
 	}
 
 	async function updateLink(discord_id, reddit_name) {
+		if (client.config.node_env === "DEVELOPMENT") return false
+
 		const res = await client.pool.execute("UPDATE reddit_link SET reddit_name = ? WHERE reddit_link.discord_id = ?", [reddit_name, discord_id])
 		
 		if (!res) return false

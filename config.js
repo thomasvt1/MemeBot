@@ -1,6 +1,8 @@
-// RENAME THIS FILE TO CONFIG.JS
 const config = {
-	// Bot Owner, level 10 by default. A User ID. Should never be anything else than the bot owner's ID.
+	// Development environment for testing
+	"node_env": "DEVELOPMENT",
+	
+	// Bot Owner, level 2 by default. A User ID. Should never be anything else than the bot owner's ID.
 	"ownerID": "213704185517047808",
 
 	// Your Bot's Token. Available on https://discordapp.com/developers/applications/me
@@ -12,31 +14,32 @@ const config = {
 	// VIA COMMANDS IN THE GUILD.
   
 	"defaultSettings" : {
-		"prefix": "$",
+		"prefix": "mt$",
 		"investmentChannel": "investment-watch",
 		"mention-everyone": "false"
 	},
 
 	// Websocket settings for future plans
 	"websocket": {
-        "enabled": false,
 		"url": "ws://yourip:port"
-    },
+	},
+	
 	//MySQL DB for storing reddit usernames
-    "mysql": {
+	"mysql": {
 		"host": "127.0.0.1",
 		"port": 3306,
 		"user": "user",
 		"password": "password",
 		"database": "memecord"
-    },
+	},
+
 	// What we use to fetch submissions, etc
-    "reddit": {
-        "clientId": "clientId",
-        "clientSecret": "clientSecret",
-        "refreshToken": "refreshToken",
-        "userAgent": "userAgent"
-    }
+	"reddit": {
+		"clientId": "clientId",
+		"clientSecret": "clientSecret",
+		"refreshToken": "refreshToken",
+		"userAgent": "userAgent"
+	},
 
 	// PERMISSION LEVEL DEFINITIONS.
 
