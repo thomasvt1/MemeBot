@@ -31,10 +31,11 @@ exports.run = (client, message, [name], _level) => {
 	profitprct /= history.length // Calculate average % return
 	profitprct_5 /= 5 // Calculate average % return for last 5
 
-	// Calculate this week's profit
+	// Calculate this week's profit using 
+	// hacky ternary operators to keep it clean
 	let weekprofit
-	for (let i = 0; i < 6; i++) {
-		if (!history[i].done) weekprofit += history[i].profit
+	for (let i = !history[0].done ? 0 : 1; !history[0].done ? i < 6 : i < 7; i++) {
+		weekprofit += history[i].profit
 	}
 
 	// Calculate amount of investments today
@@ -46,7 +47,8 @@ exports.run = (client, message, [name], _level) => {
 		investments_today++
 	}
 	
-	//const weekprofit = 
+	const weekratio = (weekprofit / user.networth).toFixed(3)
+	const weekratioscore = (weekratio < 1) ? "Poor" : (weekratio > 1) ? "Good" : (weekratio > 1.5) ? "Excellent" : (weekratio > 2) ? "Outstanding" : false
 	const lastinvested = Math.trunc(((new Date().getTime() / 1000) - history[0].time) / 36e2) // 36e3 will result in hours between date objects
 	const maturesin = (history[0].time + 14400) - Math.trunc(new Date().getTime() / 1000) // 14400 = 4 hours
 	const currentinvestment = history.length && !history[0].done ? client.api.getSubmission(history[0].post) : false // Simple ternary to check whether current investment is running
@@ -64,7 +66,8 @@ exports.run = (client, message, [name], _level) => {
 		.addField("**Average investment profit (last 5)**", `${profitprct_5.toFixed(2)}%`, true)
 		.addField("**Investments last 24 hours**", `${investments_today}`, true)
 		.addField("**Last invested**", `${lastinvested} hours ago`, true)
-		.addField("**This Week's Profit**", `${lastinvested} hours ago`, true)
+		.addField("**This week's profit**", `${client.api.numberWithCommas(user.networth - weekprofit)} M¢`, true)
+		.addField("**Week profit ratio**", `${!weekratioscore ? "Unknown" : weekratioscore} (${weekratio})`, true)
 		
 	if (currentinvestment) stats.addField("Current investment", `
 		__**[${currentinvestment.title}](https://redd.it/${history[0].post})**__\n\n

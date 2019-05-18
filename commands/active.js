@@ -19,19 +19,13 @@ exports.run = (client, message, [name], _level) => {
 
 	// Calculate profit %
 	let profitprct = 0
-	let profitprct_5 = 0
 	for (let i = 0; i < history.length; i++) {
 		if (history[i].done === true) {
 			profitprct += history[i].profit / history[i].amount * 100
-
-			if (i <= 5) { // Use for average last 5
-				profitprct_5 += history[i].profit / history[i].amount * 100
-			}
 		}
 	}
 
 	profitprct /= history.length // Calculate average % return
-	profitprct_5 /= 5 // Calculate average % return for last 5
 
 
 	// Calculate amount of investments today
