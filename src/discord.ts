@@ -292,7 +292,7 @@ async function active(msg: Discord.Message, args: string[]) {
     const profile = await getUserProfile(msg, args);
     const history = await getInvestorHistory(profile.name, 1);
 
-    if (history[0].success === true) {
+    if (history[0].done === true) {
         msg.reply("You currently don't have any active investments");
         return;
     }
