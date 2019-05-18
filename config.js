@@ -14,7 +14,7 @@ const config = {
 	// VIA COMMANDS IN THE GUILD.
   
 	"defaultSettings" : {
-		"prefix": "mt$",
+		"prefix": "$",
 		"investmentChannel": "investment-watch",
 		"mention-everyone": "false"
 	},
