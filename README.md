@@ -1,3 +1,8 @@
-# MemeCord
+# MemeBot
 
-A Discord bot used for the subreddit [MemeEconomy](https://www.reddit.com/r/memeeconomy/)
+![Discord](https://img.shields.io/discord/563439683309142016.svg?color=%237289da&label=discord)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/w/thomasvt1/MemeCord.svg?style=popout)
+![GitHub contributors](https://img.shields.io/github/contributors/thomasvt1/MemeCord.svg?style=popout)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) 
+
+A Discord bot that provides useful info on investors/firms in [MemeEconomy](https://reddit.com/r/MemeEconomy)

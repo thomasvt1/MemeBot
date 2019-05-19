@@ -9,7 +9,7 @@ const config = {
 	"coownerID": "115156616256552962",
 
 	// Your Bot's Token. Available on https://discordapp.com/developers/applications/me
-	"token": "mfa.VkO_2G4Qv3T--NO--lWetW_tjND--TOKEN--QFTm6YGtzq9PH--4U--tG0",
+	"token": "bottoken",
 
 	// Default per-server settings. New guilds have these settings. 
 
@@ -17,7 +17,7 @@ const config = {
 	// VIA COMMANDS IN THE GUILD.
   
 	"defaultSettings" : {
-		"prefix": "$",
+		"prefix": "&",
 		"investmentChannel": "investment-watch",
 		"mention-everyone": "false"
 	},
@@ -38,10 +38,10 @@ const config = {
 
 	// What we use to fetch submissions, etc
 	"reddit": {
-		"clientId": "clientId",
-		"clientSecret": "clientSecret",
-		"refreshToken": "refreshToken",
-		"userAgent": "userAgent"
+		"clientId": "clientid",
+		"clientSecret": "clientsecret",
+		"refreshToken": "obtain using reddit-oauth-helper",
+		"userAgent": "can be anything"
 	},
 
 	// PERMISSION LEVEL DEFINITIONS.
@@ -69,7 +69,7 @@ const config = {
 		{ level: 2,
 			name: "Owner", 
 			// Another simple check, compares the message author id to the one stored in the config file.
-			check: (message) => (message.client.config.ownerID || message.client.config.coownerID) === message.author.id
+			check: (message) => message.client.config.ownerID === message.author.id || message.client.config.coownerID === message.author.id
 		}
 	]
 }

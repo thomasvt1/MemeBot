@@ -5,6 +5,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 data/
+config.test.js
 test.js
 
 # Built code
