@@ -37,7 +37,7 @@ exports.run = async (client, message, [name], _level) => {
 	let i = 0
 	while (before_last_payout(history[i].time)) {
 		weekprofit += history[i].profit
-        i++
+		i++
 	}
 	
 	// Calculate amount of investments today
@@ -108,5 +108,5 @@ exports.help = {
 }
 
 function before_last_payout(inv_time) {
-    return !((new Date(inv_time * 1000).getDay() === 5 && moment(inv_time).hour() < 23));
+	return !((new Date(inv_time * 1000).getDay() === 5 && moment(inv_time).hour() < 23))
 }

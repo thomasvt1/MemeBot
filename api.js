@@ -4,7 +4,7 @@
 // MemeEconomy related functions are given on the API page (https://github.com/thecsw/memeinvestor_bot/tree/master/api)
 const api = {}
 
-const config = require("./config.js")
+const config = require("./config.js").node_env === "DEVELOPMENT" ? require("./config.test.js") : require("./config.js")
 const mysql = require("mysql2/promise")
 const rp = require("request-promise")
 const snoowrap = require("snoowrap")

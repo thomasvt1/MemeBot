@@ -34,7 +34,7 @@ exports.run = async (client, message, [name], _level) => {
 	// Calculate amount of investments today
 	let investments_today = 0
 	for (const inv of history) {
-		const timediff = Math.trunc(((new Date().getTime() / 1000) - inv.time) / 36e2) // 36e3 will result in hours between date objects
+		const timediff = Math.trunc((moment.unix() - inv.time) / 36e2) // 36e3 will result in hours between date objects
 		if (timediff > 24)
 			break
 		investments_today++
@@ -47,11 +47,11 @@ exports.run = async (client, message, [name], _level) => {
 	await client.api.r.getSubmission(lastinvestment.post).fetch().then((sub) => lastpost = sub).catch(err => console.error(err))
 	currentinvestment ? await client.api.r.getSubmission(currentinvestment.post).fetch().then((sub) => currentpost = sub).catch(err => console.error(err)) : currentpost = false
 
-	const lastinvested = Math.trunc(((moment().unix()) - currentinvestment.time) / 36e2) // 36e3 will result in hours between date objects
+	const lastinvested = Math.trunc(((moment().unix()) - (!currentinvestment ? lastinvestment.time : currentinvestment.time)) / 36e2) // 36e3 will result in hours between date objects
 	const maturesin = currentinvestment ? (currentinvestment.time + 14400) - moment().unix() : false // 14400 = 4 hours
 	const hours = currentinvestment ? Math.trunc(maturesin / 60 / 60) : false
 	const minutes = currentinvestment ? Math.trunc(((maturesin / 3600) - hours) * 60) : false
-	const maturedat = currentinvestment ? moment.unix(lastinvestment.time + 14400).format("ddd Do MMM YYYY [at] HH:mm [UTC]ZZ") : false // 14400 = 4 hours
+	const maturedat = moment.unix(lastinvestment.time + 14400).format("ddd Do MMM YYYY [at] HH:mm [UTC]ZZ") // 14400 = 4 hours
 
 	// Last investment's return
 	const lastinvestment_return = client.math.calculateInvestmentReturn(lastinvestment.upvotes, lastpost.score, user.networth)
@@ -73,11 +73,10 @@ exports.run = async (client, message, [name], _level) => {
 		.addField("**Average investment profit**", `${profitprct.toFixed(2)}%`, false)
 		.addField("**Investments last 24 hours**", `${investments_today}`, false)
 		.addField("**Last invested**", `${lastinvested} hours ago`, false)
-		.addBlankField(false)
 
 	if (currentinvestment) {
 		stats.addField("Current investment", `
-__**[${currentpost.title}](https://redd.it/${currentinvestment.post})**__\n\n
+__**[${currentpost.title}](https://redd.it/${currentinvestment.post})**__\n
 **Initial upvotes:** ${currentinvestment.upvotes}\n
 **Current upvotes:** ${currentpost.score}\n
 **Matures in:** ${hours} hours ${String(minutes).padStart(2, "0")} minutes\n
@@ -87,7 +86,7 @@ __**[${currentpost.title}](https://redd.it/${currentinvestment.post})**__\n\n
 		stats.addBlankField(false)
 	}
 	stats.addField("Last investment", `
-__**[${lastpost.title}](https://redd.it/${lastinvestment.post})**__\n\n
+__**[${lastpost.title}](https://redd.it/${lastinvestment.post})**__\n
 **Initial upvotes:** ${lastinvestment.upvotes}\n
 **Final upvotes:** ${lastinvestment.final_upvotes}\n
 **Matured at:** ${maturedat}\n

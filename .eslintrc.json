@@ -6,7 +6,7 @@
     "es6": true,
     "node": true
   },
-  "extends": ["eslint:recommended", "you-dont-need-momentjs/recommended"],
+  "extends": "eslint:recommended",
   "rules": {
     "no-console": "off",
     "no-unused-vars": "off",

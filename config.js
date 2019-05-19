@@ -22,9 +22,9 @@ const config = {
 		"mention-everyone": "false"
 	},
 
-	// Websocket settings for future plans
+	// Websocket settings for #investment-watch
 	"websocket": {
-		"url": "ws://yourip:port"
+		"url": "ws://meme.ws.thomasvt.xyz"
 	},
 	
 	//MySQL DB for storing reddit usernames

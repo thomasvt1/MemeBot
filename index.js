@@ -15,8 +15,8 @@ const Enmap = require("enmap")
 // or `bot.something`, this is what we're refering to. Your client.
 const client = new Discord.Client()
 
-// Here we load the config file that contains our token and our prefix values.
-client.config = require("./config.js")
+// Here we load the config file that contains our token and our prefix values. (checks for debugging case)
+client.config = require("./config.js").node_env === "DEVELOPMENT" ? require("./config.test.js") : require("./config.js")
 // client.config.token contains the bot's token
 // client.config.prefix contains the message prefix
 
