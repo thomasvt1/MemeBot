@@ -1,19 +1,22 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
-exports.run = (client, message, [name], _level) => {
-	const check = client.api.getLink(message.author.id)
+exports.run = async (client, message, [name], _level) => {
+	const check = await client.api.getLink(message.author.id)
+	const username = check ? check : name
 	let user
 
-	if (name.length < 3 && !check) {
-		message.reply(":thinking: Something tells me that is not a Reddit username")
-	}
+	if (!name && !check) return message.reply(":question: Please supply a Reddit username.")
 
-	client.api.getInvestorProfile(check ? check : name).then(body => {
+	if (name.length < 3 && !check) return message.reply(":thinking: Something tells me that is not a Reddit username")
+
+	await client.api.getInvestorProfile(username).then(body => {
 		if (body.id === 0) return message.reply(":question: I couldn't find that user. Sorry")
-		if (body.name === name.toLowerCase() || body.name === check.toLowerCase()) user = body
-	})
+		user = body
+	}).catch(err => console.error(err))
 
-	const history = client.api.getInvestorHistory(check ? check : name.toLowerCase())
+	const redditlink = await client.api.getRedditLink(username.toLowerCase())
+
+	const history = await client.api.getInvestorHistory(username.toLowerCase()).catch(err => console.error(err))
 
 	if (!history.length) return message.reply(":exclamation: You haven't invested before!")
 
@@ -37,47 +40,64 @@ exports.run = (client, message, [name], _level) => {
 		investments_today++
 	}
 
-	const lastinvested = Math.trunc(((new Date().getTime() / 1000) - history[0].time) / 36e2) // 36e3 will result in hours between date objects
-	const currentinvestment = !history[0].done ? client.api.getSubmission(history[0].post) : false // Simple ternary to check whether current investment is running
-	const lastinvestment = !currentinvestment ? client.api.getSubmission(history[0].post) : client.api.getSubmission(history[1].post)
-	const maturesin = (history[0].time + 14400) - Math.trunc(new Date().getTime() / 1000) // 14400 = 4 hours
-	const maturedat = (history[0].time + 14400) // 14400 = 4 hours
-	const investment_return = client.math.calculateInvestmentReturn(history[0].upvotes, currentinvestment.score, user.networth) // Fancy math to calculate investment return
-	const score = currentinvestment.score // I'm lazy xd
-	const break_even = Math.round(client.math.calculateBreakEvenPoint(history[0].upvotes))
-	const broke_even = Math.round(client.math.calculateBreakEvenPoint(!currentinvestment ? history[0].upvotes : history[1].upvotes))
+	let currentpost
+	let lastpost
+	const currentinvestment = !history[0].done ? history[0] : false // Simple ternary to check whether current investment is running
+	const lastinvestment = history[0].done ? history[0] : history[1]
+	await client.api.r.getSubmission(lastinvestment.post).fetch().then((sub) => lastpost = sub).catch(err => console.error(err))
+	currentinvestment ? await client.api.r.getSubmission(currentinvestment.post).fetch().then((sub) => currentpost = sub).catch(err => console.error(err)) : currentpost = false
+
+	const lastinvested = Math.trunc(((moment().unix()) - currentinvestment.time) / 36e2) // 36e3 will result in hours between date objects
+	const maturesin = currentinvestment ? (currentinvestment.time + 14400) - moment().unix() : false // 14400 = 4 hours
+	const hours = currentinvestment ? Math.trunc(maturesin / 60 / 60) : false
+	const minutes = currentinvestment ? Math.trunc(((maturesin / 3600) - hours) * 60) : false
+	const maturedat = currentinvestment ? moment.unix(lastinvestment.time + 14400).format("ddd Do MMM YYYY [at] HH:mm [UTC]ZZ") : false // 14400 = 4 hours
+
+	// Last investment's return
+	const lastinvestment_return = client.math.calculateInvestmentReturn(lastinvestment.upvotes, lastpost.score, user.networth)
+	// Fancy math to calculate investment return
+	const investment_return = currentinvestment ? client.math.calculateInvestmentReturn(currentinvestment.upvotes, currentpost.score, user.networth) : false
+
+	const break_even = currentinvestment ? Math.round(client.math.calculateBreakEvenPoint(currentinvestment.upvotes)) : false
+	const broke_even = Math.round(client.math.calculateBreakEvenPoint(lastinvestment.upvotes))
+	const breaks = currentinvestment ? ((break_even - currentpost.score) < 0 ? "Broke" : "Breaks") : false
+	const breaktogo = currentinvestment ? ((break_even - currentpost.score) < 0 ? "" : `(${break_even - currentpost.score} upvotes to go)`) : false
+
 	const stats = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeCord")
 		.setColor("GOLD")
 		.setFooter("Made by Thomas van Tilburg with ❤️", client.users.get(client.config.ownerID).avatarURL)
-		.setTitle(`u/${check ? check : name}`)
-		.setURL(`https://reddit.com/u/${check ? check : name}`)
-		.addField("**Net worth**", `${client.api.numberWithCommas(user.networth)} M¢`, true)
-		.addField("**Average investment profit**", `${profitprct.toFixed(2)}%`, true)
-		.addField("**Investments last 24 hours**", `${investments_today}`, true)
-		.addField("**Last invested**", `${lastinvested} hours ago`, true)
+		.setTitle(`u/${username}`)
+		.setURL(`https://reddit.com/u/${username}`)
+		.addField("**Net worth**", `${client.api.numberWithCommas(user.networth)} M¢`, false)
+		.addField("**Average investment profit**", `${profitprct.toFixed(2)}%`, false)
+		.addField("**Investments last 24 hours**", `${investments_today}`, false)
+		.addField("**Last invested**", `${lastinvested} hours ago`, false)
+		.addBlankField(false)
 
-	if (currentinvestment) stats.addField("Current investment", `
-		__**[${currentinvestment.title}](https://redd.it/${history[0].post})**__\n\n
-		**Initial upvotes:** ${history[0].upvotes}\n
-		**Current upvotes:** ${score}\n
-		**Matures in:** ${moment(maturesin).format("HH hours mm mins")}\n
-		**Invested:** ${client.api.numberWithCommas(history[0].amount)} M¢\n
-		**Profit:** ${client.api.numberWithCommas(Math.trunc(investment_return / 100 * history[0].amount))} M¢ (*${investment_return}%*)\n
-		**Breaks even at:** ${break_even} upvotes (${break_even - score} upvotes to go) M¢`, true)
-	
+	if (currentinvestment) {
+		stats.addField("Current investment", `
+__**[${currentpost.title}](https://redd.it/${currentinvestment.post})**__\n\n
+**Initial upvotes:** ${currentinvestment.upvotes}\n
+**Current upvotes:** ${currentpost.score}\n
+**Matures in:** ${hours} hours ${String(minutes).padStart(2, "0")} minutes\n
+**Invested:** ${client.api.numberWithCommas(currentinvestment.amount)} M¢\n
+**Profit:** ${client.api.numberWithCommas(Math.trunc(investment_return / 100 * currentinvestment.amount))} M¢ (*${investment_return}%*)\n
+**${breaks} even at:** ${break_even} upvotes ${breaktogo}`, true)
+		stats.addBlankField(false)
+	}
 	stats.addField("Last investment", `
-		__**[${lastinvestment.title}](https://redd.it/${!currentinvestment ? history[0].post : history[1].post})**__\n\n
-		**Initial upvotes:** ${!currentinvestment ? history[0].upvotes : history[1].upvotes}\n
-		**Current upvotes:** ${lastinvestment.score}\n
-		**Matured at:** ${moment(maturedat).format("ddd Do MMM YYYY at HH:mm")}\n
-		**Invested:** ${client.api.numberWithCommas(!currentinvestment ? history[0].amount: history[1].amount)} M¢\n
-		**Profit:** ${client.api.numberWithCommas(Math.trunc(investment_return / 100 * !currentinvestment ? history[0].amount : history[1].amount))} M¢ (*${investment_return}%*)\n
-		**Broke even at:** ${broke_even} upvotes`, true)
+__**[${lastpost.title}](https://redd.it/${lastinvestment.post})**__\n\n
+**Initial upvotes:** ${lastinvestment.upvotes}\n
+**Final upvotes:** ${lastinvestment.final_upvotes}\n
+**Matured at:** ${maturedat}\n
+**Invested:** ${client.api.numberWithCommas(lastinvestment.amount)} M¢\n
+**Profit:** ${client.api.numberWithCommas(lastinvestment.profit)} M¢ (*${lastinvestment_return}%*)\n
+**Broke even at:** ${broke_even} upvotes`, true)
 	if (check) stats.setThumbnail(client.users.get(message.author.id).displayAvatarURL)
-	if (!check && client.api.getRedditLink(name)) stats.setThumbnail(client.users.get(client.api.getRedditLink(name)).displayAvatarURL)
-	if (currentinvestment || !currentinvestment) stats.setImage(lastinvestment.url)
-	message.channel.send({ embed: stats })
+	if (!check && redditlink) stats.setThumbnail(client.users.get(redditlink).displayAvatarURL)
+	if (lastinvestment && currentinvestment || lastinvestment && !currentinvestment) stats.setImage(lastpost.thumbnail)
+	return message.channel.send({ embed: stats })
 }
 
 exports.conf = {

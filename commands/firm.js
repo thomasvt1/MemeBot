@@ -43,17 +43,17 @@ exports.run = (client, message, [name], _level) => {
 		message.channel.send(reply)
 	} else {
 	//insert embed here
-		const stats = new RichEmbed()
-			.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeCord")
-			.setColor("GOLD")
-			.setFooter("Made by Thomas van Tilburg with ❤️", client.users.get(client.config.ownerID).avatarURL)
-			.setTitle(`u/${check ? check : name}`)
-			.setURL(`https://reddit.com/u/${check ? check : name}`)
-			.addField("**Net worth**", `${client.api.numberWithCommas(user.networth)} M¢`, true)
-			.addField("**Average investment profit**", ``, true)
-			.addField("**Average investment profit (last 5)**", ``, true)
-			.addField("**Investments last 24 hours**", `${investments_today}`, true)
-			.addField("**Last invested**", `${lastinvested} hours ago`, true)
+	//	const stats = new RichEmbed()
+	//		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeCord")
+	//		.setColor("GOLD")
+	//		.setFooter("Made by Thomas van Tilburg with ❤️", client.users.get(client.config.ownerID).avatarURL)
+	//		.setTitle(`u/${check ? check : name}`)
+	//		.setURL(`https://reddit.com/u/${check ? check : name}`)
+	//		.addField("**Net worth**", `${client.api.numberWithCommas(user.networth)} M¢`, true)
+	//		.addField("**Average investment profit**", ``, true)
+	//		.addField("**Average investment profit (last 5)**", ``, true)
+	//		.addField("**Investments last 24 hours**", `${investments_today}`, true)
+	//		.addField("**Last invested**", `${lastinvested} hours ago`, true)
 		/*{
   "embed": {
     "title": "The Nameless Bank",

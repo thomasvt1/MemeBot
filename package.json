@@ -24,21 +24,27 @@
   },
   "homepage": "https://github.com/thomasvt1/MemeCord#readme",
   "dependencies": {
-    "better-sqlite-pool": "^0.1.2",
+    "@discordjs/uws": "^11.149.1",
+    "better-sqlite-pool": "github:eslachance/better-sqlite-pool",
     "bufferutil": "^4.0.1",
     "chalk": "^2.3.0",
     "discord.js": "^11.5.0",
     "enmap": "^4.8.5",
-    "hastebin-gen": "^2.0.4",
+    "erlpack": "github:discordapp/erlpack",
     "inquirer": "^6.3.1",
     "lru-cache": "^5.1.1",
     "moment": "^2.20.1",
     "moment-duration-format": "^2.2.0",
     "mysql2": "^1.6.5",
+    "pastebin-js": "^1.0.2",
     "plotly": "^1.0.6",
     "pngjs": "^3.4.0",
     "request-promise": "^4.2.4",
     "snoowrap": "^1.15.2",
+    "uws": "^100.0.1",
     "ws": "^7.0.0"
+  },
+  "devDependencies": {
+    "eslint-plugin-you-dont-need-momentjs": "^1.4.0"
   }
 }

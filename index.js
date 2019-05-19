@@ -9,7 +9,6 @@ const Discord = require("discord.js")
 const { promisify } = require("util")
 const readdir = promisify(require("fs").readdir)
 const Enmap = require("enmap")
-const mysql = require("mysql2/promise")
 
 // This is your client. Some people call it `bot`, some people call it `self`,
 // some might call it `cootchie`. Either way, when you see `client.something`,
@@ -20,6 +19,12 @@ const client = new Discord.Client()
 client.config = require("./config.js")
 // client.config.token contains the bot's token
 // client.config.prefix contains the message prefix
+
+// Add Meme.Market and Reddity related functions into codebase
+client.api = require("./api.js")
+
+// Add investment calculating crap and whatever in
+client.math = require("./math.js")
 
 // Require our logger
 client.logger = require("./modules/Logger")
@@ -37,24 +42,6 @@ client.aliases = new Enmap()
 // essentially saves a collection to disk. This is great for per-server configs,
 // and makes things extremely easy for this purpose.
 client.settings = new Enmap({ name: "settings" })
-
-// Add Meme.Market and Reddity related functions into codebase
-client.api = require("./api.js")
-
-// Add investment calculating crap and whatever in
-client.math = require("./math.js")
-
-// Add MySQL database for storing Discord + Reddit links
-client.pool = mysql.createPool({
-	host: client.config.mysql.host,
-	port: client.config.mysql.port,
-	user: client.config.mysql.user,
-	password: client.config.mysql.password,
-	database: client.config.mysql.database,
-	waitForConnections: true,
-	connectionLimit: 10,
-	queueLimit: 0
-})
 
 // We're doing real fancy node 8 async/await stuff here, and to do that
 // we need to wrap stuff in an anonymous function. It's annoying but it works.
@@ -94,7 +81,7 @@ const init = async () => {
 	// Here we login the client.
 	client.login(client.config.token)
 
-// End top-level async/await function.
+	// End top-level async/await function.
 }
 
 init()
