@@ -1,6 +1,8 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 exports.run = async (client, message, [name], _level) => {
+	name = name.replace(/^((\/|)u\/)/g, "")
+	
 	const check = await client.api.getLink(message.author.id)
 	const username = check ? check : name.replace(/^((\/|)u\/)/g, "")
 
