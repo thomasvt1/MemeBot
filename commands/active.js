@@ -34,7 +34,7 @@ exports.run = async (client, message, [name], _level) => {
 	// Calculate amount of investments today
 	let investments_today = 0
 	for (const inv of history) {
-		const timediff = Math.trunc((moment.unix() - inv.time) / 36e2) // 36e3 will result in hours between date objects
+		const timediff = Math.trunc(((new Date().getTime() / 1000) - inv.time) / 36e2) // 36e3 will result in hours between date objects
 		if (timediff > 24)
 			break
 		investments_today++

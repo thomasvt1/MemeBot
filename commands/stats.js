@@ -8,6 +8,8 @@ exports.run = async (client, message, [name], _level) => {
 
 	if (name.length < 3 && !check) return message.reply(":thinking: Something tells me that is not a Reddit username")
 
+	if (name.startsWith("u/") || name.startsWith("/u/")) name.replace(/^((\/|)u\/)/g, "")
+
 	let user
 	await client.api.getInvestorProfile(username).then(body => {
 		if (body.id === 0) return message.reply(":question: I couldn't find that user. Sorry")
@@ -81,7 +83,9 @@ exports.run = async (client, message, [name], _level) => {
 		.addField("**Week profit ratio**", `${weekratio}%`, true)
 		
 	if (currentinvestment) stats.addField("Current investment", `
-__**[${subpost.title}](https://redd.it/${history[0].post})**__\n**Initial upvotes:** ${history[0].upvotes}\n
+[u/${username}](https://reddit.com/u/${username})
+__**[${subpost.title}](https://redd.it/${history[0].post})**__\n
+**Initial upvotes:** ${history[0].upvotes}\n
 **Current upvotes:** ${subpost.score}\n
 **Matures in:** ${hours} hours ${String(minutes).padStart(2, "0")} minutes\n
 **Invested:** ${client.api.numberWithCommas(history[0].amount)} M¢\n

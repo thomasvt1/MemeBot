@@ -4,7 +4,7 @@ require("moment-duration-format")
 
 exports.run = (client, message, args, level) => { // eslint-disable-line no-unused-vars
 	const duration = moment.duration(client.uptime).format(" D [days], H [hrs], m [mins], s [secs]")
-	const bot = moment(client.user.createdTimestamp).format("dddd MMMM Do YYYY,") + " at " + moment(client.user.createdTimestamp).format("LTS")
+	const bot = moment(client.user.createdTimestamp).format("dddd MMMM Do YYYY, [at] HH:mm [UTC]ZZ")
 	const stats = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeCord")
 		.setColor("GOLD")

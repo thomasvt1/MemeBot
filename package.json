@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "node index.js",
+    "preinstall": "export ACCEPT_HIGHCHARTS_LICENSE=1"
   },
   "engines": {
     "node": ">=8"
@@ -16,7 +17,7 @@
   },
   "author": "Thomas van Tilburg (https://thomasvt.xyz)",
   "contributors": [
-    "Keanu <guestone63@gmail.com> (https://github.com/Keanu73)"
+    "Keanu C. <keanu@keanu73.net> (https://github.com/Keanu73)"
   ],
   "license": "ISC",
   "bugs": {
@@ -25,12 +26,19 @@
   "homepage": "https://github.com/thomasvt1/MemeCord#readme",
   "dependencies": {
     "@discordjs/uws": "^11.149.1",
+    "@hapi/boom": "^7.4.2",
+    "@hapi/hawk": "^7.1.0",
+    "@hapi/hoek": "^6.2.3",
+    "@hapi/sntp": "^3.1.1",
     "better-sqlite-pool": "github:eslachance/better-sqlite-pool",
     "bufferutil": "^4.0.1",
     "chalk": "^2.3.0",
+    "concat-stream": "^2.0.0",
+    "debug": "^4.1.1",
     "discord.js": "^11.5.0",
     "enmap": "^4.8.5",
     "erlpack": "github:discordapp/erlpack",
+    "highcharts-export-server": "^2.0.24",
     "inquirer": "^6.3.1",
     "lru-cache": "^5.1.1",
     "moment": "^2.20.1",
@@ -41,10 +49,12 @@
     "pngjs": "^3.4.0",
     "request-promise": "^4.2.4",
     "snoowrap": "^1.15.2",
+    "tunnel-agent": "^0.6.0",
     "uws": "^100.0.1",
     "ws": "^7.0.0"
   },
   "devDependencies": {
+    "eslint": "^5.5.0",
     "eslint-plugin-you-dont-need-momentjs": "^1.4.0"
   }
 }

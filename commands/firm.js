@@ -1,6 +1,7 @@
 const { RichEmbed } = require("discord.js")
 exports.run = (client, message, [name], _level) => {
 	const check = client.api.getLink(message.author.id)
+	const username = check ? check : name
 	let user
 
 	if (name.length < 3 && !check) {
@@ -11,7 +12,7 @@ exports.run = (client, message, [name], _level) => {
 		if (body.id === 0) return message.reply(":question: I couldn't find that user. Sorry")
 		if (body.firm === 0 && !check) return message.reply(":x: This person isn't in a firm.")
 		if (body.firm === 0 && check) return message.reply(":x: You're not in a firm.")
-		if (body.name === name.toLowerCase() || body.name === check.toLowerCase()) user = body
+		user = body
 	})
 
 	const firm = client.api.getFirmProfile(user.firm)
@@ -53,7 +54,8 @@ exports.run = (client, message, [name], _level) => {
 	//		.addField("**Average investment profit**", ``, true)
 	//		.addField("**Average investment profit (last 5)**", ``, true)
 	//		.addField("**Investments last 24 hours**", `${investments_today}`, true)
-	//		.addField("**Last invested**", `${lastinvested} hours ago`, true)
+  //		.addField("**Last invested**", `${lastinvested} hours ago`, true)
+    // we also need week's best profiteer
 		/*{
   "embed": {
     "title": "The Nameless Bank",

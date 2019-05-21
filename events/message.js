@@ -21,6 +21,8 @@ module.exports = async (client, message) => {
 	// which is set in the configuration file.
 	if (message.content.indexOf(settings.prefix) !== 0) return
 
+	if (message.guild && !message.channel.memberPermissions(message.guild.me).has("SEND_MESSAGES")) return message.author.send(`:exclamation: I'm unable to send messages to <#${message.channel.id}>!`)
+
 	// Here we separate our "command" name, and our "arguments" for the command.
 	// e.g. if we have the message "+say Is this the real life?" , we'll get the following:
 	// command = say
@@ -61,6 +63,6 @@ module.exports = async (client, message) => {
 		message.flags.push(args.shift().slice(1))
 	}
 	// If the command exists, **AND** the user has permission, run it.
-	client.logger.cmd(`[CMD] ${client.config.permLevels.find(l => l.level === level).name} ${message.author.username} (${message.author.id}) ran command ${cmd.help.name}`)
+	client.logger.cmd(`[CMD] ${client.config.permLevels.find(l => l.level === level).name} ${message.author.username} (${message.author.id}) ran command ${cmd.help.name} with args ${args[0]}`)
 	cmd.run(client, message, args, level)
 }
