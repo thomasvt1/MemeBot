@@ -1,13 +1,13 @@
 const { RichEmbed } = require("discord.js")
 exports.run = async (client, message, [name], _level) => {
-	name = name.replace(/^((\/|)u\/)/g, "")
-
 	const check = await client.api.getLink(message.author.id)
-	const username = check ? check : name.replace(/^((\/|)u\/)/g, "")
 
 	if (!name && !check) return message.reply(":question: Please supply a Reddit username.")
 
 	if (name.length < 3 && !check) return message.reply(":thinking: Something tells me that is not a Reddit username")
+
+	name = name.replace(/^((\/|)u\/)/g, "")
+	const username = check ? check : name
 
 	const user = await client.api.getInvestorProfile(username).catch(err => client.logger.error(err.stack))
 	if (user.id === 0) return message.reply(":question: I couldn't find that user.")
