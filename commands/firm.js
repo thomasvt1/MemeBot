@@ -1,43 +1,42 @@
 const { RichEmbed } = require("discord.js")
-exports.run = (client, message, [name], _level) => {
-	const check = client.api.getLink(message.author.id)
-	const username = check ? check : name
-	let user
+exports.run = async (client, message, [name], _level) => {
+	name = name.replace(/^((\/|)u\/)/g, "")
 
-	if (name.length < 3 && !check) {
-		message.reply(":thinking: Something tells me that is not a Reddit username")
-	}
+	const check = await client.api.getLink(message.author.id)
+	const username = check ? check : name.replace(/^((\/|)u\/)/g, "")
 
-	client.api.getInvestorProfile(check ? check : name).then(body => {
-		if (body.id === 0) return message.reply(":question: I couldn't find that user. Sorry")
-		if (body.firm === 0 && !check) return message.reply(":x: This person isn't in a firm.")
-		if (body.firm === 0 && check) return message.reply(":x: You're not in a firm.")
-		user = body
-	})
+	if (!name && !check) return message.reply(":question: Please supply a Reddit username.")
 
-	const firm = client.api.getFirmProfile(user.firm)
-	const firmmembers = client.api.getFirmMembers(user.firm)
+	if (name.length < 3 && !check) return message.reply(":thinking: Something tells me that is not a Reddit username")
 
-	const lastinvestment = []
+	const user = await client.api.getInvestorProfile(username).catch(err => client.logger.error(err.stack))
+	if (user.id === 0) return message.reply(":question: I couldn't find that user.")
+	if (user.firm === 0 && !check) return message.reply(":x: This person isn't in a firm.")
+	if (user.firm === 0 && check) return message.reply(":x: You're not in a firm.")
+
+	const firm = await client.api.getFirmProfile(user.firm).catch(err => client.logger.error(err.stack))
+	const firmmembers = await client.api.getFirmMembers(user.firm).catch(err => client.logger.error(err.stack))
+
+	const inactiveinvestors = []
 
 	for (const member of firmmembers) {
 		const history = client.api.getInvestorHistory(member.name, 1)
 		if (history[0] !== undefined)
-			lastinvestment.push({ name: member.name, timediff: Math.trunc(new Date().getTime() / 1000) - history[0].time })
+			inactiveinvestors.push({ name: member.name, timediff: Math.trunc(new Date().getTime() / 1000) - history[0].time })
 	}
 
-	lastinvestment.sort((a, b) => b.timediff - a.timediff)
+	inactiveinvestors.sort((a, b) => b.timediff - a.timediff)
 
-	const listsize = Math.min(10, lastinvestment.length)
+	const listsize = Math.min(10, inactiveinvestors.length)
 
 	if (!client.checkEmbed(message.guild.me)) {
 		let reply = `Currently ${firm.size} investors in ${firm.name}. Here are the ${listsize} most inactive investors\n` + "```"
 
 		for (let i = 0; i <= listsize; i++) {
-			if (lastinvestment[i] === undefined)
+			if (inactiveinvestors[i] === undefined)
 				continue
-			const timediff = Math.trunc(lastinvestment[i].timediff / 36e2) // 36e3 will result in hours between date objects
-			reply += `${i + 1}. ${lastinvestment[i].name} last invested: ${timediff} hours ago\n`
+			const timediff = Math.trunc(inactiveinvestors[i].timediff / 36e2) // 36e3 will result in hours between date objects
+			reply += `${i + 1}. ${inactiveinvestors[i].name} last invested: ${timediff} hours ago\n`
 		}
 
 		reply += "```"

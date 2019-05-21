@@ -11,7 +11,7 @@ exports.run = async (client, message, [name], _level) => {
 	if (name.length < 3 && !check) return message.reply(":thinking: Something tells me that is not a Reddit username")
 
 	const user = await client.api.getInvestorProfile(username).catch(err => client.logger.error(err.stack))
-	if (user.id === 0) return message.reply(":question: I couldn't find that user. Sorry")
+	if (user.id === 0) return message.reply(":question: I couldn't find that user.")
 
 	const firm = await client.api.getFirmProfile(user.firm).catch(err => client.logger.error(err.stack))
 
