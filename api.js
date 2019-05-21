@@ -108,6 +108,21 @@ api.getFirmMembers = async function (id) {
 	})
 }
 
+api.getTop100 = async function (page, amount = 25) {
+	const options = {
+		uri: `https://meme.market/api/investors/top?per_page=${amount}&page=${page}`,
+		json: true
+	}
+
+	return new Promise(function (resolve, reject) {
+		rp(options).then(function (parsedBody) {
+			resolve(parsedBody)
+		}).catch(err => {
+			reject(err)
+		})
+	})
+}
+
 api.getRedditLink = async function (reddit_name) {
 	if (config.node_env === "DEVELOPMENT") return false
 
@@ -151,6 +166,18 @@ api.updateLink = async function (discord_id, reddit_name) {
 // Some hacky regex to make numbers look nicer
 api.numberWithCommas = function (x) {
 	return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+}
+
+api.getSuffix = function (val) {
+	const number = parseInt(val)
+	const abbrev = ["", "K", "M", "B", "T", "q", "Q", "s", "S"]
+	const unrangifiedOrder = Math.floor(Math.log10(Math.abs(number)) / 3)
+	const order = Math.max(0, Math.min(unrangifiedOrder, abbrev.length - 1))
+	const suffix = abbrev[order]
+	const precision = suffix ? 1 : 0
+	const value = (number / Math.pow(10, order * 3)).toFixed(precision)
+
+	return value + " " + suffix
 }
 
 module.exports = api

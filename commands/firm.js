@@ -54,8 +54,8 @@ exports.run = (client, message, [name], _level) => {
 	//		.addField("**Average investment profit**", ``, true)
 	//		.addField("**Average investment profit (last 5)**", ``, true)
 	//		.addField("**Investments last 24 hours**", `${investments_today}`, true)
-  //		.addField("**Last invested**", `${lastinvested} hours ago`, true)
-    // we also need week's best profiteer
+		//		.addField("**Last invested**", `${lastinvested} hours ago`, true)
+		// we also need week's best profiteer
 		/*{
   "embed": {
     "title": "The Nameless Bank",
