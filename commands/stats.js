@@ -14,6 +14,8 @@ exports.run = async (client, message, [name], _level) => {
 	if (user.id === 0) return message.reply(":question: I couldn't find that user. Sorry")
 
 	const firm = await client.api.getFirmProfile(user.firm).catch(err => client.logger.error(err.stack))
+
+	const redditlink = await client.api.getRedditLink(username.toLowerCase())
 	
 	const history = await client.api.getInvestorHistory(username).catch(err => client.logger.error(err.stack))
 
@@ -92,7 +94,7 @@ __**[${currentpost.title}](https://redd.it/${currentinvestment.post})**__\n
 **Profit:** ${client.api.numberWithCommas(forecastedprofit)} M¢ (*${investment_return}%*)\n
 **${breaks} even at:** ${break_even} upvotes ${breaktogo}`, true)
 	if (check) stats.setThumbnail(client.users.get(message.author.id).displayAvatarURL)
-	if (!check && client.api.getRedditLink(name)) stats.setThumbnail(client.users.get(client.api.getRedditLink(name)))
+	if (!check && redditlink) stats.setThumbnail(client.users.get(redditlink).displayAvatarURl)
 	if (currentinvestment) stats.setImage(currentpost.thumbnail)
 	return message.channel.send({ embed: stats })
 }
