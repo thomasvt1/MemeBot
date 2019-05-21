@@ -83,7 +83,7 @@ exports.run = async (client, message, [name], _level) => {
 		.addField("**Week profit ratio**", `${weekratio}%`, true)
 		
 	if (currentinvestment) stats.addField("Current investment", `
-[u/${username}](https://reddit.com/u/${username})
+[u/${subpost.author.name}](https://reddit.com/u/${subpost.author.name})\n
 __**[${subpost.title}](https://redd.it/${history[0].post})**__\n
 **Initial upvotes:** ${history[0].upvotes}\n
 **Current upvotes:** ${subpost.score}\n

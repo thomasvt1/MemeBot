@@ -76,6 +76,7 @@ exports.run = async (client, message, [name], _level) => {
 
 	if (currentinvestment) {
 		stats.addField("Current investment", `
+[u/${currentpost.author.name}](https://reddit.com/u/${subpost.author.name})\n
 __**[${currentpost.title}](https://redd.it/${currentinvestment.post})**__\n
 **Initial upvotes:** ${currentinvestment.upvotes}\n
 **Current upvotes:** ${currentpost.score}\n
@@ -86,6 +87,7 @@ __**[${currentpost.title}](https://redd.it/${currentinvestment.post})**__\n
 		stats.addBlankField(false)
 	}
 	stats.addField("Last investment", `
+[u/${lastpost.author.name}](https://reddit.com/u/${subpost.author.name})\n
 __**[${lastpost.title}](https://redd.it/${lastinvestment.post})**__\n
 **Initial upvotes:** ${lastinvestment.upvotes}\n
 **Final upvotes:** ${lastinvestment.final_upvotes}\n
