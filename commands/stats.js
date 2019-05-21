@@ -91,7 +91,7 @@ __**[${currentpost.title}](https://redd.it/${currentinvestment.post})**__\n
 **Current upvotes:** ${currentpost.score}\n
 **Matures in:** ${hours} hours ${String(minutes).padStart(2, "0")} minutes\n
 **Invested:** ${client.api.numberWithCommas(currentinvestment.amount)} M¢\n
-**Profit:** ${client.api.numberWithCommas(forecastedprofit)} M¢ (*${investment_return}%*)\n
+**Profit:** ${client.api.numberWithCommas(Math.trunc(forecastedprofit))} M¢ (*${investment_return}%*)\n
 **${breaks} even at:** ${break_even} upvotes ${breaktogo}`, true)
 	if (check) stats.setThumbnail(client.users.get(message.author.id).displayAvatarURL)
 	if (!check && redditlink) stats.setThumbnail(client.users.get(redditlink).displayAvatarURl)
