@@ -56,14 +56,15 @@ exports.run = async (client, message, [name], _level) => {
 	await client.api.r.getSubmission(history[0].post).fetch().then((sub) => currentpost = sub).catch(err => console.error(err))
 	// Removing week ratio scores for now until we have sufficient data on what is a good ratio
 	// const weekratioscore = (weekratio < 1) ? "Poor" : (weekratio > 1) ? "Good" : (weekratio > 1.5) ? "Excellent" : (weekratio > 2) ? "Outstanding" : false
-	const weekratio = ((weekprofit / user.networth) * 100.0).toFixed(2)
+	const weekratio = ((weekprofit / (user.networth - weekprofit)) * 100.0).toFixed(2)
+	//const weekratio = ((weekprofit / (user.networth - weekprofit)) * 100.0).toFixed(2)
 
 	const currentinvestment = history.length && !history[0].done ? history[0] : false // Simple ternary to check whether current investment is running
 	const investment_return = client.math.calculateInvestmentReturn(currentinvestment.upvotes, currentpost.score, user.networth) // Fancy math to calculate investment return
 	let forecastedprofit = Math.trunc(investment_return / 100 * currentinvestment.amount)
 	user.firm !== 0 ? forecastedprofit -= forecastedprofit * (firm.tax / 100) : forecastedprofit
 
-	const lastinvested = Math.trunc(((moment().unix()) - currentinvestment.time) / 36e2) // 36e3 will result in hours between date objects
+	const lastinvested = Math.trunc(((moment().unix()) - history[0].time) / 36e2) // 36e3 will result in hours between date objects
 	const maturesin = (currentinvestment.time + 14400) - moment().unix() // 14400 = 4 hours
 	const hours = Math.trunc(maturesin / 60 / 60)
 	const minutes = Math.trunc(((maturesin / 3600) - hours) * 60)
