@@ -159,23 +159,27 @@ math.calculateFirmPayout = function (balance, size, execs, assocs) {
 	// 100 % of remaining paid to floor traders(21 % of total payroll)
 	const trader_total = remaining_amount
 	const tradernbr = size - execs - assocs - board_members
-	const trader_percent = 21 / Math.max(tradernbr)
+	const trader_percent = 21 / Math.max(tradernbr, 1)
 	const trader_amount = trader_total / Math.max(tradernbr, 1)
 
 	const info = {
 		board: {
 			amount: board_amount,
+			total: board_total
 		},
 		exec: {
 			amount: exec_amount,
+			percent: exec_percent,
 			total: exec_total
 		},
 		assoc: {
 			amount: assoc_amount,
+			percent: assoc_percent,
 			total: assoc_total
 		},
 		trader: {
 			amount: trader_amount,
+			percent: trader_percent,
 			total: trader_total
 		}
 	}
