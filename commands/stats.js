@@ -10,14 +10,22 @@ exports.run = async (client, message, [name], _level) => {
 	name = name.replace(/^((\/|)u\/)/g, "")
 	const username = check ? check : name
 
-	const user = await client.api.getInvestorProfile(username).catch(err => client.logger.error(err.stack))
+	const user = await client.api.getInvestorProfile(username.toLowerCase()).catch(err => client.logger.error(err.stack))
 	if (user.id === 0) return message.reply(":question: I couldn't find that user.")
 
 	const firm = await client.api.getFirmProfile(user.firm).catch(err => client.logger.error(err.stack))
 
+	const firmroles = {
+		assoc: "Associate",
+		exec: "Executive",
+		coo: "COO",
+		cfo: "CFO",
+		ceo: "COO"
+	}
+
 	const redditlink = await client.api.getRedditLink(username.toLowerCase())
 	
-	const history = await client.api.getInvestorHistory(username).catch(err => client.logger.error(err.stack))
+	const history = await client.api.getInvestorHistory(username.toLowerCase()).catch(err => client.logger.error(err.stack))
 
 	// Calculate profit %
 	let profitprct = 0
@@ -74,10 +82,13 @@ exports.run = async (client, message, [name], _level) => {
 	const stats = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
 		.setColor("GOLD")
-		.setFooter("Made by Thomas van Tilburg with ❤️", client.users.get(client.config.ownerID).avatarURL)
+		.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
 		.setTitle(`u/${username}`)
 		.setURL(`https://reddit.com/u/${username}`)
 		.addField("**Net worth**", `${client.api.numberWithCommas(user.networth)} M¢`, true)
+		.addField("**Completed investments**", `${client.api.numberWithCommas(user.completed)}`, true)
+		.addField("**Rank**", `**\`#${user.rank}\`**`, true)
+		.addField("**Firm**", `**\`${user.firm_role === "" ? "Floor Trader": firmroles[user.firm_role]}\`** of **\`${firm.name}\`**`, true)
 		.addField("**Average investment profit**", `${profitprct.toFixed(2)}%`, true)
 		.addField("**Average investment profit (last 5)**", `${profitprct_5.toFixed(2)}%`, true)
 		.addField("**Investments last 24 hours**", `${investments_today}`, true)

@@ -52,7 +52,7 @@ api.getInvestorProfile = async function (name) {
 	})
 }
 
-api.getInvestorHistory = async function (name, amount = 50) {
+api.getInvestorHistory = async function (name, amount = 50, page = 0) {
 	/**
 	* This gets the investor history of a Reddit user
 	*
@@ -65,7 +65,7 @@ api.getInvestorHistory = async function (name, amount = 50) {
 	*     api.getInvestorHistory("Keanu73")
 	*/
 	const options = {
-		uri: `https://meme.market/api/investor/${name}/investments?per_page=${amount}&page=0`,
+		uri: `https://meme.market/api/investor/${name}/investments?per_page=${amount}&page=${page}`,
 		json: true
 	}
 

@@ -73,7 +73,7 @@ exports.run = async (client, message, [name], _level) => {
 	const stats = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
 		.setColor("GOLD")
-		.setFooter("Made by Thomas van Tilburg with ❤️", client.users.get(client.config.ownerID).avatarURL)
+		.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
 		.setTitle(`u/${username}`)
 		.setURL(`https://reddit.com/u/${username}`)
 		.addField("**Net worth**", `${client.api.numberWithCommas(user.networth)} M¢`, false)
@@ -89,7 +89,7 @@ __**[${currentpost.title}](https://redd.it/${currentinvestment.post})**__\n
 **Current upvotes:** ${currentpost.score}\n
 **Matures in:** ${hours} hours ${String(minutes).padStart(2, "0")} minutes\n
 **Invested:** ${client.api.numberWithCommas(currentinvestment.amount)} M¢\n
-**Profit:** ${client.api.numberWithCommas(Math.trunc(forecastedprofit))} M¢ (*${investment_return}%*)\n
+**Forecasted profit:** ${client.api.numberWithCommas(Math.trunc(forecastedprofit))} M¢ (*${investment_return}%*)\n
 **${breaks} even at:** ${break_even} upvotes ${breaktogo}`, true)
 		stats.addBlankField(false)
 	}
