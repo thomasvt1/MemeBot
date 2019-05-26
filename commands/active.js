@@ -76,10 +76,10 @@ exports.run = async (client, message, [name], _level) => {
 		.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
 		.setTitle(`u/${username}`)
 		.setURL(`https://reddit.com/u/${username}`)
-		.addField("**Net worth**", `${client.api.numberWithCommas(user.networth)} M¢`, false)
-		.addField("**Average investment profit**", `${profitprct.toFixed(2)}%`, false)
-		.addField("**Investments last 24 hours**", `${investments_today}`, false)
-		.addField("**Last invested**", `${lastinvested} hours ago`, false)
+		.addField("Net worth", `${client.api.numberWithCommas(user.networth)} M¢`, false)
+		.addField("Average investment profit", `${profitprct.toFixed(2)}%`, false)
+		.addField("Investments last 24 hours", `${investments_today}`, false)
+		.addField("Last invested*", `${lastinvested} hours ago`, false)
 
 	if (currentinvestment) {
 		stats.addField("Current investment", `

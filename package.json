@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/thomasvt1/MemeCord.git"
+    "url": "git+https://github.com/thomasvt1/MemeBot.git"
   },
   "author": "Thomas van Tilburg (https://thomasvt.xyz)",
   "contributors": [
@@ -21,9 +21,9 @@
   ],
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/thomasvt1/MemeCord/issues"
+    "url": "https://github.com/thomasvt1/MemeBot/issues"
   },
-  "homepage": "https://github.com/thomasvt1/MemeCord#readme",
+  "homepage": "https://github.com/thomasvt1/MemeBot#readme",
   "dependencies": {
     "@discordjs/uws": "^11.149.1",
     "@hapi/boom": "^7.4.2",

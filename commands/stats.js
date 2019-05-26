@@ -72,8 +72,8 @@ exports.run = async (client, message, [name], _level) => {
 	let forecastedprofit = Math.trunc(investment_return / 100 * currentinvestment.amount)
 	user.firm !== 0 ? forecastedprofit -= forecastedprofit * (firm.tax / 100) : forecastedprofit
 
-	const lastinvested = Math.trunc(((moment().unix()) - history[0].time) / 36e2) // 36e3 will result in hours between date objects
-	const maturesin = (currentinvestment.time + 14400) - moment().unix() // 14400 = 4 hours
+	const lastinvested = moment.duration(moment.unix() - history[0].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
+	const maturesin = moment.duration((currentinvestment.time + 14400) - moment().unix(), "seconds").format("[**]H[**] [hour] [and] [**]m[**] [minute]") // 14400 = 4 hours
 	const hours = Math.trunc(maturesin / 60 / 60)
 	const minutes = Math.trunc(((maturesin / 3600) - hours) * 60)
 	const break_even = Math.round(client.math.calculateBreakEvenPoint(currentinvestment.upvotes))
@@ -91,7 +91,7 @@ exports.run = async (client, message, [name], _level) => {
 		.addField("**Firm**", `**\`${user.firm_role === "" ? "Floor Trader": firmroles[user.firm_role]}\`** of **\`${firm.name}\`**`, true)
 		.addField("**Average investment profit**", `${profitprct.toFixed(2)}%`, true)
 		.addField("**Average investment profit (last 5)**", `${profitprct_5.toFixed(2)}%`, true)
-		.addField("**Investments last 24 hours**", `${investments_today}`, true)
+		.addField("**Investments in the past day**", `${investments_today}`, true)
 		.addField("**Last invested**", `${lastinvested} hours ago`, true)
 		.addField("**This week's profit**", `${client.api.numberWithCommas(weekprofit)} M¢`, true)
 		.addField("**Week profit ratio**", `${weekratio}%`, true)
@@ -101,7 +101,7 @@ exports.run = async (client, message, [name], _level) => {
 __**[${currentpost.title}](https://redd.it/${currentinvestment.post})**__\n
 **Initial upvotes:** ${history[0].upvotes}\n
 **Current upvotes:** ${currentpost.score}\n
-**Matures in:** ${hours} hours ${String(minutes).padStart(2, "0")} minutes\n
+**Matures in:** ${maturesin}\n
 **Invested:** ${client.api.numberWithCommas(currentinvestment.amount)} M¢\n
 **Profit:** ${client.api.numberWithCommas(Math.trunc(forecastedprofit))} M¢ (*${investment_return}%*)\n
 **${breaks} even at:** ${break_even} upvotes ${breaktogo}`, true)

@@ -1,4 +1,6 @@
 const { RichEmbed } = require("discord.js")
+const moment = require("moment")
+const momentf = require("moment-duration-format")
 exports.run = async (client, message, [name], _level) => {
 	const check = await client.api.getLink(message.author.id)
 
@@ -28,46 +30,41 @@ exports.run = async (client, message, [name], _level) => {
 		ceo: "COO"
 	}
 
-	// Calculate profit %
-	let profitprct = 0
-	// eslint-disable-next-line prefer-const
+	// Here we calculate the average investment profit of the entire firm
+	// by listing out all of each firm member's investments, then pushing them
+	// all into one array. We then average them all out.
 	let investments = []
-	let c = 0
-	let investc = 0
-	let page = 0
-	while (c < firmmembers.length) {
-		investc = firmmembers[c].investments
-		const history = await client.api.getInvestorHistory(firmmembers[c].name, 100, page)
-		investments.push(history)
-		investc -= 100
-		if (investc > 0) while (investc > 0) {
+	let profitprct = 0
+
+	for (let i = 0; i < firmmembers.length; i++) {
+		let num_left = firmmembers[i].completed
+		let page = 0
+		let amount = 0
+
+		while (num_left > 0) {
+			if (num_left > 100) {
+				amount = 100
+			} else {
+				amount = num_left
+			}
+			const history = await client.api.getInvestorHistory(firmmembers[i].name, amount, page)
+			investments = investments.concat(history)
+			num_left -= amount
 			page += 1
-			const history = await client.api.getInvestorHistory(firmmembers[c].name, 100, page)
-			investments.push(history)
-			investc -= 100
 		}
-		
-		if (investc < 100) while (investc > 0) {
-			page = 0
-			const history = await client.api.getInvestorHistory(firmmembers[c].name, investc, page)
-			investments.push(history)
-			investc -= 100
-		}
-		c++
 	}
 
 	for (let i = 0; i < investments.length; i++) {
-		for (let f = 0; f < investments[f].length; f++) {
-			if (investments[f].done === true) {
-				console.log(profitprct)
-				profitprct += investments[f].profit / investments[f].amount * 100
-			}
+		if (investments[i].done === true) {
+			profitprct += investments[i].profit / investments[i].amount * 100 // investor profit ratio
 		}
 	}
 
-	console.log(profitprct)
+	profitprct /= investments.length // Calculate average % return
 
-	profitprct /= firm.size // Calculate average % return
+	// Calculate most inactive investors and most active investors
+	// (in terms of **time difference**, not investments.)
+	// List all of them, calculate time difference, format it using moment-duration-format.
 
 	const inactiveinvestors = []
 	const activeinvestors = []
@@ -82,18 +79,24 @@ exports.run = async (client, message, [name], _level) => {
 
 	inactiveinvestors.sort((a, b) => b.timediff - a.timediff)
 	activeinvestors.sort((a, b) => b.timediff + a.timediff)
-  
+
+	const mostinactiveinvestor = moment.duration(inactiveinvestors[0].timediff, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")
+	const lastinvestor = moment.duration(activeinvestors[0].timediff, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")
+
+	// week's best profiteer
+
 	const firminfo = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
 		.setColor("GOLD")
 		.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
 		.setTitle(firm.name)
 		.setURL(`https://meme.market/firm.html?firm=${user.firm}`)
-		.addField("**Balance**", `${client.api.numberWithCommas(firm.balance)} M¢`, true)
-		.addField("**Average investment profit**", `${profitprct}%`, true)
-		.addField("**Your Rank**", user.firm_role === "" ? "Floor Trader": firmroles[user.firm_role], true)
-		.addField("**Last investor**", `[u/${activeinvestors[0].name}]()\n**${Math.trunc(activeinvestors[0].timediff / 36e2)}** hours ago`, true)
-		.addField("**Most inactive investor**", `[u/${inactiveinvestors[0].name}]()\n**${Math.trunc(inactiveinvestors[0].timediff / 36e2)}** hours ago`, true)
+		.addField("Balance", `${client.api.numberWithCommas(firm.balance)} M¢`, true)
+		.addField("Average investment profit (firm)", `${profitprct.toFixed(3)}%`, true)
+		.addField("Your Rank", user.firm_role === "" ? "Floor Trader": firmroles[user.firm_role], true)
+		.addField("Last investor", `[u/${activeinvestors[0].name}](https://meme.market/user.html?account=${activeinvestors[0].name})\n${lastinvestor}`, true)
+		.addField("Most inactive investor", `[u/${inactiveinvestors[0].name}](https://meme.market/user.html?account=${inactiveinvestors[0].name})\n${mostinactiveinvestor}`, true)
+		.addField("Most inactive investor", `[u/${inactiveinvestors[0].name}](https://meme.market/user.html?account=${inactiveinvestors[0].name})\n${mostinactiveinvestor}`, true)
 	if (check) firminfo.setThumbnail(client.users.get(message.author.id).displayAvatarURL)
 	if (!check && redditlink) firminfo.setThumbnail(client.users.get(redditlink).displayAvatarURL)
 	return message.channel.send({embed: firminfo})
