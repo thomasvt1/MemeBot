@@ -62,6 +62,28 @@ exports.run = async (client, message, [name], _level) => {
 
 	profitprct /= investments.length // Calculate average % return
 
+	// Calculate week's best profiteer, also include contribution to firm balance
+
+	const weekprofiteers = []
+
+	for (const member of firmmembers) {
+		const history = await client.api.getInvestorHistory(member.name)
+		let weekprofit = 0
+		let i = 0
+		while (i < history.length && before_last_payout(history[i].time)) {
+			weekprofit += history[i].profit
+			i++
+		}
+
+		weekprofiteers.push({ name: member.name, profit: weekprofit })
+	}
+
+	weekprofiteers.sort((a, b) => b.profit - a.profit)
+
+	const weekbestprofiteer = weekprofiteers[0]
+	const firmcontribution = weekbestprofiteer.profit - weekbestprofiteer.profit * (firm.tax / 100)
+	const firmconstr = `\nContributed **${client.api.numberWithCommas(Math.trunc(firmcontribution))}** M¢ to firm (**${((firmcontribution / firm.balance) * 100).toFixed(2)}%**)`
+
 	// Calculate most inactive investors and most active investors
 	// (in terms of **time difference**, not investments.)
 	// List all of them, calculate time difference, format it using moment-duration-format.
@@ -78,12 +100,10 @@ exports.run = async (client, message, [name], _level) => {
 	}
 
 	inactiveinvestors.sort((a, b) => b.timediff - a.timediff)
-	activeinvestors.sort((a, b) => b.timediff + a.timediff)
+	activeinvestors.sort((a, b) => a.timediff - b.timediff)
 
 	const mostinactiveinvestor = moment.duration(inactiveinvestors[0].timediff, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")
 	const lastinvestor = moment.duration(activeinvestors[0].timediff, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")
-
-	// week's best profiteer
 
 	const firminfo = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
@@ -96,7 +116,7 @@ exports.run = async (client, message, [name], _level) => {
 		.addField("Your Rank", user.firm_role === "" ? "Floor Trader": firmroles[user.firm_role], true)
 		.addField("Last investor", `[u/${activeinvestors[0].name}](https://meme.market/user.html?account=${activeinvestors[0].name})\n${lastinvestor}`, true)
 		.addField("Most inactive investor", `[u/${inactiveinvestors[0].name}](https://meme.market/user.html?account=${inactiveinvestors[0].name})\n${mostinactiveinvestor}`, true)
-		.addField("Most inactive investor", `[u/${inactiveinvestors[0].name}](https://meme.market/user.html?account=${inactiveinvestors[0].name})\n${mostinactiveinvestor}`, true)
+		.addField("Week's best profiteer", `[u/${weekbestprofiteer.name}](https://meme.market/user.html?account=${weekbestprofiteer.name})\n**${client.api.numberWithCommas(weekbestprofiteer.profit)}** M¢${firmconstr}`, true)
 	if (check) firminfo.setThumbnail(client.users.get(message.author.id).displayAvatarURL)
 	if (!check && redditlink) firminfo.setThumbnail(client.users.get(redditlink).displayAvatarURL)
 	return message.channel.send({embed: firminfo})
@@ -184,4 +204,8 @@ exports.help = {
 	category: "MemeEconomy",
 	description: "Presents various statistics about a firm, including top 10 active/inactive investors.",
 	usage: "inactive <reddit username> (uses set default)"
+}
+
+function before_last_payout(inv_time) {
+	return !((new Date(inv_time * 1000).getDay() === 5 && moment(inv_time).hour() < 23))
 }

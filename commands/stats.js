@@ -74,8 +74,6 @@ exports.run = async (client, message, [name], _level) => {
 
 	const lastinvested = moment.duration(moment.unix() - history[0].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
 	const maturesin = moment.duration((currentinvestment.time + 14400) - moment().unix(), "seconds").format("[**]H[**] [hour] [and] [**]m[**] [minute]") // 14400 = 4 hours
-	const hours = Math.trunc(maturesin / 60 / 60)
-	const minutes = Math.trunc(((maturesin / 3600) - hours) * 60)
 	const break_even = Math.round(client.math.calculateBreakEvenPoint(currentinvestment.upvotes))
 	const breaks = (break_even - currentpost.score) < 0 ? "Broke" : "Breaks"
 	const breaktogo = (break_even - currentpost.score) < 0 ? "" : `(${break_even - currentpost.score} upvotes to go)`

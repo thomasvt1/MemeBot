@@ -59,10 +59,8 @@ exports.run = async (client, message, [name], _level) => {
 	let forecastedprofit = Math.trunc(investment_return / 100 * currentinvestment.amount)
 	user.firm !== 0 ? forecastedprofit -= forecastedprofit * (firm.tax / 100) : forecastedprofit
 
-	const lastinvested = Math.trunc(((moment().unix()) - (!currentinvestment ? lastinvestment.time : currentinvestment.time)) / 36e2) // 36e3 will result in hours between date objects
-	const maturesin = currentinvestment ? (currentinvestment.time + 14400) - moment().unix() : false // 14400 = 4 hours
-	const hours = currentinvestment ? Math.trunc(maturesin / 60 / 60) : false
-	const minutes = currentinvestment ? Math.trunc(((maturesin / 3600) - hours) * 60) : false
+	const lastinvested = moment.duration(moment.unix() - (!currentinvestment ? lastinvestment.time : currentinvestment.time), "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
+	const maturesin = currentinvestment ? moment.duration((currentinvestment.time + 14400) - moment().unix(), "seconds").format("[**]H[**] [hour] [and] [**]m[**] [minute]") : false // 14400 = 4 hours
 	const maturedat = moment.unix(lastinvestment.time + 14400).format("ddd Do MMM YYYY [at] HH:mm [UTC]ZZ") // 14400 = 4 hours
 
 	const break_even = currentinvestment ? Math.round(client.math.calculateBreakEvenPoint(currentinvestment.upvotes)) : false
@@ -79,7 +77,7 @@ exports.run = async (client, message, [name], _level) => {
 		.addField("Net worth", `${client.api.numberWithCommas(user.networth)} M¢`, false)
 		.addField("Average investment profit", `${profitprct.toFixed(2)}%`, false)
 		.addField("Investments last 24 hours", `${investments_today}`, false)
-		.addField("Last invested*", `${lastinvested} hours ago`, false)
+		.addField("Last invested", `${lastinvested} hours ago`, false)
 
 	if (currentinvestment) {
 		stats.addField("Current investment", `
@@ -87,7 +85,7 @@ exports.run = async (client, message, [name], _level) => {
 __**[${currentpost.title}](https://redd.it/${currentinvestment.post})**__\n
 **Initial upvotes:** ${currentinvestment.upvotes}\n
 **Current upvotes:** ${currentpost.score}\n
-**Matures in:** ${hours} hours ${String(minutes).padStart(2, "0")} minutes\n
+**Matures in:** ${maturesin}\n
 **Invested:** ${client.api.numberWithCommas(currentinvestment.amount)} M¢\n
 **Forecasted profit:** ${client.api.numberWithCommas(Math.trunc(forecastedprofit))} M¢ (*${investment_return}%*)\n
 **${breaks} even at:** ${break_even} upvotes ${breaktogo}`, true)
