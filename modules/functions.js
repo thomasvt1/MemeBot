@@ -1,5 +1,4 @@
 /* eslint-disable no-undef */
-const rp = require("request-promise")
 module.exports = (client) => {
 
 	/*

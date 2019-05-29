@@ -1,24 +1,6 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
-exports.run = async (client, message, [name], _level) => {
-	const check = await client.api.getLink(message.author.id)
-
-	if (!name && !check) return message.reply(":question: Please supply a Reddit username.")
-
-	if (name.length < 3 && !check) return message.reply(":thinking: Something tells me that is not a Reddit username")
-
-	name = name.replace(/^((\/|)u\/)/g, "")
-	const username = check ? check : name
-
-	const user = await client.api.getInvestorProfile(username).catch(err => client.logger.error(err.stack))
-	if (user.id === 0) return message.reply(":question: I couldn't find that user.")
-
-	const firm = await client.api.getFirmProfile(user.firm).catch(err => client.logger.error(err.stack))
-
-	const redditlink = await client.api.getRedditLink(username.toLowerCase())
-
-	const history = await client.api.getInvestorHistory(username.toLowerCase()).catch(err => console.error(err))
-
+exports.run = async (client, message, [username, redditlink, user, history, firm, _firmmembers, _firmrole, check], _level) => {
 	if (!history.length) return message.reply(":exclamation: You haven't invested before!")
 
 	// Calculate profit %
@@ -41,25 +23,22 @@ exports.run = async (client, message, [name], _level) => {
 		investments_today++
 	}
 
-	let currentpost
-	let lastpost
-
 	const currentinvestment = !history[0].done ? history[0] : false // Simple ternary to check whether current investment is running
 	const lastinvestment = history[0].done ? history[0] : history[1]
 
-	await client.api.r.getSubmission(lastinvestment.post).fetch().then((sub) => lastpost = sub).catch(err => console.error(err))
-	currentinvestment ? await client.api.r.getSubmission(currentinvestment.post).fetch().then((sub) => currentpost = sub).catch(err => console.error(err)) : currentpost = false
+	const lastpost = await client.api.r.getSubmission(lastinvestment.post).fetch().then((sub) => sub).catch(err => console.error(err))
+	const currentpost = currentinvestment ? await client.api.r.getSubmission(currentinvestment.post).fetch().then((sub) => sub).catch(err => console.error(err)) : false
 
 	// Last investment's return
 	const lastinvestment_return = client.math.calculateInvestmentReturn(lastinvestment.upvotes, lastpost.score, user.networth)
 	// Fancy math to calculate investment return
 	const investment_return = currentinvestment ? client.math.calculateInvestmentReturn(currentinvestment.upvotes, currentpost.score, user.networth) : false
 
-	const lastprofit = user.firm !== 0 ? lastinvestment.profit - lastinvestment.profit * (firm.tax / 100) : lastinvestment.profit
+	const lastprofit = user.firm !== 0 ? Math.trunc(lastinvestment.profit - lastinvestment.profit * (firm.tax / 100)) : lastinvestment.profit
 	let forecastedprofit = Math.trunc(investment_return / 100 * currentinvestment.amount)
 	user.firm !== 0 ? forecastedprofit -= forecastedprofit * (firm.tax / 100) : forecastedprofit
 
-	const lastinvested = moment.duration(moment.unix() - (!currentinvestment ? lastinvestment.time : currentinvestment.time), "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
+	const lastinvested = moment.duration(moment().unix() - (!currentinvestment ? lastinvestment.time : currentinvestment.time), "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
 	const maturesin = currentinvestment ? moment.duration((currentinvestment.time + 14400) - moment().unix(), "seconds").format("[**]H[**] [hour] [and] [**]m[**] [minute]") : false // 14400 = 4 hours
 	const maturedat = moment.unix(lastinvestment.time + 14400).format("ddd Do MMM YYYY [at] HH:mm [UTC]ZZ") // 14400 = 4 hours
 
@@ -73,11 +52,11 @@ exports.run = async (client, message, [name], _level) => {
 		.setColor("GOLD")
 		.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
 		.setTitle(`u/${username}`)
-		.setURL(`https://reddit.com/u/${username}`)
+		.setURL(`https://meme.market/user.html?account=${username}`)
 		.addField("Net worth", `${client.api.numberWithCommas(user.networth)} M¢`, false)
 		.addField("Average investment profit", `${profitprct.toFixed(2)}%`, false)
 		.addField("Investments last 24 hours", `${investments_today}`, false)
-		.addField("Last invested", `${lastinvested} hours ago`, false)
+		.addField("Last invested", lastinvested, false)
 
 	if (currentinvestment) {
 		stats.addField("Current investment", `

@@ -9,6 +9,7 @@ const Discord = require("discord.js")
 const { promisify } = require("util")
 const readdir = promisify(require("fs").readdir)
 const Enmap = require("enmap")
+const WebSocket = require("ws")
 
 // This is your client. Some people call it `bot`, some people call it `self`,
 // some might call it `cootchie`. Either way, when you see `client.something`,
@@ -43,6 +44,9 @@ client.aliases = new Enmap()
 // and makes things extremely easy for this purpose.
 client.settings = new Enmap({ name: "settings" })
 
+const ws = new WebSocket(client.config.websocket.url)
+const websockethandler = require("./modules/websocket.js")
+
 // We're doing real fancy node 8 async/await stuff here, and to do that
 // we need to wrap stuff in an anonymous function. It's annoying but it works.
 
@@ -70,6 +74,8 @@ const init = async () => {
 		// This line is awesome by the way. Just sayin'.
 		client.on(eventName, event.bind(null, client))
 	})
+
+	ws.on("message", (data) => websockethandler(client, data))
 
 	// Generate a cache of client permissions for pretty perm names in commands.
 	client.levelCache = {}

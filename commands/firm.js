@@ -1,35 +1,7 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 const momentf = require("moment-duration-format")
-exports.run = async (client, message, [name], _level) => {
-	const check = await client.api.getLink(message.author.id)
-
-	if (!name && !check) return message.reply(":question: Please supply a Reddit username.")
-
-	if (name.length < 3 && !check) return message.reply(":thinking: Something tells me that is not a Reddit username")
-
-	name = name.replace(/^((\/|)u\/)/g, "")
-	const username = check ? check : name
-
-	const user = await client.api.getInvestorProfile(username.toLowerCase()).catch(err => client.logger.error(err.stack))
-	if (user.id === 0) return message.reply(":question: I couldn't find that user.")
-	if (user.firm === 0 && !check) return message.reply(":x: This person isn't in a firm.")
-	if (user.firm === 0 && check) return message.reply(":x: You're not in a firm.")
-
-	const redditlink = await client.api.getRedditLink(username.toLowerCase())
-
-	const firm = await client.api.getFirmProfile(user.firm).catch(err => client.logger.error(err.stack))
-  
-	const firmmembers = await client.api.getFirmMembers(user.firm).catch(err => client.logger.error(err.stack))
-  
-	const firmroles = {
-		assoc: "Associate",
-		exec: "Executive",
-		coo: "COO",
-		cfo: "CFO",
-		ceo: "COO"
-	}
-
+exports.run = async (client, message, [username, redditlink, user, _history, firm, firmmembers, firmrole, check], _level) => {
 	// Here we calculate the average investment profit of the entire firm
 	// by listing out all of each firm member's investments, then pushing them
 	// all into one array. We then average them all out.
@@ -113,7 +85,7 @@ exports.run = async (client, message, [name], _level) => {
 		.setURL(`https://meme.market/firm.html?firm=${user.firm}`)
 		.addField("Balance", `${client.api.numberWithCommas(firm.balance)} M¢`, true)
 		.addField("Average investment profit (firm)", `${profitprct.toFixed(3)}%`, true)
-		.addField("Your Rank", user.firm_role === "" ? "Floor Trader": firmroles[user.firm_role], true)
+		.addField("Your Rank", firmrole, true)
 		.addField("Last investor", `[u/${activeinvestors[0].name}](https://meme.market/user.html?account=${activeinvestors[0].name})\n${lastinvestor}`, true)
 		.addField("Most inactive investor", `[u/${inactiveinvestors[0].name}](https://meme.market/user.html?account=${inactiveinvestors[0].name})\n${mostinactiveinvestor}`, true)
 		.addField("Week's best profiteer", `[u/${weekbestprofiteer.name}](https://meme.market/user.html?account=${weekbestprofiteer.name})\n**${client.api.numberWithCommas(weekbestprofiteer.profit)}** M¢${firmconstr}`, true)
@@ -189,7 +161,7 @@ exports.run = async (client, message, [name], _level) => {
       }
     ]
   }
-}*/
+*/
 }
 
 exports.conf = {

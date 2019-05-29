@@ -27,7 +27,7 @@ module.exports = async (client, message) => {
 	// e.g. if we have the message "+say Is this the real life?" , we'll get the following:
 	// command = say
 	// args = ["Is", "this", "the", "real", "life?"]
-	const args = message.content.slice(settings.prefix.length).trim().split(/ +/g)
+	let args = message.content.slice(settings.prefix.length).trim().split(/ +/g)
 	const command = args.shift().toLowerCase()
 
 	// If the member on a guild is invisible or not cached, fetch them.
@@ -62,7 +62,49 @@ module.exports = async (client, message) => {
 	while (args[0] && args[0][0] === "-") {
 		message.flags.push(args.shift().slice(1))
 	}
+
 	// If the command exists, **AND** the user has permission, run it.
-	client.logger.cmd(`[CMD] ${client.config.permLevels.find(l => l.level === level).name} ${message.author.username} (${message.author.id}) ran command ${cmd.help.name} with args ${args[0]}`)
+	client.logger.cmd(`[CMD] ${client.config.permLevels.find(l => l.level === level).name} ${message.author.username} (${message.author.id}) ran command ${cmd.help.name} with ${args[0] ? `args ${args[0]}` : "no args"}`)
+
+	if (cmd.help.category === "MemeEconomy" && !cmd.help.name === "top100") {
+		args = await memeInit(client, message)
+	}
+
 	cmd.run(client, message, args, level)
+}
+
+const memeInit = async (client, message) => {
+	const settings = message.settings = client.getSettings(message.guild)
+	const args = message.content.slice(settings.prefix.length).trim().split(/ +/g)
+	const check = await client.api.getLink(message.author.id)
+
+	if (!args[1] && !check) return message.reply(":question: Please supply a Reddit username.")
+
+	if (args[1].length < 3 && !check) return message.reply(":thinking: Something tells me that is not a Reddit username")
+
+	args[1] = args[1].replace(/^((\/|)u\/)/g, "")
+	const username = check ? check : args[1]
+
+	const profile = await client.api.getInvestorProfile(username.toLowerCase()).catch(err => client.logger.error(err.stack))
+	if (profile.id === 0) return message.reply(":question: I couldn't find that user.")
+
+	const firm = await client.api.getFirmProfile(profile.firm).catch(err => client.logger.error(err.stack))
+
+	const firmroles = {
+		assoc: "Associate",
+		exec: "Executive",
+		coo: "COO",
+		cfo: "CFO",
+		ceo: "COO"
+	}
+
+	const firmrole = profile.firm_role === "" ? "Floor Trader" : firmroles[profile.firm_role]
+
+	const discord_id = await client.api.getRedditLink(username.toLowerCase())
+
+	const history = await client.api.getInvestorHistory(username.toLowerCase()).catch(err => client.logger.error(err.stack))
+
+	const firmmembers = await client.api.getFirmMembers(profile.firm).catch(err => client.logger.error(err.stack))
+
+	return [username, discord_id, profile, history, firm, firmmembers, firmrole, check]
 }

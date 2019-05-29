@@ -16,15 +16,15 @@ const config = {
 	// DO NOT LEAVE ANY OF THESE BLANK, AS YOU WILL NOT BE ABLE TO UPDATE THEM
 	// VIA COMMANDS IN THE GUILD.
   
-	"defaultSettings" : {
+	"defaultSettings": {
 		"prefix": "&",
-		"investmentChannel": "investment-watch",
+		"investmentChannel": "0",
 		"mention-everyone": "false"
 	},
 
 	// Websocket settings for #investment-watch
 	"websocket": {
-		"url": "ws://meme.ws.thomasvt.xyz"
+		"url": "wss://meme.ws.thomasvt.xyz"
 	},
 	
 	//MySQL DB for storing reddit usernames
