@@ -44,13 +44,6 @@ client.aliases = new Enmap()
 // and makes things extremely easy for this purpose.
 client.settings = new Enmap({ name: "settings" })
 
-try {
-	const ws = new WebSocket(client.config.websocket.url)
-	const websockethandler = require("./modules/websocket.js")
-	ws.on("message", async (data) => await websockethandler(client, data))
-} catch (err) {
-	client.logger.error(err)
-}
 // We're doing real fancy node 8 async/await stuff here, and to do that
 // we need to wrap stuff in an anonymous function. It's annoying but it works.
 
@@ -78,6 +71,14 @@ const init = async () => {
 		// This line is awesome by the way. Just sayin'.
 		client.on(eventName, event.bind(null, client))
 	})
+
+	try {
+		const ws = new WebSocket(client.config.websocket.url)
+		const websockethandler = require("./modules/websocket.js")
+		ws.on("message", async (data) => await websockethandler(client, data))
+	} catch (err) {
+		client.logger.error(err)
+	}
 
 	// Generate a cache of client permissions for pretty perm names in commands.
 	client.levelCache = {}
