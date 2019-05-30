@@ -70,6 +70,7 @@ __**[${currentpost.title}](https://redd.it/${currentinvestment.post})**__\n
 **${breaks} even at:** ${break_even} upvotes ${breaktogo}`, true)
 		stats.addBlankField(false)
 	}
+	
 	stats.addField("Last investment", `
 [u/${lastpost.author.name}](https://reddit.com/u/${lastpost.author.name})\n
 __**[${lastpost.title}](https://redd.it/${lastinvestment.post})**__\n

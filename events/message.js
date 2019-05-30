@@ -66,24 +66,23 @@ module.exports = async (client, message) => {
 	// If the command exists, **AND** the user has permission, run it.
 	client.logger.cmd(`[CMD] ${client.config.permLevels.find(l => l.level === level).name} ${message.author.username} (${message.author.id}) ran command ${cmd.help.name} with ${args[0] ? `args ${args[0]}` : "no args"}`)
 
-	if (cmd.help.category === "MemeEconomy" && !cmd.help.name === "top100") {
-		args = await memeInit(client, message)
+	if (cmd.help.category === "MemeEconomy" && cmd.help.name !== "top100") {
+		args = await memeInit(client, message, args[0])
 	}
 
 	cmd.run(client, message, args, level)
 }
 
-const memeInit = async (client, message) => {
+const memeInit = async (client, message, name) => {
 	const settings = message.settings = client.getSettings(message.guild)
-	const args = message.content.slice(settings.prefix.length).trim().split(/ +/g)
 	const check = await client.api.getLink(message.author.id)
 
-	if (!args[1] && !check) return message.reply(":question: Please supply a Reddit username.")
+	if (!name && !check) return message.reply(":question: Please supply a Reddit username.")
 
-	if (args[1].length < 3 && !check) return message.reply(":thinking: Something tells me that is not a Reddit username")
+	if (name.length < 3 && !check) return message.reply(":thinking: Something tells me that is not a Reddit username")
 
-	args[1] = args[1].replace(/^((\/|)u\/)/g, "")
-	const username = check ? check : args[1]
+	name = name.replace(/^((\/|)u\/)/g, "")
+	const username = check ? check : name
 
 	const profile = await client.api.getInvestorProfile(username.toLowerCase()).catch(err => client.logger.error(err.stack))
 	if (profile.id === 0) return message.reply(":question: I couldn't find that user.")

@@ -37,7 +37,7 @@ exports.run = async (client, message, [action, key, ...value], level) => { // es
 		client.settings.set(message.guild.id, joinedValue, key)
 
 		// Confirm everything is fine!
-		message.reply(`${key} successfully edited to ${joinedValue}`)
+		message.reply(`\`${key}\` successfully edited to \`${joinedValue}\``)
 	} else
   
 	// Resets a key to the default value

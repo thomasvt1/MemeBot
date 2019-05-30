@@ -28,13 +28,23 @@ module.exports = async (client, investment) => {
             
 			const redditpfp = await client.api.r.getUser(investment.username).fetch().then((usr) => usr.icon_img)
             
-			// top 10 firm emojis
+			// top 10 firm emojis: temporary mapping solution
+			// until most firms submit their logos, therefore
+			// dynamic solution to .toLowerCase() and remove
+			// spaces
+
+			const firmemojis = {
+				113: "<:solenterprises:582821691831353366>",
+				125: "<:thenamelessbank:582968558930362368>"
+			}
+
+			const firmstr = user.firm !== 0 ? firmemojis[user.firm] ? firmemojis[user.firm] : "" : ""
 
 			const investmentinfo = new RichEmbed()
 				.setAuthor("MemeBot Investment Watch", client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
 				.setColor("BLUE")
 				.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
-				.setTitle(`${famous} u/${investment.username} <:solenterprises:582821691831353366>`)
+				.setTitle(`${famous} u/${investment.username} ${firmstr}`)
 				.setURL(`https://meme.market/user.html?account=${investment.username}`)
 				.setDescription(`**[${submission.title}](https://redd.it/${investment.submid})**`)
 				.setImage(submission.thumbnail)
