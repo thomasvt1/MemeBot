@@ -5,6 +5,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 data/
+config.js
 test.js
 
 # Built code
@@ -62,7 +63,6 @@ typings/
 # dotenv environment variables file
 .env
 
-config.js
 highcharts.js
 result.png
 .vscode/launch.json
