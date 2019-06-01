@@ -9,7 +9,6 @@ const Discord = require("discord.js")
 const { promisify } = require("util")
 const readdir = promisify(require("fs").readdir)
 const Enmap = require("enmap")
-const WebSocket = require("ws")
 
 // This is your client. Some people call it `bot`, some people call it `self`,
 // some might call it `cootchie`. Either way, when you see `client.something`,
@@ -71,14 +70,6 @@ const init = async () => {
 		// This line is awesome by the way. Just sayin'.
 		client.on(eventName, event.bind(null, client))
 	})
-
-	try {
-		const ws = new WebSocket(client.config.websocket.url)
-		const websockethandler = require("./modules/websocket.js")
-		ws.on("message", async (data) => await websockethandler(client, data))
-	} catch (err) {
-		client.logger.error(err)
-	}
 
 	// Generate a cache of client permissions for pretty perm names in commands.
 	client.levelCache = {}

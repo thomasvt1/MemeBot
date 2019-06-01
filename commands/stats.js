@@ -21,7 +21,7 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 	// Calculate this week's profit
 	let weekprofit = 0
 	let i = 0
-	while (i < history.length && before_last_payout(history[i].time)) {
+	while (i < history.length && history[i].time < firm.last_payout) {
 		weekprofit += history[i].profit
 		i++
 	}
@@ -45,9 +45,12 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 
 	const lastinvested = moment.duration(moment().unix() - history[0].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
 	const maturesin = moment.duration((currentinvestment.time + 14400) - moment().unix(), "seconds").format("[**]H[**] [hour] [and] [**]m[**] [minute]") // 14400 = 4 hours
+	
 	const break_even = Math.round(client.math.calculateBreakEvenPoint(currentinvestment.upvotes))
 	const breaks = (break_even - currentpost.score) < 0 ? "Broke" : "Breaks"
 	const breaktogo = (break_even - currentpost.score) < 0 ? "" : `(${break_even - currentpost.score} upvotes to go)`
+	const redditpfp = await client.api.r.getUser(username).fetch().then((usr) => usr.icon_img)
+
 	const stats = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
 		.setColor("GOLD")
@@ -76,6 +79,7 @@ __**[${currentpost.title}](https://redd.it/${currentinvestment.post})**__\n
 **${breaks} even at:** ${break_even} upvotes ${breaktogo}`, true)
 	if (!redditlink && check) stats.setThumbnail(client.users.get(message.author.id).displayAvatarURL)
 	if (redditlink) stats.setThumbnail(client.users.get(redditlink).displayAvatarURL)
+	if (!redditlink && !check) stats.setThumbnail(redditpfp)
 	if (currentinvestment) stats.setImage(currentpost.thumbnail)
 	return message.channel.send({ embed: stats })
 }
@@ -92,8 +96,4 @@ exports.help = {
 	category: "MemeEconomy",
 	description: "Checks yours or someone else's stats",
 	usage: "stats <reddit username> (uses set default)"
-}
-
-function before_last_payout(inv_time) {
-	return !((new Date(inv_time * 1000).getDay() === 5 && moment(inv_time).hour() < 23))
 }

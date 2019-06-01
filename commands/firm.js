@@ -41,7 +41,7 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 		const history = await client.api.getInvestorHistory(member.name)
 		let weekprofit = 0
 		let i = 0
-		while (i < history.length && before_last_payout(history[i].time)) {
+		while (i < history.length && history[i].time < firm.last_payout) {
 			weekprofit += history[i].profit
 			i++
 		}

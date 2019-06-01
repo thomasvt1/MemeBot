@@ -1,7 +1,7 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 exports.run = async (client, message, [page], _level) => {
-	if (page > 4 || page < 1) return message.reply(`There is no page ${page}!`)
+	if (page > 4 || page < 1) return message.channel.send(`:exclamation: There is no page ${page}!`)
 
 	if (!page) page = 1
 	const top100 = await client.api.getTop100(page - 1, 25).then(body => body).catch(err => client.logger.error(err.stack))

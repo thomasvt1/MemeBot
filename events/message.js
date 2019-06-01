@@ -9,7 +9,7 @@ module.exports = async (client, message) => {
 
 	// Grab the settings for this server from Enmap.
 	// If there is no guild, get default conf (DMs)
-	const settings = message.settings = client.getSettings(message.guild)
+	const settings = message.settings = client.getSettings(message.guild.id)
 
 	// Checks if the bot was mentioned, with no message after it, returns the prefix.
 	const prefixMention = new RegExp(`^<@!?${client.user.id}>( |)$`)
@@ -21,7 +21,8 @@ module.exports = async (client, message) => {
 	// which is set in the configuration file.
 	if (message.content.indexOf(settings.prefix) !== 0) return
 
-	if (message.guild && !message.channel.memberPermissions(message.guild.me).has("SEND_MESSAGES")) return message.author.send(`:exclamation: I'm unable to send messages to <#${message.channel.id}>!`)
+	if (message.guild && !message.channel.memberPermissions(message.guild.me).has("SEND_MESSAGES"))
+		return message.author.send(`:exclamation: I'm unable to send messages to <#${message.channel.id}>!`)
 
 	// Here we separate our "command" name, and our "arguments" for the command.
 	// e.g. if we have the message "+say Is this the real life?" , we'll get the following:
@@ -67,43 +68,38 @@ module.exports = async (client, message) => {
 	client.logger.cmd(`[CMD] ${client.config.permLevels.find(l => l.level === level).name} ${message.author.username} (${message.author.id}) ran command ${cmd.help.name} with ${args[0] ? `args ${args[0]}` : "no args"}`)
 
 	if (cmd.help.category === "MemeEconomy" && cmd.help.name !== "top100") {
-		args = await memeInit(client, message, args[0])
+		const check = await client.api.getLink(message.author.id)
+
+		if (!args[0] && !check) return message.channel.send(":question: Please supply a Reddit username.")
+
+		if (args[0].length < 3 && !check) return message.channel.send(":thinking: Something tells me that is not a Reddit username")
+
+		args[0] = args[0].replace(/^((\/|)u\/)/g, "")
+		const username = check ? check : args[0]
+
+		const profile = await client.api.getInvestorProfile(username.toLowerCase()).catch(err => client.logger.error(err.stack))
+		if (profile.id === 0) return message.channel.send(":question: I couldn't find that user.")
+
+		const firm = await client.api.getFirmProfile(profile.firm).catch(err => client.logger.error(err.stack))
+
+		const firmroles = {
+			assoc: "Associate",
+			exec: "Executive",
+			coo: "COO",
+			cfo: "CFO",
+			ceo: "COO"
+		}
+
+		const firmrole = profile.firm_role === "" ? "Floor Trader" : firmroles[profile.firm_role]
+
+		const discord_id = await client.api.getRedditLink(username.toLowerCase())
+
+		const history = await client.api.getInvestorHistory(username.toLowerCase()).catch(err => client.logger.error(err.stack))
+
+		const firmmembers = await client.api.getFirmMembers(profile.firm).catch(err => client.logger.error(err.stack))
+
+		args =  [username, discord_id, profile, history, firm, firmmembers, firmrole, check]
 	}
 
 	cmd.run(client, message, args, level)
-}
-
-const memeInit = async (client, message, name) => {
-	const settings = message.settings = client.getSettings(message.guild)
-	const check = await client.api.getLink(message.author.id)
-
-	if (!name && !check) return message.reply(":question: Please supply a Reddit username.")
-
-	if (name.length < 3 && !check) return message.reply(":thinking: Something tells me that is not a Reddit username")
-
-	name = name.replace(/^((\/|)u\/)/g, "")
-	const username = check ? check : name
-
-	const profile = await client.api.getInvestorProfile(username.toLowerCase()).catch(err => client.logger.error(err.stack))
-	if (profile.id === 0) return message.reply(":question: I couldn't find that user.")
-
-	const firm = await client.api.getFirmProfile(profile.firm).catch(err => client.logger.error(err.stack))
-
-	const firmroles = {
-		assoc: "Associate",
-		exec: "Executive",
-		coo: "COO",
-		cfo: "CFO",
-		ceo: "COO"
-	}
-
-	const firmrole = profile.firm_role === "" ? "Floor Trader" : firmroles[profile.firm_role]
-
-	const discord_id = await client.api.getRedditLink(username.toLowerCase())
-
-	const history = await client.api.getInvestorHistory(username.toLowerCase()).catch(err => client.logger.error(err.stack))
-
-	const firmmembers = await client.api.getFirmMembers(profile.firm).catch(err => client.logger.error(err.stack))
-
-	return [username, discord_id, profile, history, firm, firmmembers, firmrole, check]
 }

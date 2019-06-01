@@ -1,7 +1,7 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 exports.run = async (client, message, [username, redditlink, user, history, firm, _firmmembers, _firmrole, check], _level) => {
-	if (!history.length) return message.reply(":exclamation: You haven't invested before!")
+	if (!history.length) return message.channel.send(":exclamation: You haven't invested before!")
 
 	// Calculate profit %
 	let profitprct = 0
@@ -46,6 +46,7 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 	const broke_even = Math.round(client.math.calculateBreakEvenPoint(lastinvestment.upvotes))
 	const breaks = currentinvestment ? ((break_even - currentpost.score) < 0 ? "Broke" : "Breaks") : false
 	const breaktogo = currentinvestment ? ((break_even - currentpost.score) < 0 ? "" : `(${break_even - currentpost.score} upvotes to go)`) : false
+	const redditpfp = await client.api.r.getUser(username).fetch().then((usr) => usr.icon_img)
 
 	const stats = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
@@ -82,6 +83,8 @@ __**[${lastpost.title}](https://redd.it/${lastinvestment.post})**__\n
 **Broke even at:** ${broke_even} upvotes`, true)
 	if (check) stats.setThumbnail(client.users.get(message.author.id).displayAvatarURL)
 	if (!check && redditlink) stats.setThumbnail(client.users.get(redditlink).displayAvatarURL)
+	if (redditlink) stats.setThumbnail(client.users.get(redditlink).displayAvatarURL)
+	if (!redditlink && !check) stats.setThumbnail(redditpfp)
 	if (lastinvestment && currentinvestment || lastinvestment && !currentinvestment) stats.setImage(lastpost.thumbnail)
 	return message.channel.send({ embed: stats })
 }

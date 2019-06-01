@@ -1,57 +1,63 @@
 const { RichEmbed } = require("discord.js")
+const moment = require("moment")
 module.exports = async (client, investment) => {
-	if (investment.toString().includes("submid")) {
-		investment = JSON.parse(investment.toString())
-		for (const guild in client.guilds) {
-			// investment watch channel will equal as channel id
-			const settings = client.getSettings(guild)
-            
-			let submission
-			await client.api.r.getSubmission(investment.submid).fetch().then((sub) => submission = sub).catch(err => console.error(err))
-            
-			const user = await client.api.getInvestorProfile(investment.username).catch(err => client.logger.error(err.stack))
+	// note: investment watch should return something like this
+	// { submid: reddit_post_id, upvotes: reddit_post_upvotes, comments: reddit_comments, timediff: postedat (seconds), investments: investments, highinvestments: highinvestments, username: reddit_poster, famous: false }
+	client.guilds.forEach(async (guild) => {
+		// investment watch channel will equal as channel id
+		const settings = client.getSettings(guild)
 
-			const firm = await client.api.getFirmProfile(user.firm).catch(err => client.logger.error(err.stack))
-            
-			const firmroles = {
-				assoc: "Associate",
-				exec: "Executive",
-				coo: "COO",
-				cfo: "CFO",
-				ceo: "COO"
-			}
+		if (settings.investmentChannel === 0) return
 
+		if (!client.channels.get(settings.investmentChannel)) return client.users.get("115156616256552962").send("Your #investment-watch channel is configured incorrectly!\nPlease use `&set edit investmentChannel <mention channel here>` to fix this problem.")
 
-			const redditlink = await client.api.getRedditLink(investment.username.toLowerCase())
-            
-			const famous = investment.famous ? "<:famousmemer:582821955489628166>" : ""
-            
-			const redditpfp = await client.api.r.getUser(investment.username).fetch().then((usr) => usr.icon_img)
-            
-			// top 10 firm emojis: temporary mapping solution
-			// until most firms submit their logos, therefore
-			// dynamic solution to .toLowerCase() and remove
-			// spaces
+		const mentioneveryone = settings.mentionEveryone === "true" ? "@everyone" : ""
 
-			const firmemojis = {
-				113: "<:solenterprises:582821691831353366>",
-				125: "<:thenamelessbank:582968558930362368>"
-			}
+		const submission = await client.api.r.getSubmission(investment.submid).fetch().then((sub) => sub).catch(err => console.error(err))
 
-			const firmstr = user.firm !== 0 ? firmemojis[user.firm] ? firmemojis[user.firm] : "" : ""
+		const user = await client.api.getInvestorProfile(investment.username).catch(err => client.logger.error(err.stack))
 
-			const investmentinfo = new RichEmbed()
-				.setAuthor("MemeBot Investment Watch", client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
-				.setColor("BLUE")
-				.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
-				.setTitle(`${famous} u/${investment.username} ${firmstr}`)
-				.setURL(`https://meme.market/user.html?account=${investment.username}`)
-				.setDescription(`**[${submission.title}](https://redd.it/${investment.submid})**`)
-				.setImage(submission.thumbnail)
-				.addField("Firm", `**\`${user.firm_role === "" ? "Floor Trader" : firmroles[user.firm_role]}\`** of **\`${firm.name}\`**`, true)
-			if (redditlink) investmentinfo.setThumbnail(client.users.get(redditlink).displayAvatarURL)
-			if (!redditlink) investmentinfo.setThumbnail(redditpfp) 
-			return client.channels.get(settings.investmentChannel).send({embed: investmentinfo})
+		const firm = await client.api.getFirmProfile(user.firm).catch(err => client.logger.error(err.stack))
+
+		const firmroles = {
+			assoc: "Associate",
+			exec: "Executive",
+			coo: "COO",
+			cfo: "CFO",
+			ceo: "COO"
 		}
-	}
+
+
+		const redditlink = await client.api.getRedditLink(investment.username.toLowerCase())
+
+		const famous = investment.famous ? "<:famousmemer:582821955489628166>" : ""
+
+		const redditpfp = await client.api.r.getUser(investment.username).fetch().then((usr) => usr.icon_img)
+
+		let firmemoji = ""
+		client.guilds.get("563439683309142016").emojis.forEach(async (e) => {
+			if (e.name === firm.name.toLowerCase().replace(/ /g, "")) firmemoji = `<:${e.identifier.toString()}>`
+		})
+
+		const timeposted = moment.duration(investment.timediff, "seconds").format("[**]m[**] [minutes] [ago], [**]s[**] [seconds] [ago]")
+
+		const investmentinfo = new RichEmbed()
+			.setAuthor("MemeBot Investment Watch", client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
+			.setColor("BLUE")
+			.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
+			.setTitle(`${famous} u/${investment.username} ${firmemoji}`)
+			.setURL(`https://meme.market/user.html?account=${investment.username}`)
+			.setDescription(`**[${submission.title}](https://redd.it/${investment.submid})**`)
+			.setImage(submission.thumbnail)
+		if (user.firm !== 0) investmentinfo.addField("Firm", `**\`${user.firm_role === "" ? "Floor Trader" : firmroles[user.firm_role]}\`** of **\`${firm.name}\`**`, true)
+			.addField("Time posted", timeposted, true)
+			.addField("Upvotes", investment.upvotes.toString(), true)
+			.addField("Investments", investment.investments.toString(), true)
+			.addField("High investments", investment.highinvestments.toString(), true)
+			.addField("Comments", investment.comments.toString(), true)
+		if (redditlink) investmentinfo.setThumbnail(client.users.get(redditlink).displayAvatarURL)
+		if (!redditlink) investmentinfo.setThumbnail(redditpfp)
+		client.channels.get(settings.investmentChannel).send(mentioneveryone, { embed: investmentinfo })
+	})
+	return "Investment Watch: Success"
 }
