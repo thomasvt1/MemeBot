@@ -6,7 +6,8 @@
   "scripts": {
     "build": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "preinstall": "export ACCEPT_HIGHCHARTS_LICENSE=1"
+    "preinstall-linux": "export ACCEPT_HIGHCHARTS_LICENSE=1",
+    "preinstall": "SET ACCEPT_HIGHCHARTS_LICENSE=1"
   },
   "engines": {
     "node": ">=8"
@@ -39,6 +40,7 @@
     "enmap": "^4.8.5",
     "erlpack": "github:discordapp/erlpack",
     "highcharts-export-server": "^2.0.24",
+    "imgur": "^0.3.1",
     "inquirer": "^6.3.1",
     "lru-cache": "^5.1.1",
     "moment": "^2.20.1",
