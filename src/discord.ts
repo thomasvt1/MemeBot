@@ -34,31 +34,31 @@ client.on('message', msg => {
     }
 
     if (msg.content.startsWith("$setname")) {
-        return setname(msg, args);
+        return tryFunction(msg, setname(msg, args));
     }
 
     if (msg.content.startsWith("$stats")) {
-        return stats(msg, args);
+        return tryFunction(msg, stats(msg, args));
     }
 
     if (msg.content.startsWith("$inactive")) {
-        return inactive(msg, args);
+        return tryFunction(msg, inactive(msg, args));
     }
 
     if (msg.content.startsWith("$firmtop")) {
-        return firmtop(msg, args);
+        return tryFunction(msg, firmtop(msg, args));
     }
 
     if (msg.content.startsWith("$active")) {
-        return active(msg, args);
+        return tryFunction(msg, active(msg, args));
     }
 
     if (msg.content.startsWith("$average")) {
-        return average_investments(msg, args);
+        return tryFunction(msg, average_investments(msg, args));
     }
 });
 
-async function help(msg: Discord.Message, args: string[]) {
+function help(msg: Discord.Message, args: string[]) {
     let reply = "";
 
     reply += `Hi ${msg.author.username}, here's a quick list of what I can help you with\n`;
@@ -76,6 +76,15 @@ async function help(msg: Discord.Message, args: string[]) {
     reply += "```";
 
     msg.channel.send(reply);
+}
+
+async function tryFunction(msg: Discord.Message, func: any) {
+    try {
+        return await func;
+    } catch (error) {
+        console.error(error);
+        msg.reply("I'm afraid something went wrong - you could try it again or contact my developers");
+    }
 }
 
 async function setname(msg: Discord.Message, args: string[]) {
