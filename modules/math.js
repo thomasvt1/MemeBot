@@ -63,7 +63,7 @@ math.linear_interpolate = function linear_interpolate(x, x_0, x_1, y_0, y_1) {
 }
 
 math.net_worth_coefficient = function net_worth_coefficient(net_worth) {
-	return Math.pow(net_worth, -0.155) * 6
+	return net_worth ** -0.155 * 6
 }
 
 math.calculateInvestmentReturn = function calculateInvestmentReturn(oldUpvotes, newUpvotes, netWorth) {
@@ -163,8 +163,10 @@ math.calculateFirmPayout = function (balance, size, execs, assocs) {
 	const trader_amount = trader_total / Math.max(tradernbr, 1)
 
 	const info = {
+		payout_total: payout_amount,
 		board: {
 			amount: board_amount,
+			percent: 10,
 			total: board_total
 		},
 		exec: {

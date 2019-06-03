@@ -21,7 +21,7 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 	// Calculate this week's profit
 	let weekprofit = 0
 	let i = 0
-	while (i < history.length && history[i].time < firm.last_payout) {
+	while (i < history.length && history[i].time > firm.last_payout) {
 		weekprofit += history[i].profit
 		i++
 	}

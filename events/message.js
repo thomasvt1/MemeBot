@@ -9,7 +9,7 @@ module.exports = async (client, message) => {
 
 	// Grab the settings for this server from Enmap.
 	// If there is no guild, get default conf (DMs)
-	const settings = message.settings = client.getSettings(message.guild.id)
+	const settings = message.guild ? client.getSettings(message.guild.id) : client.settings.get("default")
 
 	// Checks if the bot was mentioned, with no message after it, returns the prefix.
 	const prefixMention = new RegExp(`^<@!?${client.user.id}>( |)$`)
@@ -77,6 +77,8 @@ module.exports = async (client, message) => {
 		args[0] = args[0].replace(/^((\/|)u\/)/g, "")
 		const username = check ? check : args[0]
 
+		const investment = cmd.help.name === "history" ? args[1] : false
+
 		const profile = await client.api.getInvestorProfile(username.toLowerCase()).catch(err => client.logger.error(err.stack))
 		if (profile.id === 0) return message.channel.send(":question: I couldn't find that user.")
 
@@ -98,7 +100,7 @@ module.exports = async (client, message) => {
 
 		const firmmembers = await client.api.getFirmMembers(profile.firm).catch(err => client.logger.error(err.stack))
 
-		args =  [username, discord_id, profile, history, firm, firmmembers, firmrole, check]
+		cmd.help.name === "history" ? args = [username, discord_id, profile, history, firm, firmmembers, firmrole, check, investment] : [username, discord_id, profile, history, firm, firmmembers, firmrole, check]
 	}
 
 	cmd.run(client, message, args, level)
