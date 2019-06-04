@@ -99,8 +99,10 @@ module.exports = async (client, message) => {
 		const history = await client.api.getInvestorHistory(username.toLowerCase()).catch(err => client.logger.error(err.stack))
 
 		const firmmembers = await client.api.getFirmMembers(profile.firm).catch(err => client.logger.error(err.stack))
+		
+		const arguments = cmd.help.name === "history" ? [username, discord_id, profile, history, firm, firmmembers, firmrole, check, investment] : [username, discord_id, profile, history, firm, firmmembers, firmrole, check]
 
-		cmd.help.name === "history" ? args = [username, discord_id, profile, history, firm, firmmembers, firmrole, check, investment] : [username, discord_id, profile, history, firm, firmmembers, firmrole, check]
+		args = arguments
 	}
 
 	cmd.run(client, message, args, level)

@@ -7,7 +7,7 @@ exports.run = async (_client, message, [_username, _redditlink, _user, history, 
 
 	const timediff = moment().unix() - currentinvestment.time
 	const timeout = timediff * 1000
-	const maturesin = moment.duration(moment().unix() + timediff, "seconds").format("[**]H[**] [hour] [and] [**]m[**] [minutes]")
+	const maturesin = moment.duration(timediff, "seconds").format("[**]H[**] [hour] [and] [**]m[**] [minutes]")
 
 	console.log(timeout)
 	message.channel.send(`:white_check_mark: I will remind you when your investment has matured in ${maturesin}.`)

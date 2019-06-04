@@ -1,5 +1,7 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
+const fs = require("fs")
+const exporter = require("highcharts-export-server")
 exports.run = async (client, message, [username, redditlink, user, _history, firm, firmmembers, firmrole, check], _level) => {
 	// Here we calculate the average investment profit of the entire firm
 	// by listing out all of each firm member's investments, then pushing them
@@ -41,7 +43,7 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 		const history = await client.api.getInvestorHistory(member.name)
 		let weekprofit = 0
 		let i = 0
-		while (i < history.length && history[i].time < firm.last_payout) {
+		while (i < history.length && history[i].time > firm.last_payout) {
 			weekprofit += history[i].profit
 			i++
 		}
@@ -52,8 +54,11 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 	weekprofiteers.sort((a, b) => b.profit - a.profit)
 
 	const weekbestprofiteer = weekprofiteers[0]
-	const firmcontribution = weekbestprofiteer.profit - weekbestprofiteer.profit * (firm.tax / 100)
-	const firmconstr = `\nContributed **${client.api.numberWithCommas(Math.trunc(firmcontribution))}** M¢ to firm (**${((firmcontribution / firm.balance) * 100).toFixed(2)}%**)`
+	const weekworstprofiteer = weekprofiteers[weekprofiteers.length - 1]
+	const bfirmcontribution = weekbestprofiteer.profit - (weekbestprofiteer.profit * (firm.tax / 100))
+	const wfirmcontribution = weekworstprofiteer.profit - (weekworstprofiteer.profit * (firm.tax / 100))
+	const bfirmconstr = `\nContributed **${client.api.numberWithCommas(Math.trunc(bfirmcontribution))}** M¢ to firm (**${((bfirmcontribution / firm.balance) * 100).toFixed(2)}%**)`
+	const wfirmconstr = `\nContributed **${client.api.numberWithCommas(Math.trunc(wfirmcontribution))}** M¢ to firm (**${((wfirmcontribution / firm.balance) * 100).toFixed(2)}%**)`
 
 	// Calculate most inactive investors and most active investors
 	// (in terms of **time difference**, not investments.)
@@ -76,6 +81,10 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 	const mostinactiveinvestor = moment.duration(inactiveinvestors[0].timediff, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")
 	const lastinvestor = moment.duration(activeinvestors[0].timediff, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")
 
+	const yourrole = check ? "Your Role" : `${username}'s Role`
+
+	
+
 	const firminfo = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
 		.setColor("GOLD")
@@ -83,11 +92,16 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 		.setTitle(firm.name)
 		.setURL(`https://meme.market/firm.html?firm=${user.firm}`)
 		.addField("Balance", `${client.api.numberWithCommas(firm.balance)} M¢`, true)
-		.addField("Average investment profit (firm)", `${profitprct.toFixed(3)}%`, true)
-		.addField("Your Rank", firmrole, true)
+		.addField("Average investment profit", `${profitprct.toFixed(3)}%`, true)
+		.addField("Rank", `\`#${firm.rank}\``, true)
+		.addField(yourrole, firmrole, true)
 		.addField("Last investor", `[u/${activeinvestors[0].name}](https://meme.market/user.html?account=${activeinvestors[0].name})\n${lastinvestor}`, true)
 		.addField("Most inactive investor", `[u/${inactiveinvestors[0].name}](https://meme.market/user.html?account=${inactiveinvestors[0].name})\n${mostinactiveinvestor}`, true)
-		.addField("Week's best profiteer", `[u/${weekbestprofiteer.name}](https://meme.market/user.html?account=${weekbestprofiteer.name})\n**${client.api.numberWithCommas(weekbestprofiteer.profit)}** M¢${firmconstr}`, true)
+		.addField("CEO", firm.ceo, true)
+		.addField("COO", firm.coo, true)
+		.addField("CFO", firm.cfo, true)
+		.addField("Week's best profiteer", `[u/${weekbestprofiteer.name}](https://meme.market/user.html?account=${weekbestprofiteer.name})\n**${client.api.numberWithCommas(weekbestprofiteer.profit)}** M¢${bfirmconstr}`, true)
+		.addField("Week's worst profiteer", `[u/${weekworstprofiteer.name}](https://meme.market/user.html?account=${weekworstprofiteer.name})\n**${client.api.numberWithCommas(weekworstprofiteer.profit)}** M¢${wfirmconstr}`, true)
 	if (check) firminfo.setThumbnail(client.users.get(message.author.id).displayAvatarURL)
 	if (!check && redditlink) firminfo.setThumbnail(client.users.get(redditlink).displayAvatarURL)
 	return message.channel.send({embed: firminfo})
@@ -177,6 +191,66 @@ exports.help = {
 	usage: "inactive <reddit username> (uses set default)"
 }
 
-function before_last_payout(inv_time) {
-	return !((new Date(inv_time * 1000).getDay() === 5 && moment(inv_time).hour() < 23))
+function exportPieChart(trader, assoc, exec, cfo, coo, ceo) {
+	//Export settings
+	const exportSettings = {
+		type: "png",
+		options: {
+			chart: {
+				backgroundColor: "transparent",
+				plotBorderWidth: null,
+				plotShadow: false,
+				type: "pie",
+			},
+			credits: {
+				enabled: false
+			},
+			plotOptions: {
+				pie: {
+					dataLabels: {
+						enabled: true,
+						format: "<b>{point.name}</b><br>{point.percentage:.1f}%",
+						distance: -50,
+						filter: {
+							property: "percentage",
+							operator: ">",
+							value: 4
+						},
+						style: {
+							textOutline: false,
+							fontFamily: "Arial",
+							fontSize: "10px"
+						}
+					}
+				}
+			},
+			title: {
+				text: undefined
+			},
+			series: [{
+				data: [{ name: "Floor<br>Traders", y: trader }, { name: "Associates", y: assoc }, { name: "Executives", y: exec }, { name: "OutlandishZach", y: ceo }, { name: "Hayura----", y: coo }, { name: "RegularNoodles", y: cfo }]
+			}]
+		}
+	}
+
+	//Set up a pool of PhantomJS workers
+	exporter.initPool()
+
+	//Perform an export
+	/*
+			Export settings corresponds to the available CLI arguments described
+			above.
+	*/
+	exporter.export(exportSettings, function (err, res) {
+		//The export result is now in res.
+		//If the output is not PDF or SVG, it will be base64 encoded (res.data).
+		//If the output is a PDF or SVG, it will contain a filename (res.filename).
+		fs.writeFileSync("./result.png", res.data, { encoding: "base64" }, function (err) {
+			throw err
+		})
+
+		//Kill the pool when we're done with it, and exit the application
+		exporter.killPool()
+		process.exit(1)
+	})
 }

@@ -1,7 +1,7 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 exports.run = async (client, message, [username, redditlink, user, history, firm, _firmmembers, _firmrole, check], _level) => {
-	if (!history.length) return message.channel.send(":exclamation: You haven't invested before!")
+	if (!history || !history.length) return message.channel.send(":exclamation: You haven't invested before!")
 
 	// Calculate profit %
 	let profitprct = 0
@@ -30,22 +30,29 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 	const currentpost = currentinvestment ? await client.api.r.getSubmission(currentinvestment.post).fetch().then((sub) => sub).catch(err => console.error(err)) : false
 
 	// Last investment's return
-	const lastinvestment_return = client.math.calculateInvestmentReturn(lastinvestment.upvotes, lastpost.score, user.networth)
+	const lroi = await client.math.calculateInvestmentReturn(lastinvestment.upvotes, lastpost.score, user.networth)
+	const lastinvestment_return = lroi[0]
+
 	// Fancy math to calculate investment return
-	const investment_return = currentinvestment ? client.math.calculateInvestmentReturn(currentinvestment.upvotes, currentpost.score, user.networth) : false
+	const roi = currentinvestment ? await client.math.calculateInvestmentReturn(currentinvestment.upvotes, currentpost.score, user.networth) : false
+	const investment_return = currentinvestment ? roi[0] : false
+	const maxpercent = currentinvestment ? roi[1] : false
+	const maxprofit = currentinvestment ? roi[2] : false
 
 	const lastprofit = user.firm !== 0 ? Math.trunc(lastinvestment.profit - lastinvestment.profit * (firm.tax / 100)) : lastinvestment.profit
-	let forecastedprofit = Math.trunc(investment_return / 100 * currentinvestment.amount)
-	user.firm !== 0 ? forecastedprofit -= forecastedprofit * (firm.tax / 100) : forecastedprofit
+
+	let forecastedprofit = currentinvestment ? Math.trunc(investment_return / 100 * currentinvestment.amount) : false
+	if (currentinvestment && user.firm !== 0) forecastedprofit -= forecastedprofit * (firm.tax / 100)
 
 	const lastinvested = moment.duration(moment().unix() - (!currentinvestment ? lastinvestment.time : currentinvestment.time), "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
 	const maturesin = currentinvestment ? moment.duration((currentinvestment.time + 14400) - moment().unix(), "seconds").format("[**]H[**] [hour] [and] [**]m[**] [minute]") : false // 14400 = 4 hours
 	const maturedat = moment.unix(lastinvestment.time + 14400).format("ddd Do MMM YYYY [at] HH:mm [UTC]ZZ") // 14400 = 4 hours
 
-	const break_even = currentinvestment ? Math.round(client.math.calculateBreakEvenPoint(currentinvestment.upvotes)) : false
-	const broke_even = Math.round(client.math.calculateBreakEvenPoint(lastinvestment.upvotes))
+	const break_even = currentinvestment ? Math.round(await client.math.calculateBreakEvenPoint(currentinvestment.upvotes)) : false
+	const broke_even = Math.round(await client.math.calculateBreakEvenPoint(lastinvestment.upvotes))
 	const breaks = currentinvestment ? ((break_even - currentpost.score) < 0 ? "Broke" : "Breaks") : false
 	const breaktogo = currentinvestment ? ((break_even - currentpost.score) < 0 ? "" : `(${break_even - currentpost.score} upvotes to go)`) : false
+
 	const redditpfp = await client.api.r.getUser(username).fetch().then((usr) => usr.icon_img)
 
 	const stats = new RichEmbed()
@@ -68,6 +75,7 @@ __**[${currentpost.title}](https://redd.it/${currentinvestment.post})**__\n
 **Matures in:** ${maturesin}\n
 **Invested:** ${client.api.numberWithCommas(currentinvestment.amount)} M¢\n
 **Forecasted profit:** ${client.api.numberWithCommas(Math.trunc(forecastedprofit))} M¢ (*${investment_return}%*)\n
+**Maximum profit:** ${client.api.numberWithCommas(Math.trunc(maxprofit))} M¢ (*${maxpercent}*)\n
 **${breaks} even at:** ${break_even} upvotes ${breaktogo}`, true)
 		stats.addBlankField(false)
 	}

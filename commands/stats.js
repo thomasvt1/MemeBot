@@ -39,7 +39,10 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 	const weekratio = ((weekprofit / (user.networth - weekprofit)) * 100.0).toFixed(2)
 
 	const currentinvestment = history.length && !history[0].done ? history[0] : false // Simple ternary to check whether current investment is running
-	const investment_return = client.math.calculateInvestmentReturn(currentinvestment.upvotes, currentpost.score, user.networth) // Fancy math to calculate investment return
+	const roi = currentinvestment ? client.math.calculateInvestmentReturn(currentinvestment.upvotes, currentpost.score, user.networth) : false
+	const investment_return = currentinvestment ? roi.investmentreturn : false
+	const maxprofit = currentinvestment ? roi.maxprofit : false
+	const maxpercent = currentinvestment ? roi.maxpercent : false
 	let forecastedprofit = Math.trunc(investment_return / 100 * currentinvestment.amount)
 	user.firm !== 0 ? forecastedprofit -= forecastedprofit * (firm.tax / 100) : forecastedprofit
 
@@ -76,6 +79,7 @@ __**[${currentpost.title}](https://redd.it/${currentinvestment.post})**__\n
 **Matures in:** ${maturesin}\n
 **Invested:** ${client.api.numberWithCommas(currentinvestment.amount)} M¢\n
 **Profit:** ${client.api.numberWithCommas(Math.trunc(forecastedprofit))} M¢ (*${investment_return}%*)\n
+**Maximum profit:** ${client.api.numberWithCommas(Math.trunc(maxprofit))} M¢ (*${maxpercent}*)\n
 **${breaks} even at:** ${break_even} upvotes ${breaktogo}`, true)
 	if (!redditlink && check) stats.setThumbnail(client.users.get(message.author.id).displayAvatarURL)
 	if (redditlink) stats.setThumbnail(client.users.get(redditlink).displayAvatarURL)

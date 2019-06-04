@@ -1,6 +1,6 @@
 const math = {}
 
-math.calculate = function calculate(newNumber, oldNumber, net_worth) {
+math.calculate = async (newNumber, oldNumber, net_worth) => {
 	// Treat anything below 0 upvotes as 0 upvotes
 	if (oldNumber < 0) {
 		oldNumber = 0
@@ -19,72 +19,75 @@ math.calculate = function calculate(newNumber, oldNumber, net_worth) {
 	}
 
 	// Compute the maximum of the sigmoid
-	var sig_max = this.sigmoid_max(oldNumber)
+	var sig_max = await math.sigmoid_max(oldNumber)
 
 	// Compute the midpoint of the sigmoid
-	var sig_mp = this.sigmoid_midpoint(oldNumber)
+	var sig_mp = math.sigmoid_midpoint(oldNumber)
 
 	// Compute the steepness of the sigmoid
-	var sig_stp = this.sigmoid_steepness(oldNumber)
+	var sig_stp = math.sigmoid_steepness(oldNumber)
 
 	// Calculate return
-	var factor = this.sigmoid(delta, sig_max, sig_mp, sig_stp)
+	var factor = math.sigmoid(delta, sig_max, sig_mp, sig_stp)
 
 	factor = factor - 1
-	factor = factor * this.net_worth_coefficient(net_worth)
+	factor = factor * math.net_worth_coefficient(net_worth)
 	return factor + 1
 }
 
-math.sigmoid = function sigmoid(x, maxvalue, midpoint, steepness) {
+math.sigmoid = function (x, maxvalue, midpoint, steepness) {
 	var arg = -(steepness * (x - midpoint))
 	var y = maxvalue / (1 + Math.exp(arg))
 	return y
 }
 
-math.sigmoid_max = function sigmoid_max(oldNumber) {
+math.sigmoid_max = async (oldNumber) => {
 	return 1.2 + 0.6 / ((oldNumber / 10) + 1)
 }
 
-math.sigmoid_midpoint = function sigmoid_midpoint(oldNumber) {
+math.sigmoid_midpoint = function (oldNumber) {
 	var sig_mp_0 = 10
 	var sig_mp_1 = 500
-	return this.linear_interpolate(oldNumber, 0, 25000, sig_mp_0, sig_mp_1)
+	return math.linear_interpolate(oldNumber, 0, 25000, sig_mp_0, sig_mp_1)
 }
 
-math.sigmoid_steepness = function sigmoid_steepness(oldNumber) {
+math.sigmoid_steepness = function (oldNumber) {
 	return 0.06 / ((oldNumber / 100) + 1)
 }
 
-math.linear_interpolate = function linear_interpolate(x, x_0, x_1, y_0, y_1) {
+math.linear_interpolate = function (x, x_0, x_1, y_0, y_1) {
 	var m = (y_1 - y_0) / x_1 - x_0
 	var c = y_0
 	var y = (m * x) + c
 	return y
 }
 
-math.net_worth_coefficient = function net_worth_coefficient(net_worth) {
+math.net_worth_coefficient = function (net_worth) {
 	return net_worth ** -0.155 * 6
 }
 
-math.calculateInvestmentReturn = function calculateInvestmentReturn(oldUpvotes, newUpvotes, netWorth) {
-	const factor = this.calculate(newUpvotes, oldUpvotes, netWorth)
+math.calculateInvestmentReturn = async (oldUpvotes, newUpvotes, netWorth) => {
+	const factor = await math.calculate(newUpvotes, oldUpvotes, netWorth)
 
 	const investmentReturn = (Math.round((factor - 1) * 100 * 100)) / 100
 
-	return investmentReturn
+	const maxPercent = ((Math.round(await math.sigmoid_max(oldUpvotes) * 10000) - 10000) / 100).toString() + "%"
+	const maxProfit = Math.trunc(await math.calculatePoint(await math.sigmoid_max(oldUpvotes), oldUpvotes, netWorth))
+
+	return [investmentReturn, maxPercent, maxProfit]
 }
 
-math.calculateBreakEvenPoint = function calculateBreakEvenPoint(upvotes) {
-	return Math.round(this.calculatePoint(1, upvotes, 100) * 100) / 100
+math.calculateBreakEvenPoint = async (upvotes) => {
+	return Math.round(await math.calculatePoint(1, upvotes, 100) * 100) / 100
 }
 
-math.calculatePoint = function calculatePoint(factor, oldNumber, net_worth) {
+math.calculatePoint = async (factor, oldNumber, net_worth) => {
 	var y = oldNumber
 	var z = factor
 	let TOL
 
 	var x = y
-	var newFactor = this.calculate(x, y, net_worth)
+	var newFactor = math.calculate(x, y, net_worth)
 
 	if (factor !== 1) {
 		z = 0.999 * factor
@@ -100,12 +103,12 @@ math.calculatePoint = function calculatePoint(factor, oldNumber, net_worth) {
 		if (newFactor > z) {
 			while (newFactor > z) {
 				x = x - TOL
-				newFactor = this.calculate(x, y, net_worth)
+				newFactor = math.calculate(x, y, net_worth)
 			}
 		} else {
 			while (newFactor < z) {
 				x = x + TOL
-				newFactor = this.calculate(x, y, net_worth)
+				newFactor = math.calculate(x, y, net_worth)
 			}
 		}
 	} else {
@@ -119,7 +122,7 @@ math.calculatePoint = function calculatePoint(factor, oldNumber, net_worth) {
 
 		while (newFactor < z) {
 			x = x + TOL
-			newFactor = this.calculate(x, y, net_worth)
+			newFactor = math.calculate(x, y, net_worth)
 		}
 	}
 
