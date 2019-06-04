@@ -20,7 +20,7 @@
   "contributors": [
     "Keanu C. <keanu@keanu73.net> (https://github.com/Keanu73)"
   ],
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/thomasvt1/MemeBot/issues"
   },
@@ -29,22 +29,21 @@
     "@discordjs/uws": "^11.149.1",
     "@hapi/boom": "^7.4.2",
     "@hapi/hawk": "^7.1.0",
-    "@hapi/hoek": "^6.2.3",
+    "@hapi/hoek": "^7.1.0",
     "@hapi/sntp": "^3.1.1",
     "better-sqlite-pool": "github:eslachance/better-sqlite-pool",
     "bufferutil": "^4.0.1",
-    "chalk": "^2.3.0",
+    "chalk": "^2.4.2",
     "concat-stream": "^2.0.0",
     "debug": "^4.1.1",
-    "discord.js": "^11.5.0",
-    "enmap": "^4.8.5",
-    "erlpack": "github:discordapp/erlpack",
+    "discord.js": "^11.5.1",
+    "enmap": "^4.8.7",
     "highcharts-export-server": "^2.0.24",
     "imgur": "^0.3.1",
     "inquirer": "^6.3.1",
     "lru-cache": "^5.1.1",
-    "moment": "^2.20.1",
-    "moment-duration-format": "^2.2.0",
+    "moment": "^2.24.0",
+    "moment-duration-format": "^2.3.1",
     "mysql2": "^1.6.5",
     "pastebin-js": "^1.0.2",
     "plotly": "^1.0.6",
@@ -56,7 +55,7 @@
     "ws": "^7.0.0"
   },
   "devDependencies": {
-    "eslint": "^5.5.0",
-    "eslint-plugin-you-dont-need-momentjs": "^1.4.0"
+    "eslint": "^5.16.0",
+    "eslint-plugin-you-dont-need-momentjs": "^1.5.0"
   }
 }
