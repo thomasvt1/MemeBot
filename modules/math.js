@@ -1,6 +1,6 @@
 const math = {}
 
-math.calculate = async (newNumber, oldNumber, net_worth) => {
+math.calculate = (newNumber, oldNumber, net_worth) => {
 	// Treat anything below 0 upvotes as 0 upvotes
 	if (oldNumber < 0) {
 		oldNumber = 0
@@ -19,7 +19,7 @@ math.calculate = async (newNumber, oldNumber, net_worth) => {
 	}
 
 	// Compute the maximum of the sigmoid
-	var sig_max = await math.sigmoid_max(oldNumber)
+	var sig_max = math.sigmoid_max(oldNumber)
 
 	// Compute the midpoint of the sigmoid
 	var sig_mp = math.sigmoid_midpoint(oldNumber)
@@ -41,7 +41,7 @@ math.sigmoid = function (x, maxvalue, midpoint, steepness) {
 	return y
 }
 
-math.sigmoid_max = async (oldNumber) => {
+math.sigmoid_max = (oldNumber) => {
 	return 1.2 + 0.6 / ((oldNumber / 10) + 1)
 }
 
@@ -66,22 +66,22 @@ math.net_worth_coefficient = function (net_worth) {
 	return net_worth ** -0.155 * 6
 }
 
-math.calculateInvestmentReturn = async (oldUpvotes, newUpvotes, netWorth) => {
-	const factor = await math.calculate(newUpvotes, oldUpvotes, netWorth)
+math.calculateInvestmentReturn = (oldUpvotes, newUpvotes, netWorth) => {
+	const factor = math.calculate(newUpvotes, oldUpvotes, netWorth)
 
 	const investmentReturn = (Math.round((factor - 1) * 100 * 100)) / 100
 
-	const maxPercent = ((Math.round(await math.sigmoid_max(oldUpvotes) * 10000) - 10000) / 100).toString() + "%"
-	const maxProfit = Math.trunc(await math.calculatePoint(await math.sigmoid_max(oldUpvotes), oldUpvotes, netWorth))
+	const maxPercent = ((Math.round(math.sigmoid_max(oldUpvotes) * 10000) - 10000) / 100).toString() + "%"
+	const maxProfit = Math.trunc(math.calculatePoint(math.sigmoid_max(oldUpvotes), oldUpvotes, netWorth))
 
 	return [investmentReturn, maxPercent, maxProfit]
 }
 
-math.calculateBreakEvenPoint = async (upvotes) => {
-	return Math.round(await math.calculatePoint(1, upvotes, 100) * 100) / 100
+math.calculateBreakEvenPoint = (upvotes) => {
+	return Math.round(math.calculatePoint(1, upvotes, 100) * 100) / 100
 }
 
-math.calculatePoint = async (factor, oldNumber, net_worth) => {
+math.calculatePoint = (factor, oldNumber, net_worth) => {
 	var y = oldNumber
 	var z = factor
 	let TOL
