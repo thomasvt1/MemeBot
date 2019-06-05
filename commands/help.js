@@ -10,9 +10,9 @@ exports.run = (client, message, args, level) => {
 	// If no specific command is called, show all filtered commands.
 	if (!args[0]) {
 		const help = new RichEmbed()
-			.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeCord")
+			.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
 			.setColor("BLUE")
-			.setFooter("Made by Thomas van Tilburg with ❤️", client.users.get(client.config.ownerID).avatarURL)
+			.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
 			.setThumbnail(client.user.avatarURL)
 			.setTitle("List of Commands")
 			.setDescription("You can set a default account to run these commands with by using $setname.")
