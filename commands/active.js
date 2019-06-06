@@ -25,19 +25,17 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 
 	const breakeven_point = Math.round(client.math.calculateBreakEvenPoint(currentinvestment.upvotes))
 
-	let text_upvotes = `
-	**Initial upvotes:** ${currentinvestment.upvotes}
-	**Current upvotes:** ${currentpost.score}\n`
+	let text_upvotes = `**Initial upvotes:** ${currentinvestment.upvotes}\n`
+	text_upvotes += `**Current upvotes:** ${currentpost.score}`
 
 	if (breakeven_point >= currentinvestment.score)
-		text_upvotes += `**Break even at:** ${breakeven_point}`
+		text_upvotes += `\n**Break even at:** ${breakeven_point}`
 
 	text_upvotes += "\n\u200b"
 
-	const text_profit = `
-	**Invested:** ${client.api.numberWithCommas(currentinvestment.amount)} M¢
-	**Forecasted profit:** ${client.api.numberWithCommas(Math.trunc(forecastedprofit))} M¢ (*${factor.toFixed(2)}%*)
-	**Maximum profit:** ${client.api.numberWithCommas(Math.trunc(maxprofit))} M¢ (*${factor_max.toFixed(2)}%*)`
+	let text_profit = `**Invested:** ${client.api.numberWithCommas(currentinvestment.amount)} M¢\n`
+	text_profit += `**Current profit:** ${client.api.numberWithCommas(Math.trunc(forecastedprofit))} M¢ (*${factor.toFixed(2)}%*)\n`
+	text_profit += `**Maximum profit:** ${client.api.numberWithCommas(Math.trunc(maxprofit))} M¢ (*${factor_max.toFixed(2)}%*)`
 
 	const stats = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
@@ -46,9 +44,7 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 		.setTitle(`u/${username}`)
 		.setURL(`https://meme.market/user.html?account=${username}`)
 		.setThumbnail(currentpost.thumbnail)
-		.addField("Current investment", `
-		**[${currentpost.title}](https://redd.it/${currentinvestment.post})**\n
-		**Matures in:** ${maturesin}\n\u200b`)
+		.addField("Current investment", `**[${currentpost.title}](https://redd.it/${currentinvestment.post})**\n\n**Matures in:** ${maturesin}\n\u200b`)
 		.addField("Upvotes", text_upvotes)
 		.addField("Profit", text_profit)
 
