@@ -11,7 +11,7 @@ math.calculate = (newNumber, oldNumber, net_worth) => {
 	}
 
 	// Compute gain
-	var delta = newNumber - oldNumber
+	let delta = newNumber - oldNumber
 
 	// Treat negative gain as no gain
 	if (delta < 0) {
@@ -19,25 +19,25 @@ math.calculate = (newNumber, oldNumber, net_worth) => {
 	}
 
 	// Compute the maximum of the sigmoid
-	var sig_max = math.sigmoid_max(oldNumber)
+	const sig_max = math.sigmoid_max(oldNumber)
 
 	// Compute the midpoint of the sigmoid
-	var sig_mp = math.sigmoid_midpoint(oldNumber)
+	const sig_mp = math.sigmoid_midpoint(oldNumber)
 
 	// Compute the steepness of the sigmoid
-	var sig_stp = math.sigmoid_steepness(oldNumber)
+	const sig_stp = math.sigmoid_steepness(oldNumber)
 
 	// Calculate return
-	var factor = math.sigmoid(delta, sig_max, sig_mp, sig_stp)
+	let factor = math.sigmoid(delta, sig_max, sig_mp, sig_stp)
 
-	factor = factor - 1
+	factor -= 1
 	factor = factor * math.net_worth_coefficient(net_worth)
 	return factor + 1
 }
 
 math.sigmoid = function (x, maxvalue, midpoint, steepness) {
-	var arg = -(steepness * (x - midpoint))
-	var y = maxvalue / (1 + Math.exp(arg))
+	const arg = -(steepness * (x - midpoint))
+	const y = maxvalue / (1 + Math.exp(arg))
 	return y
 }
 
@@ -46,8 +46,8 @@ math.sigmoid_max = (oldNumber) => {
 }
 
 math.sigmoid_midpoint = function (oldNumber) {
-	var sig_mp_0 = 10
-	var sig_mp_1 = 500
+	const sig_mp_0 = 10
+	const sig_mp_1 = 500
 	return math.linear_interpolate(oldNumber, 0, 25000, sig_mp_0, sig_mp_1)
 }
 
@@ -56,25 +56,22 @@ math.sigmoid_steepness = function (oldNumber) {
 }
 
 math.linear_interpolate = function (x, x_0, x_1, y_0, y_1) {
-	var m = (y_1 - y_0) / x_1 - x_0
-	var c = y_0
-	var y = (m * x) + c
+	const m = (y_1 - y_0) / x_1 - x_0
+	const c = y_0
+	const y = (m * x) + c
 	return y
 }
 
 math.net_worth_coefficient = function (net_worth) {
-	return net_worth ** -0.155 * 6
+	return Math.pow(net_worth, -0.155) * 6
 }
 
-math.calculateInvestmentReturn = (oldUpvotes, newUpvotes, netWorth) => {
-	const factor = math.calculate(newUpvotes, oldUpvotes, netWorth)
+math.calculate_factor = (oldUpvotes, newUpvotes, netWorth) => {
+	const factor = (math.calculate(newUpvotes, oldUpvotes, netWorth) - 1) * 100
 
-	const investmentReturn = (Math.round((factor - 1) * 100 * 100)) / 100
+	const max_factor = (math.calculate(50e5, oldUpvotes, netWorth) - 1) * 100
 
-	const maxPercent = ((Math.round(math.sigmoid_max(oldUpvotes) * 10000) - 10000) / 100).toString() + "%"
-	const maxProfit = Math.trunc(math.calculatePoint(math.sigmoid_max(oldUpvotes), oldUpvotes, netWorth))
-
-	return [investmentReturn, maxPercent, maxProfit]
+	return [factor, max_factor]
 }
 
 math.calculateBreakEvenPoint = (upvotes) => {
@@ -82,12 +79,12 @@ math.calculateBreakEvenPoint = (upvotes) => {
 }
 
 math.calculatePoint = (factor, oldNumber, net_worth) => {
-	var y = oldNumber
-	var z = factor
+	const y = oldNumber
+	let z = factor
 	let TOL
 
-	var x = y
-	var newFactor = math.calculate(x, y, net_worth)
+	let x = y
+	let newFactor = math.calculate(x, y, net_worth)
 
 	if (factor !== 1) {
 		z = 0.999 * factor
