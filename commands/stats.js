@@ -1,5 +1,6 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
+require("moment-duration-format")
 exports.run = async (client, message, [username, redditlink, user, history, firm, _firmmembers, firmrole, check], _level) => {
 
 	// Calculate profit %
@@ -7,10 +8,10 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 	let profitprct_5 = 0
 	for (let i = 0; i < history.length; i++) {
 		if (history[i].done === true) {
-			profitprct += history[i].profit / history[i].amount * 100
+			profitprct += (history[i].profit - history[i].profit * (history[i].firm_tax / 100)) / history[i].amount * 100
 
 			if (i <= 5) { // Use for average last 5
-				profitprct_5 += history[i].profit / history[i].amount * 100
+				profitprct_5 += (history[i].profit - history[i].profit * (history[i].firm_tax / 100)) / history[i].amount * 100
 			}
 		}
 	}
@@ -22,7 +23,7 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 	let weekprofit = 0
 	let i = 0
 	while (i < history.length && history[i].time > firm.last_payout) {
-		weekprofit += history[i].profit
+		weekprofit += history[i].profit - history[i].profit * (history[i].firm_tax / 100)
 		i++
 	}
 	
@@ -39,12 +40,15 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 	const weekratio = ((weekprofit / (user.networth - weekprofit)) * 100.0).toFixed(2)
 
 	const currentinvestment = history.length && !history[0].done ? history[0] : false // Simple ternary to check whether current investment is running
-	const roi = currentinvestment ? client.math.calculateInvestmentReturn(currentinvestment.upvotes, currentpost.score, user.networth) : false
-	const investment_return = currentinvestment ? roi.investmentreturn : false
-	const maxprofit = currentinvestment ? roi.maxprofit : false
-	const maxpercent = currentinvestment ? roi.maxpercent : false
-	let forecastedprofit = Math.trunc(investment_return / 100 * currentinvestment.amount)
-	user.firm !== 0 ? forecastedprofit -= forecastedprofit * (firm.tax / 100) : forecastedprofit
+
+	// Fancy math to calculate investment return
+	const [factor, factor_max] = currentinvestment ? await client.math.calculate_factor(currentinvestment.upvotes, currentpost.score, user.networth) : false
+
+	let forecastedprofit = currentinvestment.amount * factor
+	if (user.firm !== 0) forecastedprofit -= forecastedprofit * (currentinvestment.firm_tax / 100)
+
+	let maxprofit = currentinvestment.amount * factor_max
+	if (user.firm !== 0) maxprofit -= maxprofit * (currentinvestment.firm_tax / 100)
 
 	const lastinvested = moment.duration(moment().unix() - history[0].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
 	const maturesin = moment.duration((currentinvestment.time + 14400) - moment().unix(), "seconds").format("[**]H[**] [hour] [and] [**]m[**] [minute]") // 14400 = 4 hours
@@ -53,23 +57,28 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 	const breaks = (break_even - currentpost.score) < 0 ? "Broke" : "Breaks"
 	const breaktogo = (break_even - currentpost.score) < 0 ? "" : `(${break_even - currentpost.score} upvotes to go)`
 	const redditpfp = await client.api.r.getUser(username).fetch().then((usr) => usr.icon_img)
+	
+	let firmemoji = ""
+	client.guilds.get("563439683309142016").emojis.forEach(async (e) => {
+		if (e.name === firm.name.toLowerCase().replace(/ /g, "")) firmemoji = `<:${e.identifier.toString()}>`
+	})
 
 	const stats = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
 		.setColor("GOLD")
 		.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
-		.setTitle(`u/${username}`)
+		.setTitle(`u/${username} ${firmemoji}`)
 		.setURL(`https://meme.market/user.html?account=${username}`)
-		.addField("**Net worth**", `${client.api.numberWithCommas(user.networth)} M¢`, true)
-		.addField("**Completed investments**", `${client.api.numberWithCommas(user.completed)}`, true)
-		.addField("**Rank**", `**\`#${user.rank}\`**`, true)
-		.addField("**Firm**", `**\`${firmrole}\`** of **\`${firm.name}\`**`, true)
-		.addField("**Average investment profit**", `${profitprct.toFixed(2)}%`, true)
-		.addField("**Average investment profit (last 5)**", `${profitprct_5.toFixed(2)}%`, true)
-		.addField("**Investments in the past day**", `${investments_today}`, true)
-		.addField("**Last invested**", `${lastinvested}`, true)
-		.addField("**This week's profit**", `${client.api.numberWithCommas(weekprofit)} M¢`, true)
-		.addField("**Week profit ratio**", `${weekratio}%`, true)
+		.addField("Net worth", `${client.api.numberWithCommas(user.networth)} M¢`, true)
+		.addField("Completed investments", `${client.api.numberWithCommas(user.completed)}`, true)
+		.addField("Rank", `**\`#${user.rank}\`**`, true)
+		.addField("Firm", `**\`${firmrole}\`** of **\`${firm.name}\`**`, true)
+		.addField("Average investment profit", `${profitprct.toFixed(2)}%`, true)
+		.addField("Average investment profit (last 5)", `${profitprct_5.toFixed(2)}%`, true)
+		.addField("Investments in the past day", `${investments_today}`, true)
+		.addField("Last invested", `${lastinvested}`, true)
+		.addField("This week's profit", `${client.api.numberWithCommas(weekprofit)} M¢`, true)
+		.addField("Week profit ratio", `${weekratio}%`, true)
 		
 	if (currentinvestment) stats.addField("Current investment", `
 [u/${currentpost.author.name}](https://reddit.com/u/${currentpost.author.name})
@@ -78,8 +87,8 @@ __**[${currentpost.title}](https://redd.it/${currentinvestment.post})**__\n
 **Current upvotes:** ${currentpost.score}\n
 **Matures in:** ${maturesin}\n
 **Invested:** ${client.api.numberWithCommas(currentinvestment.amount)} M¢\n
-**Profit:** ${client.api.numberWithCommas(Math.trunc(forecastedprofit))} M¢ (*${investment_return}%*)\n
-**Maximum profit:** ${client.api.numberWithCommas(Math.trunc(maxprofit))} M¢ (*${maxpercent}*)\n
+**Forecasted profit:** ${client.api.numberWithCommas(Math.trunc(forecastedprofit))} M¢ (*${factor.toFixed(2)}%*)\n
+**Maximum profit:** ${client.api.numberWithCommas(Math.trunc(maxprofit))} M¢ (*${factor_max.toFixed(2)}%*)\n
 **${breaks} even at:** ${break_even} upvotes ${breaktogo}`, true)
 	if (!redditlink && check) stats.setThumbnail(client.users.get(message.author.id).displayAvatarURL)
 	if (redditlink) stats.setThumbnail(client.users.get(redditlink).displayAvatarURL)

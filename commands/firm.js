@@ -29,7 +29,7 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 
 	for (let i = 0; i < investments.length; i++) {
 		if (investments[i].done === true) {
-			profitprct += investments[i].profit / investments[i].amount * 100 // investor profit ratio
+			profitprct += (investments[i].profit - investments[i].profit * (investments[i].firm_tax / 100)) / investments[i].amount * 100 // investor profit ratio
 		}
 	}
 
@@ -42,21 +42,23 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 	for (const member of firmmembers) {
 		const history = await client.api.getInvestorHistory(member.name)
 		let weekprofit = 0
+		let weekcontrib = 0
 		let i = 0
 		while (i < history.length && history[i].time > firm.last_payout) {
-			weekprofit += history[i].profit
+			weekprofit += history[i].profit - history[i].profit * (history[i].firm_tax / 100)
+			weekcontrib += history[i].profit * (history[i].firm_tax / 100)
 			i++
 		}
 
-		weekprofiteers.push({ name: member.name, profit: weekprofit })
+		weekprofiteers.push({ name: member.name, profit: weekprofit, contrib: weekcontrib})
 	}
 
 	weekprofiteers.sort((a, b) => b.profit - a.profit)
 
 	const weekbestprofiteer = weekprofiteers[0]
 	const weekworstprofiteer = weekprofiteers[weekprofiteers.length - 1]
-	const bfirmcontribution = weekbestprofiteer.profit - (weekbestprofiteer.profit * (firm.tax / 100))
-	const wfirmcontribution = weekworstprofiteer.profit - (weekworstprofiteer.profit * (firm.tax / 100))
+	const bfirmcontribution = weekbestprofiteer.contrib
+	const wfirmcontribution = weekworstprofiteer.contrib
 	const bfirmconstr = `\nContributed **${client.api.numberWithCommas(Math.trunc(bfirmcontribution))}** M¢ to firm (**${((bfirmcontribution / firm.balance) * 100).toFixed(2)}%**)`
 	const wfirmconstr = `\nContributed **${client.api.numberWithCommas(Math.trunc(wfirmcontribution))}** M¢ to firm (**${((wfirmcontribution / firm.balance) * 100).toFixed(2)}%**)`
 
@@ -83,7 +85,10 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 
 	const yourrole = check ? "Your Role" : `${username}'s Role`
 
-	
+	let firmimage = false
+	client.guilds.get("563439683309142016").emojis.forEach(async (e) => {
+		if (e.name === firm.name.toLowerCase().replace(/ /g, "")) firmimage = e.url
+	})
 
 	const firminfo = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
@@ -102,8 +107,7 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 		.addField("CFO", firm.cfo, true)
 		.addField("Week's best profiteer", `[u/${weekbestprofiteer.name}](https://meme.market/user.html?account=${weekbestprofiteer.name})\n**${client.api.numberWithCommas(weekbestprofiteer.profit)}** M¢${bfirmconstr}`, true)
 		.addField("Week's worst profiteer", `[u/${weekworstprofiteer.name}](https://meme.market/user.html?account=${weekworstprofiteer.name})\n**${client.api.numberWithCommas(weekworstprofiteer.profit)}** M¢${wfirmconstr}`, true)
-	if (check) firminfo.setThumbnail(client.users.get(message.author.id).displayAvatarURL)
-	if (!check && redditlink) firminfo.setThumbnail(client.users.get(redditlink).displayAvatarURL)
+	if (firmimage) firminfo.setThumbnail(firmimage)
 	return message.channel.send({embed: firminfo})
 	// we also need week's best profiteer
 	/*{

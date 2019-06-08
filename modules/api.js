@@ -27,7 +27,7 @@ const pool = !config.node_env === "DEVELOPMENT" ? mysql.createPool({
 	queueLimit: 0
 }) : false
 
-api.getInvestorProfile = async function (name) {
+api.getInvestorProfile = async (name) => {
 	/**
 		* This gets the investor profile of a Reddit user.
 		*
@@ -36,7 +36,7 @@ api.getInvestorProfile = async function (name) {
 		*
 		* @example
 		*
-		*     api.getInvestorProfile("Keanu73")
+		*     await api.getInvestorProfile("Keanu73")
 		*/
 	const options = {
 		uri: "https://meme.market/api/investor/" + name,
@@ -52,7 +52,7 @@ api.getInvestorProfile = async function (name) {
 	})
 }
 
-api.getInvestorHistory = async function (name, amount = 50, page = 0) {
+api.getInvestorHistory = async (name, amount = 50, page = 0) => {
 	/**
 	* This gets the investor history of a Reddit user
 	*
@@ -62,7 +62,7 @@ api.getInvestorHistory = async function (name, amount = 50, page = 0) {
 	*
 	* @example
 	*
-	*     api.getInvestorHistory("Keanu73")
+	*     await api.getInvestorHistory("Keanu73")
 	*/
 	const options = {
 		uri: `https://meme.market/api/investor/${name}/investments?per_page=${amount}&page=${page}`,
@@ -78,7 +78,7 @@ api.getInvestorHistory = async function (name, amount = 50, page = 0) {
 	})
 }
 
-api.getFirmProfile = async function (id) {
+api.getFirmProfile = async (id) => {
 	const options = {
 		uri: "https://meme.market/api/firm/" + id,
 		json: true
@@ -93,7 +93,7 @@ api.getFirmProfile = async function (id) {
 	})
 }
 
-api.getFirmMembers = async function (id) {
+api.getFirmMembers = async (id) => {
 	const options = {
 		uri: `https://meme.market/api/firm/${id}/members?per_page=100&page=0/`,
 		json: true
@@ -108,7 +108,7 @@ api.getFirmMembers = async function (id) {
 	})
 }
 
-api.getTop100 = async function (page, amount = 25) {
+api.getTop100 = async (page, amount = 25) => {
 	const options = {
 		uri: `https://meme.market/api/investors/top?per_page=${amount}&page=${page}`,
 		json: true
@@ -123,7 +123,7 @@ api.getTop100 = async function (page, amount = 25) {
 	})
 }
 
-api.getRedditLink = async function (reddit_name) {
+api.getRedditLink = async (reddit_name) => {
 	if (config.node_env === "DEVELOPMENT") return false
 
 	const [link] = await pool.execute("SELECT discord_id FROM reddit_link WHERE reddit_name = ?", [reddit_name])
@@ -133,7 +133,7 @@ api.getRedditLink = async function (reddit_name) {
 	return link[0].discord_id
 }
 
-api.getLink = async function (discord_id) {
+api.getLink = async (discord_id) => {
 	if (config.node_env === "DEVELOPMENT") return false
 
 	const [link] = await pool.execute("SELECT reddit_name FROM reddit_link WHERE discord_id = ?", [discord_id])
@@ -143,7 +143,7 @@ api.getLink = async function (discord_id) {
 	return link[0].reddit_name
 }
 
-api.setLink = async function (discord_id, reddit_name) {
+api.setLink = async (discord_id, reddit_name) => {
 	if (config.node_env === "DEVELOPMENT") return false
 
 	const res = await pool.execute("INSERT INTO reddit_link (discord_id, reddit_name) VALUES (?, ?)", [discord_id, reddit_name])
@@ -153,7 +153,7 @@ api.setLink = async function (discord_id, reddit_name) {
 	return res
 }
 
-api.updateLink = async function (discord_id, reddit_name) {
+api.updateLink = async (discord_id, reddit_name) => {
 	if (config.node_env === "DEVELOPMENT") return false
 
 	const res = await pool.execute("UPDATE reddit_link SET reddit_name = ? WHERE reddit_link.discord_id = ?", [reddit_name, discord_id])
@@ -179,5 +179,50 @@ api.getSuffix = function (val) {
 
 	return value + " " + suffix
 }
+
+function isNumber(str) {
+	const pattern = /^\d+$/
+	return pattern.test(str)
+}
+
+function parseInvestmentAmount(str) {
+	str = str.replace(/,|\./g, "")
+
+	str = str.replace("k", "000")
+	str = str.replace("m", "000000")
+	str = str.replace("b", "000000000")
+	str = str.replace("t", "000000000000")
+	return str
+}
+
+// Returns Map<string, string>
+api.getInvestments = async (comments) => {
+	let investments = 0
+	let botreply = false
+
+	for (const reply of comments) {
+		if (reply.author.name === "MemeInvestor_bot" && reply.stickied === true) botreply = reply
+	}
+
+	if (!botreply) return false
+
+	const botreplies = await botreply.replies.fetchAll()
+
+	for (const investment of botreplies) {
+		if (investment.body.startsWith("!invest ")) {
+			const inv = investment.body.replace("!invest", "")
+
+			if (isNumber(inv)) {
+				investments++
+			} else {
+				const p_inv = parseInvestmentAmount(inv)
+				if (p_inv) investments++
+			}
+		}
+	}
+
+	return investments
+}
+
 
 module.exports = api
