@@ -8,10 +8,12 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 	let profitprct_5 = 0
 	for (let i = 0; i < history.length; i++) {
 		if (history[i].done === true) {
-			profitprct += (history[i].profit - history[i].profit * (history[i].firm_tax / 100)) / history[i].amount * 100
+			let profit = history[i].profit
+			if (user.firm !== 0) profit -= profit * (history[i].firm_tax / 100)
+			profitprct += profit / history[i].amount * 100
 
 			if (i <= 5) { // Use for average last 5
-				profitprct_5 += (history[i].profit - history[i].profit * (history[i].firm_tax / 100)) / history[i].amount * 100
+				profitprct_5 += profit / history[i].amount * 100
 			}
 		}
 	}
@@ -23,7 +25,9 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 	let weekprofit = 0
 	let i = 0
 	while (i < history.length && history[i].time > firm.last_payout) {
-		weekprofit += history[i].profit - history[i].profit * (history[i].firm_tax / 100)
+		let profit = history[i].profit
+		if (user.firm !== 0) profit -= profit * (history[i].firm_tax / 100)
+		weekprofit += profit
 		i++
 	}
 	
@@ -39,10 +43,15 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 	const currentpost = await client.api.r.getSubmission(history[0].post).fetch().then((sub) => sub).catch(err => console.error(err))
 	const weekratio = ((weekprofit / (user.networth - weekprofit)) * 100.0).toFixed(2)
 
-	const currentinvestment = history.length && !history[0].done ? history[0] : false // Simple ternary to check whether current investment is running
+	const currentinvestment = history[0] && !history[0].done ? history[0] : false // Simple ternary to check whether current investment is running
 
-	// Fancy math to calculate investment return
-	const [factor, factor_max] = currentinvestment ? await client.math.calculate_factor(currentinvestment.upvotes, currentpost.score, user.networth) : false
+	let factor
+	let factor_max
+	if (currentinvestment) {
+		const array = await client.math.calculate_factor(currentinvestment.upvotes, currentpost.score, user.networth)
+		factor = array[0]
+		factor_max = array[1]
+	}
 
 	let forecastedprofit = currentinvestment.amount * factor
 	if (user.firm !== 0) forecastedprofit -= forecastedprofit * (currentinvestment.firm_tax / 100)
@@ -77,7 +86,7 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 		.addField("Average investment profit (last 5)", `${profitprct_5.toFixed(2)}%`, true)
 		.addField("Investments in the past day", `${investments_today}`, true)
 		.addField("Last invested", `${lastinvested}`, true)
-		.addField("This week's profit", `${client.api.numberWithCommas(weekprofit)} M¢`, true)
+		.addField("This week's profit", `${client.api.numberWithCommas(Math.trunc(weekprofit))} M¢`, true)
 		.addField("Week profit ratio", `${weekratio}%`, true)
 		
 	if (currentinvestment) stats.addField("Current investment", `

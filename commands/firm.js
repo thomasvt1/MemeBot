@@ -90,6 +90,8 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 		if (e.name === firm.name.toLowerCase().replace(/ /g, "")) firmimage = e.url
 	})
 
+	// When my PR is implemented, replace "Completed investments" with "Rank" (in leaderboard)
+
 	const firminfo = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
 		.setColor("GOLD")
@@ -98,15 +100,15 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 		.setURL(`https://meme.market/firm.html?firm=${user.firm}`)
 		.addField("Balance", `${client.api.numberWithCommas(firm.balance)} M¢`, true)
 		.addField("Average investment profit", `${profitprct.toFixed(3)}%`, true)
-		.addField("Rank", `\`#${firm.rank}\``, true)
+		.addField("Completed investments", investments.length, true)
 		.addField(yourrole, firmrole, true)
 		.addField("Last investor", `[u/${activeinvestors[0].name}](https://meme.market/user.html?account=${activeinvestors[0].name})\n${lastinvestor}`, true)
 		.addField("Most inactive investor", `[u/${inactiveinvestors[0].name}](https://meme.market/user.html?account=${inactiveinvestors[0].name})\n${mostinactiveinvestor}`, true)
-		.addField("CEO", firm.ceo, true)
-		.addField("COO", firm.coo, true)
-		.addField("CFO", firm.cfo, true)
-		.addField("Week's best profiteer", `[u/${weekbestprofiteer.name}](https://meme.market/user.html?account=${weekbestprofiteer.name})\n**${client.api.numberWithCommas(weekbestprofiteer.profit)}** M¢${bfirmconstr}`, true)
-		.addField("Week's worst profiteer", `[u/${weekworstprofiteer.name}](https://meme.market/user.html?account=${weekworstprofiteer.name})\n**${client.api.numberWithCommas(weekworstprofiteer.profit)}** M¢${wfirmconstr}`, true)
+		.addField("CEO", `[${firm.ceo}](https://meme.market/user.html?account=${firm.ceo})`, true)
+		.addField("COO", firm.coo === "" ? "None" : `[${firm.coo}](https://meme.market/user.html?account=${firm.coo})`, true)
+		.addField("CFO", firm.cfo === "" ? "None" : `[${firm.cfo}](https://meme.market/user.html?account=${firm.cfo})`, true)
+		.addField("Week's best profiteer", `[u/${weekbestprofiteer.name}](https://meme.market/user.html?account=${weekbestprofiteer.name})\n**${client.api.numberWithCommas(Math.trunc(weekbestprofiteer.profit))}** M¢${bfirmconstr}`, true)
+		.addField("Week's worst profiteer", `[u/${weekworstprofiteer.name}](https://meme.market/user.html?account=${weekworstprofiteer.name})\n**${client.api.numberWithCommas(Math.trunc(weekworstprofiteer.profit))}** M¢${wfirmconstr}`, true)
 	if (firmimage) firminfo.setThumbnail(firmimage)
 	return message.channel.send({embed: firminfo})
 	// we also need week's best profiteer
@@ -191,7 +193,7 @@ exports.conf = {
 exports.help = {
 	name: "firm",
 	category: "MemeEconomy",
-	description: "Presents various statistics about a firm, including top 10 active/inactive investors.",
+	description: "Presents various statistics about a firm.",
 	usage: "inactive <reddit username> (uses set default)"
 }
 

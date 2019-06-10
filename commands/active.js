@@ -1,7 +1,7 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 require("moment-duration-format")
-exports.run = async (client, message, [username, redditlink, user, history, firm, _firmmembers, _firmrole, check], _level) => {
+exports.run = async (client, message, [username, _redditlink, user, history, _firm, _firmmembers, _firmrole, check], _level) => {
 	if (!history || !history.length) return message.channel.send(`:exclamation: ${check ? "You" : "They"} haven't invested before!`)
 
 	const currentinvestment = !history[0].done ? history[0] : false // Simple ternary to check whether current investment is running
@@ -11,13 +11,19 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 	const currentpost = currentinvestment ? await client.api.r.getSubmission(currentinvestment.post).fetch().then((sub) => sub).catch(err => console.error(err)) : false
 
 	// Fancy math to calculate investment return
-	const [factor, factor_max] = currentinvestment ? await client.math.calculate_factor(currentinvestment.upvotes, currentpost.score, user.networth) : false
+	let factor
+	let factor_max
+	if (currentinvestment) {
+		const array = await client.math.calculate_factor(currentinvestment.upvotes, currentpost.score, user.networth)
+		factor = array[0]
+		factor_max = array[1]
+	}
 
 	let forecastedprofit = currentinvestment.amount * factor
-	if (user.firm !== 0) forecastedprofit -= forecastedprofit * (firm.tax / 100)
+	if (user.firm !== 0) forecastedprofit -= forecastedprofit * (currentinvestment.firm_tax / 100)
 
 	let maxprofit = currentinvestment.amount * factor_max
-	if (user.firm !== 0) maxprofit -= maxprofit * (firm.tax / 100)
+	if (user.firm !== 0) maxprofit -= maxprofit * (currentinvestment.firm_tax / 100)
 
 	const maturesin = currentinvestment ? moment.duration((currentinvestment.time + 14400) - moment().unix(), "seconds").format("[**]H[**] [hour] [and] [**]m[**] [minute]") : false // 14400 = 4 hours
 
@@ -34,12 +40,7 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 
 	const investments = await client.api.getInvestments(await currentpost.comments.fetchAll())
 
-	const redditpfp = await client.api.r.getUser(username).fetch().then((usr) => usr.icon_img)
-
-	let userfirmemoji = ""
-	client.guilds.get("563439683309142016").emojis.forEach(async (e) => {
-		if (e.name === firm.name.toLowerCase().replace(/ /g, "")) userfirmemoji = `<:${e.identifier.toString()}>`
-	})
+	const redditpfp = await client.api.r.getUser(currentpost.author.name).fetch().then((usr) => usr.icon_img)
 
 	const opfirmid = await client.api.getInvestorProfile(currentpost.author.name).then(investor => investor.firm).catch(err => client.logger.error(err.stack))
 	const opfirm = opfirmid !== 0 ? await client.api.getFirmProfile(opfirmid).then(firm => firm.name).catch(err => client.logger.error(err.stack)) : false
@@ -54,16 +55,13 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
 		.setColor("GOLD")
 		.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
-		.setTitle(`u/${username} ${userfirmemoji}`)
 		.setURL(`https://meme.market/user.html?account=${username}`)
 		.setImage(currentpost.thumbnail)
-		.addField("Current investment", `[u/${currentpost.author.name}](https://reddit.com/u/${currentpost.author.name}) ${opfirmemoji}\n**[${currentpost.title}](https://redd.it/${currentinvestment.post})**\n\n**Matures in:** ${maturesin}\n**Amount of investments:** ${investments}\n\u200b`)
+		.setThumbnail(redditpfp)
+		.addField("Current investment", `[u/${currentpost.author.name}](https://reddit.com/u/${currentpost.author.name}) ${opfirmemoji}\n**__[${currentpost.title}](https://redd.it/${currentinvestment.post})__**\n\n**Matures in:** ${maturesin}\n**Amount of investments:** ${investments}\n\u200b`)
 		.addField("Upvotes", text_upvotes)
 		.addField("Profit", text_profit)
-	if (check) stats.setThumbnail(client.users.get(message.author.id).displayAvatarURL)
-	if (!check && redditlink) stats.setThumbnail(client.users.get(redditlink).displayAvatarURL)
-	if (redditlink) stats.setThumbnail(client.users.get(redditlink).displayAvatarURL)
-	if (!redditlink && !check) stats.setThumbnail(redditpfp)
+	
 
 	return message.channel.send({ embed: stats })
 }

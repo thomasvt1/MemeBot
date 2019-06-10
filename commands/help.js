@@ -9,13 +9,15 @@ const { RichEmbed } = require("discord.js")
 exports.run = (client, message, args, level) => {
 	// If no specific command is called, show all filtered commands.
 	if (!args[0]) {
+		const settings = message.guild ? client.getSettings(message.guild.id) : client.settings.get("default")
+		const prefix = settings.prefix
 		const help = new RichEmbed()
 			.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
 			.setColor("BLUE")
 			.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
 			.setThumbnail(client.user.avatarURL)
 			.setTitle("List of Commands")
-			.setDescription("You can set a default account to run these commands with by using $setname.")
+			.setDescription(`You can set a default account to run these commands with by using ${prefix}setname.`)
 			// Filter all commands by which are available for the user's level, using the <Collection>.filter() method.
 		const myCommands = message.guild ? client.commands.filter(cmd => client.levelCache[cmd.conf.permLevel] <= level) : client.commands.filter(cmd => client.levelCache[cmd.conf.permLevel] <= level && cmd.conf.guildOnly !== true)
 		myCommands.forEach(c => {
@@ -29,15 +31,13 @@ exports.run = (client, message, args, level) => {
 			command = client.commands.get(command)
 			if (level < client.levelCache[command.conf.permLevel]) return
 			const help = new RichEmbed()
-				.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeCord")
+				.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
 				.setColor("GOLD")
-				.setFooter("Made by Thomas van Tilburg with ❤️", client.users.get(client.config.ownerID).avatarURL)
-				.setTimestamp()
-				.setThumbnail(client.user.avatarURL)
+				.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
 				.setTitle(command.help.name)
 				.setDescription(command.help.description)
 				.addField("Usage", command.help.usage, true)
-				.addField("Aliases", command.conf.aliases.join(", "), true)
+			if (command.conf.aliases.join(", ")) help.addField("Aliases", command.conf.aliases.join(", "), true)
 			message.channel.send({ embed: help })
 		}
 	}

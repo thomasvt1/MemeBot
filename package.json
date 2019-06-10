@@ -49,6 +49,7 @@
     "plotly": "^1.0.6",
     "pngjs": "^3.4.0",
     "request-promise": "^4.2.4",
+    "safe-timers": "^1.1.0",
     "snoowrap": "^1.16.0",
     "tunnel-agent": "^0.6.0",
     "uws": "^100.0.1",

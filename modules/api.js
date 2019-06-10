@@ -93,9 +93,9 @@ api.getFirmProfile = async (id) => {
 	})
 }
 
-api.getFirmMembers = async (id) => {
+api.getFirmMembers = async (id, amount = 50, page = 0) => {
 	const options = {
-		uri: `https://meme.market/api/firm/${id}/members?per_page=100&page=0/`,
+		uri: `https://meme.market/api/firm/${id}/members?per_page=100&page=0`,
 		json: true
 	}
 
