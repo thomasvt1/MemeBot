@@ -35,7 +35,7 @@ exports.run = async (client, message, [username, _redditlink, user, history, _fi
 	text_upvotes += `**${currentpost.score > breakeven_point ? "Broke" : "Breaks"} even at:** ${breakeven_point} upvotes ${breaktogo}\u200b`
 
 	let text_profit = `**Invested:** ${client.api.numberWithCommas(currentinvestment.amount)} M¢\n`
-	text_profit += `**Forecasted profit:** ${client.api.numberWithCommas(Math.trunc(forecastedprofit))} M¢ (*${factor.toFixed(2)}%*)\n`
+	text_profit += `**Current profit:** ${client.api.numberWithCommas(Math.trunc(forecastedprofit))} M¢ (*${factor.toFixed(2)}%*)\n`
 	text_profit += `**Maximum profit:** ${client.api.numberWithCommas(Math.trunc(maxprofit))} M¢ (*${factor_max.toFixed(2)}%*)`
 
 	const investments = await client.api.getInvestments(await currentpost.comments.fetchAll())
