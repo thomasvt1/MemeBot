@@ -19,20 +19,7 @@ module.exports = async (client, investment) => {
 
 		const firm = await client.api.getFirmProfile(user.firm).catch(err => client.logger.error(err.stack))
 
-		const firmroles = {
-			assoc: "Associate",
-			exec: "Executive",
-			coo: "COO",
-			cfo: "CFO",
-			ceo: "COO"
-		}
-
-
-		const redditlink = await client.api.getRedditLink(investment.username.toLowerCase())
-
 		const famous = investment.famous ? "<:famousmemer:582821955489628166>" : ""
-
-		const redditpfp = await client.api.r.getUser(investment.username).fetch().then((usr) => usr.icon_img)
 
 		let firmemoji = ""
 		client.guilds.get("563439683309142016").emojis.forEach(async (e) => {
@@ -41,22 +28,24 @@ module.exports = async (client, investment) => {
 
 		const timeposted = moment.duration(investment.timediff, "seconds").format("[**]m[**] [minutes] [ago], [**]s[**] [seconds] [ago]")
 
+		let msg = ""
+		msg += `This meme was posted ${timeposted} and should be profitable!\n`
+		msg += `There are currently ${investment.comments} comments and ${investment.upvotes} upvotes. I also count ${investment.investments} investments and ${investment.highinvestments} high investments.\n`
+		msg += `https://reddit.com/r/MemeEconomy/comments/${investment.submid}`
+
 		const investmentinfo = new RichEmbed()
 			.setAuthor("MemeBot Investment Watch", client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
 			.setColor("BLUE")
 			.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
 			.setTitle(`${famous} u/${investment.username} ${firmemoji}`)
 			.setURL(`https://meme.market/user.html?account=${investment.username}`)
-			.setDescription(`**[${submission.title}](https://redd.it/${investment.submid})**`)
-			.setImage(submission.thumbnail)
-		if (user.firm !== 0) investmentinfo.addField("Firm", `**\`${user.firm_role === "" ? "Floor Trader" : firmroles[user.firm_role]}\`** of **\`${firm.name}\`**`, true)
+			.setThumbnail(submission.thumbnail)
+			.addField(`**[${submission.title}](https://redd.it/${investment.submid})** by [u/${investment.username}](https://meme.market/user.html?account=${investment.username})`)
 			.addField("Time posted", timeposted, true)
 			.addField("Upvotes", investment.upvotes.toString(), true)
 			.addField("Investments", investment.investments.toString(), true)
 			.addField("High investments", investment.highinvestments.toString(), true)
 			.addField("Comments", investment.comments.toString(), true)
-		if (redditlink) investmentinfo.setThumbnail(client.users.get(redditlink).displayAvatarURL)
-		if (!redditlink) investmentinfo.setThumbnail(redditpfp)
 		client.channels.get(settings.investmentChannel).send(mentioneveryone, { embed: investmentinfo })
 	})
 	return "Investment Watch: Success"
