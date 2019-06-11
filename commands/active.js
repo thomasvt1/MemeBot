@@ -1,7 +1,7 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 require("moment-duration-format")
-exports.run = async (client, message, [username, _redditlink, user, history, _firm, _firmmembers, _firmrole, check], _level) => {
+exports.run = async (client, message, [username, _redditlink, user, history, firm, _firmmembers, _firmrole, check], _level) => {
 	if (!history || !history.length) return message.channel.send(`:exclamation: ${check ? "You" : "They"} haven't invested before!`)
 
 	const currentinvestment = !history[0].done ? history[0] : false // Simple ternary to check whether current investment is running
@@ -19,11 +19,11 @@ exports.run = async (client, message, [username, _redditlink, user, history, _fi
 		factor_max = array[1]
 	}
 
-	let forecastedprofit = currentinvestment.amount * factor
-	if (user.firm !== 0) forecastedprofit -= forecastedprofit * (currentinvestment.firm_tax / 100)
+	let forecastedprofit = currentinvestment.amount * factor / 100
+	if (user.firm !== 0) forecastedprofit -= forecastedprofit * (firm.tax / 100)
 
-	let maxprofit = currentinvestment.amount * factor_max
-	if (user.firm !== 0) maxprofit -= maxprofit * (currentinvestment.firm_tax / 100)
+	let maxprofit = currentinvestment.amount * factor_max / 100
+	if (user.firm !== 0) maxprofit -= maxprofit * (firm.tax / 100)
 
 	const maturesin = currentinvestment ? moment.duration((currentinvestment.time + 14400) - moment().unix(), "seconds").format("[**]H[**] [hour] [and] [**]m[**] [minute]") : false // 14400 = 4 hours
 

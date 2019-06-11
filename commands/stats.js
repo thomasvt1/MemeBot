@@ -44,6 +44,19 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 
 	const lastinvested = moment.duration(moment().unix() - history[0].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
 
+	const currentpost = !history[0].done ? await client.api.r.getSubmission(history[0].post).fetch().then((sub) => sub).catch(err => console.error(err)) : false
+
+	let factor
+	if (!history[0].done) {
+		const array = await client.math.calculate_factor(history[0].upvotes, currentpost.score, user.networth)
+		factor = array[0]
+	}
+
+	let forecastedprofit = !history[0].done ? history[0].amount * factor / 100 : false
+	if (user.firm !== 0 && !history[0].done) forecastedprofit -= forecastedprofit * (firm.tax / 100)
+
+	const profitdifference = !history[0].done ? `\n(${forecastedprofit < 0 ? "-" : "+"}**${client.api.numberWithCommas(Math.trunc(forecastedprofit))}** M¢)` : ""
+
 	const redditpfp = await client.api.r.getUser(username).fetch().then((usr) => usr.icon_img)
 	
 	let firmemoji = ""
@@ -57,7 +70,7 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 		.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
 		.setTitle(`u/${user.name} ${firmemoji}`)
 		.setURL(`https://meme.market/user.html?account=${user.name}`)
-		.addField("Net worth", `${client.api.numberWithCommas(user.networth)} M¢ ()`, true)
+		.addField("Net worth", `**${client.api.numberWithCommas(user.networth)}** M¢ ${profitdifference}`, true)
 		.addField("Completed investments", `${client.api.numberWithCommas(user.completed)}`, true)
 		.addField("Rank", `**\`#${user.rank}\`**`, true)
 		.addField("Firm", `**\`${firmrole}\`** of **\`${firm.name}\`**`, true)
