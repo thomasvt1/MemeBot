@@ -67,9 +67,9 @@ math.net_worth_coefficient = function (net_worth) {
 }
 
 math.calculate_factor = (oldUpvotes, newUpvotes, netWorth) => {
-	const factor = (math.calculate(newUpvotes, oldUpvotes, netWorth) - 1) * 100
+	const factor = (math.calculate(newUpvotes, oldUpvotes, netWorth) - 1)
 
-	const max_factor = (math.calculate(50e5, oldUpvotes, netWorth) - 1) * 100
+	const max_factor = (math.calculate(50e5, oldUpvotes, netWorth) - 1)
 
 	return [factor, max_factor]
 }
