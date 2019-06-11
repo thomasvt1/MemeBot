@@ -67,9 +67,9 @@ math.net_worth_coefficient = function (net_worth) {
 }
 
 math.calculate_factor = (oldUpvotes, newUpvotes, netWorth) => {
-	const factor = (math.calculate(newUpvotes, oldUpvotes, netWorth) - 1)
+	const factor = (math.calculate(newUpvotes, oldUpvotes, netWorth) - 1) * 100
 
-	const max_factor = (math.calculate(50e5, oldUpvotes, netWorth) - 1)
+	const max_factor = (math.calculate(50e5, oldUpvotes, netWorth) - 1) * 100
 
 	return [factor, max_factor]
 }
@@ -126,7 +126,7 @@ math.calculatePoint = (factor, oldNumber, net_worth) => {
 	return x
 }
 
-math.calculateFirmPayout = function (balance, size, execs, assocs) {
+math.calculateFirmPayout = (balance, size, execs, assocs) => {
 	balance -= 0.1 * balance
 
 	// 50 % of remaining firm coins are paid out

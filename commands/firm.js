@@ -90,6 +90,9 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 		if (e.name === firm.name.toLowerCase().replace(/ /g, "")) firmimage = e.url
 	})
 
+	const payout = await client.math.calculateFirmPayout(firm.balance, firm.size, firm.execs, firm.assocs)
+	await exportPieChart((payout.trader.amount / payout.payout_total) / 100, (payout.assoc.amount / payout.payout_total) / 100, (payout.exec.amount / payout.payout_total) / 100, { name: firm.cfo, amount: (payout.board.amount / payout.payout_total) / 100 }, { name: firm.coo, amount: (payout.board.amount / payout.payout_total) / 100 }, { name: firm.ceo, amount: (payout.board.amount / payout.payout_total) / 100 })
+
 	// When my PR is implemented, replace "Completed investments" with "Rank" (in leaderboard)
 
 	const firminfo = new RichEmbed()
@@ -100,13 +103,14 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 		.setURL(`https://meme.market/firm.html?firm=${user.firm}`)
 		.addField("Balance", `${client.api.numberWithCommas(firm.balance)} M¢`, true)
 		.addField("Average investment profit", `${profitprct.toFixed(3)}%`, true)
-		.addField("Completed investments", investments.length, true)
+		.addField("Total completed investments", investments.length, true)
 		.addField(yourrole, firmrole, true)
 		.addField("Last investor", `[u/${activeinvestors[0].name}](https://meme.market/user.html?account=${activeinvestors[0].name})\n${lastinvestor}`, true)
 		.addField("Most inactive investor", `[u/${inactiveinvestors[0].name}](https://meme.market/user.html?account=${inactiveinvestors[0].name})\n${mostinactiveinvestor}`, true)
-		.addField("CEO", `[${firm.ceo}](https://meme.market/user.html?account=${firm.ceo})`, true)
-		.addField("COO", firm.coo === "" ? "None" : `[${firm.coo}](https://meme.market/user.html?account=${firm.coo})`, true)
-		.addField("CFO", firm.cfo === "" ? "None" : `[${firm.cfo}](https://meme.market/user.html?account=${firm.cfo})`, true)
+		.addField("Tax", `${firm.tax}%`, true)
+		.addField("CEO", `[u/${firm.ceo}](https://meme.market/user.html?account=${firm.ceo})`, true)
+		.addField("COO", firm.coo === "" ? "None" : `[u/${firm.coo}](https://meme.market/user.html?account=${firm.coo})`, true)
+		.addField("CFO", firm.cfo === "" ? "None" : `[u/${firm.cfo}](https://meme.market/user.html?account=${firm.cfo})`, true)
 		.addField("Week's best profiteer", `[u/${weekbestprofiteer.name}](https://meme.market/user.html?account=${weekbestprofiteer.name})\n**${client.api.numberWithCommas(Math.trunc(weekbestprofiteer.profit))}** M¢${bfirmconstr}`, true)
 		.addField("Week's worst profiteer", `[u/${weekworstprofiteer.name}](https://meme.market/user.html?account=${weekworstprofiteer.name})\n**${client.api.numberWithCommas(Math.trunc(weekworstprofiteer.profit))}** M¢${wfirmconstr}`, true)
 	if (firmimage) firminfo.setThumbnail(firmimage)
@@ -197,7 +201,7 @@ exports.help = {
 	usage: "inactive <reddit username> (uses set default)"
 }
 
-function exportPieChart(trader, assoc, exec, cfo, coo, ceo) {
+const exportPieChart = async (trader, assoc, exec, cfo, coo, ceo) => {
 	//Export settings
 	const exportSettings = {
 		type: "png",
@@ -220,7 +224,7 @@ function exportPieChart(trader, assoc, exec, cfo, coo, ceo) {
 						filter: {
 							property: "percentage",
 							operator: ">",
-							value: 4
+							value: 1
 						},
 						style: {
 							textOutline: false,
@@ -231,10 +235,10 @@ function exportPieChart(trader, assoc, exec, cfo, coo, ceo) {
 				}
 			},
 			title: {
-				text: undefined
+				text: null
 			},
 			series: [{
-				data: [{ name: "Floor<br>Traders", y: trader }, { name: "Associates", y: assoc }, { name: "Executives", y: exec }, { name: "OutlandishZach", y: ceo }, { name: "Hayura----", y: coo }, { name: "RegularNoodles", y: cfo }]
+				data: [{ name: "Floor<br>Traders", y: trader }, { name: "Associates", y: assoc }, { name: "Executives", y: exec }, { name: ceo.name, y: ceo.amount }, { name: coo.name, y: coo.amount }, { name: cfo.name, y: cfo.amount }]
 			}]
 		}
 	}
@@ -257,6 +261,5 @@ function exportPieChart(trader, assoc, exec, cfo, coo, ceo) {
 
 		//Kill the pool when we're done with it, and exit the application
 		exporter.killPool()
-		process.exit(1)
 	})
 }

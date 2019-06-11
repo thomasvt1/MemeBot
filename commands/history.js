@@ -5,9 +5,11 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 
 	// Calculate profit %
 	let profitprct = 0
-	for (let i = (history.length - 1) - investment; i < history.length; i++) {
+	for (let i = 0; i < history.length; i++) {
 		if (history[i].done === true) {
-			profitprct += history[i].profit / history[i].amount * 100
+			let profit = history[i].profit
+			if (user.firm !== 0) profit -= profit * (history[i].firm_tax / 100)
+			profitprct += profit / history[i].amount * 100
 		}
 	}
 
