@@ -75,7 +75,7 @@ module.exports = async (client, message) => {
 
 		const investment = cmd.help.name === "history" ? args[1] : false
 
-		const profile = await client.api.getInvestorProfile(username.toString().toLowerCase()).catch(err => client.logger.error(err.stack))
+		const profile = await client.api.getInvestorProfile(username.toLowerCase()).catch(err => client.logger.error(err.stack))
 		if (profile.id === 0) return message.channel.send(":question: I couldn't find that MemeEconomy user.")
 
 		const firm = await client.api.getFirmProfile(profile.firm).catch(err => client.logger.error(err.stack))

@@ -126,7 +126,7 @@ math.calculatePoint = (factor, oldNumber, net_worth) => {
 	return x
 }
 
-math.calculateFirmPayout = (balance, size, execs, assocs) => {
+math.calculateFirmPayout = (balance, size, execs, assocs, cfo, coo) => {
 	balance -= 0.1 * balance
 
 	// 50 % of remaining firm coins are paid out
@@ -134,7 +134,9 @@ math.calculateFirmPayout = (balance, size, execs, assocs) => {
 
 	// 30 % paid to board members(CEO, COO, CFO)(30 % of total payroll)
 	const board_total = payout_amount * 0.3
-	const board_members = 3
+	let board_members = 1
+	if (cfo) board_members += 1
+	if (coo) board_members += 1
 	const board_amount = board_total / board_members
 
 	let remaining_amount = payout_amount - board_total
@@ -163,10 +165,9 @@ math.calculateFirmPayout = (balance, size, execs, assocs) => {
 	const trader_amount = trader_total / Math.max(tradernbr, 1)
 
 	const info = {
-		payout_total: payout_amount,
+		total: payout_amount,
 		board: {
 			amount: board_amount,
-			percent: 10,
 			total: board_total
 		},
 		exec: {

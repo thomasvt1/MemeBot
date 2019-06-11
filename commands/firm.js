@@ -59,8 +59,8 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 	const weekworstprofiteer = weekprofiteers[weekprofiteers.length - 1]
 	const bfirmcontribution = weekbestprofiteer.contrib
 	const wfirmcontribution = weekworstprofiteer.contrib
-	const bfirmconstr = `\nContributed **${client.api.numberWithCommas(Math.trunc(bfirmcontribution))}** M¢ to firm (**${((bfirmcontribution / firm.balance) * 100).toFixed(2)}%**)`
-	const wfirmconstr = `\nContributed **${client.api.numberWithCommas(Math.trunc(wfirmcontribution))}** M¢ to firm (**${((wfirmcontribution / firm.balance) * 100).toFixed(2)}%**)`
+	const bfirmconstr = bfirmcontribution < 0 ? `\nContributed **${client.api.numberWithCommas(Math.trunc(bfirmcontribution))}** M¢ to firm (**${((bfirmcontribution / firm.balance) * 100).toFixed(2)}%**)` : ""
+	const wfirmconstr = wfirmcontribution < 0 ? `\nContributed **${client.api.numberWithCommas(Math.trunc(wfirmcontribution))}** M¢ to firm (**${((wfirmcontribution / firm.balance) * 100).toFixed(2)}%**)` : ""
 
 	// Calculate most inactive investors and most active investors
 	// (in terms of **time difference**, not investments.)
@@ -90,8 +90,26 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 		if (e.name === firm.name.toLowerCase().replace(/ /g, "")) firmimage = e.url
 	})
 
-	const payout = await client.math.calculateFirmPayout(firm.balance, firm.size, firm.execs, firm.assocs)
-	await exportPieChart(client, (payout.trader.amount / payout.payout_total) / 100, (payout.assoc.amount / payout.payout_total) / 100, (payout.exec.amount / payout.payout_total) / 100, { name: firm.cfo, amount: (payout.board.amount / payout.payout_total) / 100 }, { name: firm.coo, amount: (payout.board.amount / payout.payout_total) / 100 }, { name: firm.ceo, amount: (payout.board.amount / payout.payout_total) / 100 })
+	if (!firmimage) firmimage = "https://cdn.discordapp.com/emojis/588029928063107230.png"
+
+	let board_members = 1
+
+	if (firm.coo !== "0") board_members += 1
+
+	if (firm.cfo !== "0") board_members += 1
+
+	const floor_traders = firm.size - firm.assocs - firm.execs - board_members
+
+	let size = `**${firm.size}** member${firm.size > 1 ? "s" : ""}`
+	if (floor_traders > 0) size += `\n**${floor_traders}** floor trader${floor_traders > 1 ? "s" : ""}`
+	if (firm.assocs > 0) size += `\n**${firm.assocs}** associate${firm.assocs > 1 ? "s" : ""}`
+	if (firm.execs > 0) size += `\n**${firm.execs}** executive${firm.execs > 1 ? "s" : ""}`
+	size += `\n**${board_members}** board member${board_members > 1 ? "s" : ""}`
+
+	const payout = await client.math.calculateFirmPayout(firm.balance, firm.size, firm.execs, firm.assocs, firm.cfo, firm.coo)
+	console.log(payout)
+
+	const payoutstr = `Out of **${client.api.getSuffix(payout.total)}** M¢ available, floor traders would be paid **${client.api.numberWithCommas(Math.trunc(payout.trades.amount))}** each, associates would be paid **${client.api.numberWithCommas(Math.trunc(payout.assoc.amount))}** each, executives would be paid ${client.api.numberWithCommas(Math.trunc(payout.exec.amount))} each, and board members (CEO, COO, CFO) would be paid ${client.api.numberWithCommas(Math.trunc(payout.board.amount))} each.`
 
 	// When my PR is implemented, replace "Completed investments" with "Rank" (in leaderboard)
 
@@ -109,82 +127,14 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 		.addField("Most inactive investor", `[u/${inactiveinvestors[0].name}](https://meme.market/user.html?account=${inactiveinvestors[0].name})\n${mostinactiveinvestor}`, true)
 		.addField("Tax", `${firm.tax}%`, true)
 		.addField("CEO", `[u/${firm.ceo}](https://meme.market/user.html?account=${firm.ceo})`, true)
-		.addField("COO", firm.coo === "" ? "None" : `[u/${firm.coo}](https://meme.market/user.html?account=${firm.coo})`, true)
-		.addField("CFO", firm.cfo === "" ? "None" : `[u/${firm.cfo}](https://meme.market/user.html?account=${firm.cfo})`, true)
+		.addField("COO", firm.coo === "" || firm.coo === "0" ? "None" : `[u/${firm.coo}](https://meme.market/user.html?account=${firm.coo})`, true)
+		.addField("CFO", firm.cfo === "" || firm.cfo === "0" ? "None" : `[u/${firm.cfo}](https://meme.market/user.html?account=${firm.cfo})`, true)
+		.addField("Size", size, true)
+		.addField("Estimated Payouts")
 		.addField("Week's best profiteer", `[u/${weekbestprofiteer.name}](https://meme.market/user.html?account=${weekbestprofiteer.name})\n**${client.api.numberWithCommas(Math.trunc(weekbestprofiteer.profit))}** M¢${bfirmconstr}`, true)
 		.addField("Week's worst profiteer", `[u/${weekworstprofiteer.name}](https://meme.market/user.html?account=${weekworstprofiteer.name})\n**${client.api.numberWithCommas(Math.trunc(weekworstprofiteer.profit))}** M¢${wfirmconstr}`, true)
 	if (firmimage) firminfo.setThumbnail(firmimage)
 	return message.channel.send({embed: firminfo})
-	// we also need week's best profiteer
-	/*{
-  "embed": {
-    "title": "The Nameless Bank",
-    "url": "https://discordapp.com",
-    "color": 15844367,
-    "footer": {
-      "icon_url": "https://cdn.discordapp.com/avatars/213704185517047808/db686ebf5a04d411784fda835ba4a370.png",
-      "text": "Made by Thomas van Tilburg with ❤️"
-    },
-    "thumbnail": {
-      "url": "https://cdn.discordapp.com/icons/575342300507406347/6c9207bdfefb6df6edad17fe2ee513bf.webp"
-    },
-    "image": {
-      "url": "https://www.seekpng.com/png/small/100-1008726_pie-charts-png-transparent-pie-chart-png.png"
-    },
-    "author": {
-      "name": "MemeBot",
-      "url": "https://github.com/thomasvt1/MemeBot",
-      "icon_url": "https://b.thumbs.redditmedia.com/aRUO-zIbXgMTDVJOcxKjY8P6rGkakMdyVXn4k1VN-Mk.png"
-    },
-    "fields": [
-      {
-        "name": "Balance",
-        "value": "2,127,234,324,730 M¢",
-        "inline": true
-      },
-      {
-        "name": "Average investment profit:",
-        "value": "something",
-        "inline": true
-      },
-      {
-        "name": "Your Rank",
-        "value": "Floor Trader",
-        "inline": true
-      },
-      {
-        "name": "CEO",
-        "value": "OutlandishZach",
-        "inline": true
-      },
-      {
-        "name": "CFO",
-        "value": "utrebsto",
-        "inline": true
-      },
-      {
-        "name": "COO",
-        "value": "Hayura",
-        "inline": true
-      },
-      {
-        "name": "Top Investors",
-        "value": "1. Hayura--------\n2. YAH_YEETS\n3. CoolestNero\n4. utrebsto\n5. PaperTronics\n6. RegularNoodles\n7. fntastk\n8. OutlandishZach\n9. W3lcomeToReddit\n10. luisbg\n11. sanguineuphoria\n12. wMurdoch123\n13. Qmbia\n14. PepeIsStillAlive\n15. xxxJxshy\n16. Yaseralbaker\n17. BeetiF\n18. plaidypus53\n19. isalehin\n20. petrzjunior\n21. Keanu73\n22. Meme-Master420\n23. hydrophysicsguy",
-        "inline": true
-      },
-      {
-        "name": "Top 10 Inactive Investors",
-        "value": "1. Yaseralbaker last invested: 110 hours ago\n2. hydrophysicsguy last invested: 55 hours ago\n3. isalehin last invested: 17 hours ago\n4. petrzjunior last invested: 17 hours ago\n5. utrebsto last invested: 16 hours ago\n6. Keanu73 last invested: 14 hours ago\n7. plaidypus53 last invested: 12 hours ago\n8. OutlandishZach last invested: 10 hours ago\n9. PepeIsStillAlive last invested: 10 hours ago\n10. W3lcomeToReddit last invested: 8 hours ago",
-        "inline": true
-      },
-      {
-        "name": "Your Estimated Payout",
-        "value": "1,000,000,000 M¢",
-        "inline": true
-      }
-    ]
-  }
-*/
 }
 
 exports.conf = {
@@ -199,68 +149,4 @@ exports.help = {
 	category: "MemeEconomy",
 	description: "Presents various statistics about a firm.",
 	usage: "inactive <reddit username> (uses set default)"
-}
-
-const exportPieChart = async (client, trader, assoc, exec, cfo, coo, ceo) => {
-	//Export settings
-	const exportSettings = {
-		type: "png",
-		options: {
-			chart: {
-				backgroundColor: "transparent",
-				plotBorderWidth: null,
-				plotShadow: false,
-				type: "pie",
-			},
-			credits: {
-				enabled: false
-			},
-			plotOptions: {
-				pie: {
-					dataLabels: {
-						enabled: true,
-						format: "<b>{point.name}</b><br>{point.percentage:.1f}%",
-						distance: -50,
-						filter: {
-							property: "percentage",
-							operator: ">",
-							value: 1
-						},
-						style: {
-							textOutline: false,
-							fontFamily: "Arial",
-							fontSize: "10px"
-						}
-					}
-				}
-			},
-			title: {
-				text: null
-			},
-			series: [{
-				data: [{ name: "Floor<br>Traders", y: trader }, { name: "Associates", y: assoc }, { name: "Executives", y: exec }, { name: ceo.name, y: ceo.amount }, { name: coo.name, y: coo.amount }, { name: cfo.name, y: cfo.amount }]
-			}]
-		}
-	}
-
-	//Set up a pool of PhantomJS workers
-	exporter.initPool()
-
-	//Perform an export
-	/*
-			Export settings corresponds to the available CLI arguments described
-			above.
-	*/
-	exporter.export(exportSettings, function (err, res) {
-		//The export result is now in res.
-		//If the output is not PDF or SVG, it will be base64 encoded (res.data).
-		//If the output is a PDF or SVG, it will contain a filename (res.filename).
-		if (!require("is-base64").isBase64(res.data)) client.logger.error(`Invalid base64: ${res.data}`)
-		fs.writeFileSync("./result.png", res.data, { encoding: "base64" }, function (err) {
-			client.logger.error(err)
-		})
-
-		//Kill the pool when we're done with it, and exit the application
-		exporter.killPool()
-	})
 }
