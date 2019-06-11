@@ -8,6 +8,11 @@ const config = require("../config.js")
 const mysql = require("mysql2/promise")
 const rp = require("request-promise")
 const snoowrap = require("snoowrap")
+const LRU = require("lru-cache")
+
+const MAX_CACHE_TIME = 1500000
+const cache = new LRU({ max: 350, maxAge: MAX_CACHE_TIME }) // Max cache for 15 minutes.
+
 api.r = new snoowrap({
 	userAgent: config.reddit.userAgent,
 	clientId: config.reddit.clientId,
@@ -27,6 +32,21 @@ const pool = !config.node_env === "DEVELOPMENT" ? mysql.createPool({
 	queueLimit: 0
 }) : false
 
+api.doRequest = async (options, usecache = true, time = MAX_CACHE_TIME) => {
+	console.log(options.uri)
+	if (usecache && cache.has(options.uri))
+		return cache.get(options.uri)
+
+	return new Promise(function (resolve, reject) {
+		rp(options).then(function (parsedBody) {
+			cache.set(options.uri, parsedBody, time)
+			resolve(parsedBody)
+		}).catch(err => {
+			reject(err)
+		})
+	})
+}
+
 api.getInvestorProfile = async (name) => {
 	/**
 		* This gets the investor profile of a Reddit user.
@@ -42,14 +62,8 @@ api.getInvestorProfile = async (name) => {
 		uri: "https://meme.market/api/investor/" + name,
 		json: true
 	}
-        
-	return new Promise(function (resolve, reject) {
-		rp(options).then(function (parsedBody) {
-			resolve(parsedBody)
-		}).catch(err => {
-			reject(err)
-		})
-	})
+
+	return api.doRequest(options)
 }
 
 api.getInvestorHistory = async (name, amount = 50, page = 0) => {
@@ -69,13 +83,7 @@ api.getInvestorHistory = async (name, amount = 50, page = 0) => {
 		json: true
 	}
 
-	return new Promise(function (resolve, reject) {
-		rp(options).then(function (parsedBody) {
-			resolve(parsedBody)
-		}).catch(err => {
-			reject(err)
-		})
-	})
+	return api.doRequest(options)
 }
 
 api.getFirmProfile = async (id) => {
@@ -84,13 +92,7 @@ api.getFirmProfile = async (id) => {
 		json: true
 	}
 
-	return new Promise(function (resolve, reject) {
-		rp(options).then(function (parsedBody) {
-			resolve(parsedBody)
-		}).catch(err => {
-			reject(err)
-		})
-	})
+	return api.doRequest(options)
 }
 
 api.getFirmMembers = async (id, amount = 50, page = 0) => {
@@ -99,13 +101,7 @@ api.getFirmMembers = async (id, amount = 50, page = 0) => {
 		json: true
 	}
 
-	return new Promise(function (resolve, reject) {
-		rp(options).then(function (parsedBody) {
-			resolve(parsedBody)
-		}).catch(err => {
-			reject(err)
-		})
-	})
+	return api.doRequest(options)
 }
 
 api.getTop100 = async (page, amount = 25) => {
@@ -114,13 +110,7 @@ api.getTop100 = async (page, amount = 25) => {
 		json: true
 	}
 
-	return new Promise(function (resolve, reject) {
-		rp(options).then(function (parsedBody) {
-			resolve(parsedBody)
-		}).catch(err => {
-			reject(err)
-		})
-	})
+	return api.doRequest(options)
 }
 
 api.getRedditLink = async (reddit_name) => {
@@ -157,7 +147,7 @@ api.updateLink = async (discord_id, reddit_name) => {
 	if (config.node_env === "DEVELOPMENT") return false
 
 	const res = await pool.execute("UPDATE reddit_link SET reddit_name = ? WHERE reddit_link.discord_id = ?", [reddit_name, discord_id])
-		
+
 	if (!res) return false
 
 	return res
