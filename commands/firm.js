@@ -91,7 +91,7 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 	})
 
 	const payout = await client.math.calculateFirmPayout(firm.balance, firm.size, firm.execs, firm.assocs)
-	await exportPieChart((payout.trader.amount / payout.payout_total) / 100, (payout.assoc.amount / payout.payout_total) / 100, (payout.exec.amount / payout.payout_total) / 100, { name: firm.cfo, amount: (payout.board.amount / payout.payout_total) / 100 }, { name: firm.coo, amount: (payout.board.amount / payout.payout_total) / 100 }, { name: firm.ceo, amount: (payout.board.amount / payout.payout_total) / 100 })
+	await exportPieChart(client, (payout.trader.amount / payout.payout_total) / 100, (payout.assoc.amount / payout.payout_total) / 100, (payout.exec.amount / payout.payout_total) / 100, { name: firm.cfo, amount: (payout.board.amount / payout.payout_total) / 100 }, { name: firm.coo, amount: (payout.board.amount / payout.payout_total) / 100 }, { name: firm.ceo, amount: (payout.board.amount / payout.payout_total) / 100 })
 
 	// When my PR is implemented, replace "Completed investments" with "Rank" (in leaderboard)
 
@@ -201,7 +201,7 @@ exports.help = {
 	usage: "inactive <reddit username> (uses set default)"
 }
 
-const exportPieChart = async (trader, assoc, exec, cfo, coo, ceo) => {
+const exportPieChart = async (client, trader, assoc, exec, cfo, coo, ceo) => {
 	//Export settings
 	const exportSettings = {
 		type: "png",
@@ -255,8 +255,9 @@ const exportPieChart = async (trader, assoc, exec, cfo, coo, ceo) => {
 		//The export result is now in res.
 		//If the output is not PDF or SVG, it will be base64 encoded (res.data).
 		//If the output is a PDF or SVG, it will contain a filename (res.filename).
+		if (!require("is-base64").isBase64(res.data)) client.logger.error(`Invalid base64: ${res.data}`)
 		fs.writeFileSync("./result.png", res.data, { encoding: "base64" }, function (err) {
-			throw err
+			client.logger.error(err)
 		})
 
 		//Kill the pool when we're done with it, and exit the application

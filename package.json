@@ -41,6 +41,7 @@
     "highcharts-export-server": "^2.0.24",
     "imgur": "^0.3.1",
     "inquirer": "^6.3.1",
+    "is-base64": "^0.1.0",
     "lru-cache": "^5.1.1",
     "moment": "^2.24.0",
     "moment-duration-format": "^2.3.2",
