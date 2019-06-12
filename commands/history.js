@@ -33,8 +33,7 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 
 	const lastpost = await client.api.r.getSubmission(lastinvestment.post).fetch().then((sub) => sub).catch(err => console.error(err))
 
-	// Last investment's return
-	const lastinvestment_return = client.math.calculateInvestmentReturn(lastinvestment.upvotes, lastpost.score, user.networth)
+	const [factor] = await client.math.calculate_factor(lastinvestment.upvotes, lastinvestment.final_upvotes, user.networth)
 
 	const lastprofit = user.firm !== 0 ? Math.trunc(lastinvestment.profit - lastinvestment.profit * (firm.tax / 100)) : lastinvestment.profit
 
@@ -61,7 +60,7 @@ __**[${lastpost.title}](https://redd.it/${lastinvestment.post})**__\n
 **Final upvotes:** ${lastinvestment.final_upvotes}\n
 **Matured at:** ${maturedat}\n
 **Invested:** ${client.api.numberWithCommas(lastinvestment.amount)} M¢\n
-**Profit:** ${client.api.numberWithCommas(lastprofit)} M¢ (*${lastinvestment_return}%*)\n
+**Profit:** ${client.api.numberWithCommas(lastprofit)} M¢ (*${factor.toFixed(2)}%*)\n
 **Broke even at:** ${broke_even} upvotes`, true)
 		.setImage(lastpost.thumbnail)
 	if (check) stats.setThumbnail(client.users.get(message.author.id).displayAvatarURL)
