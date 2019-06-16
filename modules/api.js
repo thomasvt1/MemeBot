@@ -66,7 +66,7 @@ api.getInvestorProfile = async (name) => {
 	return api.doRequest(options)
 }
 
-api.getInvestorHistory = async (name, amount = 50, page = 0) => {
+api.getInvestorHistory = async (name, amount = 100, page = 0) => {
 	/**
 	* This gets the investor history of a Reddit user
 	*
@@ -95,9 +95,9 @@ api.getFirmProfile = async (id) => {
 	return api.doRequest(options)
 }
 
-api.getFirmMembers = async (id, amount = 50, page = 0) => {
+api.getFirmMembers = async (id, amount = 100, page = 0) => {
 	const options = {
-		uri: `https://meme.market/api/firm/${id}/members?per_page=100&page=0`,
+		uri: `https://meme.market/api/firm/${id}/members?per_page=${amount}&page=${page}`,
 		json: true
 	}
 
@@ -170,11 +170,13 @@ api.getSuffix = function (val) {
 	return value + " " + suffix
 }
 
+// eslint-disable-next-line jsdoc/require-jsdoc
 function isNumber(str) {
 	const pattern = /^\d+$/
 	return pattern.test(str)
 }
 
+// eslint-disable-next-line jsdoc/require-jsdoc
 function parseInvestmentAmount(str) {
 	str = str.replace(/,|\./g, "")
 

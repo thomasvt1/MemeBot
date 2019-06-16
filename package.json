@@ -58,6 +58,6 @@
   },
   "devDependencies": {
     "eslint": "^5.16.0",
-    "eslint-plugin-you-dont-need-momentjs": "^1.5.0"
+    "eslint-plugin-jsdoc": "^8.0.1"
   }
 }

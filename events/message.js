@@ -63,7 +63,7 @@ module.exports = async (client, message) => {
 	// If the command exists, **AND** the user has permission, run it.
 	client.logger.cmd(`[CMD] ${client.config.permLevels.find(l => l.level === level).name} ${message.author.username} (${message.author.id}) ran command ${cmd.help.name} with ${args[0] ? `args ${args[0]}` : "no args"}`)
 
-	if (cmd.help.category === "MemeEconomy" && cmd.help.name !== "top100") {
+	if (cmd.help.category === "MemeEconomy" && cmd.help.name !== "top100" && cmd.help.name !== "leaderboard") {
 		const check = await client.api.getLink(message.author.id)
 
 		if (!args[0] && !check) return message.channel.send(":question: Please supply a Reddit username.")

@@ -1,8 +1,7 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 const fs = require("fs")
-const exporter = require("highcharts-export-server")
-exports.run = async (client, message, [username, redditlink, user, _history, firm, firmmembers, firmrole, check], _level) => {
+exports.run = async (client, message, [username, _redditlink, user, _history, firm, firmmembers, firmrole, check], _level) => {
 	// Here we calculate the average investment profit of the entire firm
 	// by listing out all of each firm member's investments, then pushing them
 	// all into one array. We then average them all out.
@@ -59,8 +58,8 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 	const weekworstprofiteer = weekprofiteers[weekprofiteers.length - 1]
 	const bfirmcontribution = weekbestprofiteer.contrib
 	const wfirmcontribution = weekworstprofiteer.contrib
-	const bfirmconstr = bfirmcontribution < 0 ? `\nContributed **${client.api.numberWithCommas(Math.trunc(bfirmcontribution))}** M¢ to firm (**${((bfirmcontribution / firm.balance) * 100).toFixed(2)}%**)` : ""
-	const wfirmconstr = wfirmcontribution < 0 ? `\nContributed **${client.api.numberWithCommas(Math.trunc(wfirmcontribution))}** M¢ to firm (**${((wfirmcontribution / firm.balance) * 100).toFixed(2)}%**)` : ""
+	const bfirmconstr = bfirmcontribution > 0 ? `\nContributed **${client.api.numberWithCommas(Math.trunc(bfirmcontribution))}** M¢ to firm (**${((bfirmcontribution / firm.balance) * 100).toFixed(2)}%**)` : ""
+	const wfirmconstr = wfirmcontribution > 0 ? `\nContributed **${client.api.numberWithCommas(Math.trunc(wfirmcontribution))}** M¢ to firm (**${((wfirmcontribution / firm.balance) * 100).toFixed(2)}%**)` : ""
 
 	// Calculate most inactive investors and most active investors
 	// (in terms of **time difference**, not investments.)
@@ -70,18 +69,30 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 	const activeinvestors = []
 
 	for (const member of firmmembers) {
-		const history = await client.api.getInvestorHistory(member.name, 1)
+		// Calculate average investment per day since last firm payout
+		let avginvestments = 0
+		const history = await client.api.getInvestorHistory(member.name, 50)
+		for (const inv of history) {
+			if (inv.time < firm.last_payout)
+				break
+			avginvestments++
+		}
+		avginvestments /= parseInt(Math.trunc(moment().diff(moment.unix(firm.last_payout), "days")))
+		avginvestments = Math.trunc(avginvestments)
 		if (history[0] !== undefined) {
-			inactiveinvestors.push({ name: member.name, timediff: Math.trunc(new Date().getTime() / 1000) - history[0].time })
-			activeinvestors.push({ name: member.name, timediff: Math.trunc(new Date().getTime() / 1000) - history[0].time })
+			inactiveinvestors.push({ name: member.name, avginvestments: avginvestments, timediff: Math.trunc(new Date().getTime() / 1000) - history[0].time })
+			activeinvestors.push({ name: member.name, avginvestments: avginvestments, timediff: Math.trunc(new Date().getTime() / 1000) - history[0].time })
 		}
 	}
 
-	inactiveinvestors.sort((a, b) => b.timediff - a.timediff)
-	activeinvestors.sort((a, b) => a.timediff - b.timediff)
+	inactiveinvestors.sort((a, b) => a.avginvestments - b.avginvestments)
+	activeinvestors.sort((a, b) => b.avginvestments - a.avginvestments)
 
-	const mostinactiveinvestor = moment.duration(inactiveinvestors[0].timediff, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")
-	const lastinvestor = moment.duration(activeinvestors[0].timediff, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")
+	const leastactive = inactiveinvestors[0]
+	const mostactive = activeinvestors[0]
+
+	const leastactiveinvested = moment.duration(leastactive.timediff, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")
+	const mostactiveinvested = moment.duration(mostactive.timediff, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")
 
 	const yourrole = check ? "Your Role" : `${username}'s Role`
 
@@ -94,9 +105,9 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 
 	let board_members = 1
 
-	if (firm.coo !== "0") board_members += 1
+	if (firm.coo !== "0" && firm.coo !== "") board_members += 1
 
-	if (firm.cfo !== "0") board_members += 1
+	if (firm.cfo !== "0" && firm.cfo !== "") board_members += 1
 
 	const floor_traders = firm.size - firm.assocs - firm.execs - board_members
 
@@ -106,11 +117,6 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 	if (firm.execs > 0) size += `\n**${firm.execs}** executive${firm.execs > 1 ? "s" : ""}`
 	size += `\n**${board_members}** board member${board_members > 1 ? "s" : ""}`
 
-	const payout = await client.math.calculateFirmPayout(firm.balance, firm.size, firm.execs, firm.assocs, firm.cfo, firm.coo)
-	console.log(payout)
-
-	const payoutstr = `Out of **${client.api.getSuffix(payout.total)}** M¢ available, floor traders would be paid **${client.api.numberWithCommas(Math.trunc(payout.trades.amount))}** each, associates would be paid **${client.api.numberWithCommas(Math.trunc(payout.assoc.amount))}** each, executives would be paid ${client.api.numberWithCommas(Math.trunc(payout.exec.amount))} each, and board members (CEO, COO, CFO) would be paid ${client.api.numberWithCommas(Math.trunc(payout.board.amount))} each.`
-
 	// When my PR is implemented, replace "Completed investments" with "Rank" (in leaderboard)
 
 	const firminfo = new RichEmbed()
@@ -119,21 +125,20 @@ exports.run = async (client, message, [username, redditlink, user, _history, fir
 		.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
 		.setTitle(firm.name)
 		.setURL(`https://meme.market/firm.html?firm=${user.firm}`)
-		.addField("Balance", `${client.api.numberWithCommas(firm.balance)} M¢`, true)
+		.addField("Balance", `**${client.api.numberWithCommas(firm.balance)}** M¢`, true)
 		.addField("Average investment profit", `${profitprct.toFixed(3)}%`, true)
 		.addField("Total completed investments", investments.length, true)
 		.addField(yourrole, firmrole, true)
-		.addField("Last investor", `[u/${activeinvestors[0].name}](https://meme.market/user.html?account=${activeinvestors[0].name})\n${lastinvestor}`, true)
-		.addField("Most inactive investor", `[u/${inactiveinvestors[0].name}](https://meme.market/user.html?account=${inactiveinvestors[0].name})\n${mostinactiveinvestor}`, true)
-		.addField("Tax", `${firm.tax}%`, true)
+		.addField("Most active investor since last payout", `[u/${mostactive.name}](https://meme.market/user.html?account=${mostactive.name})\n**${mostactive.avginvestments}** average investments per day\nLast invested: ${mostactiveinvested}`, true)
+		.addField("Least active investor since last payout", `[u/${leastactive.name}](https://meme.market/user.html?account=${leastactive.name})\n**${leastactive.avginvestments}** average investments per day\nLast invested: ${leastactiveinvested}`, true)
 		.addField("CEO", `[u/${firm.ceo}](https://meme.market/user.html?account=${firm.ceo})`, true)
 		.addField("COO", firm.coo === "" || firm.coo === "0" ? "None" : `[u/${firm.coo}](https://meme.market/user.html?account=${firm.coo})`, true)
 		.addField("CFO", firm.cfo === "" || firm.cfo === "0" ? "None" : `[u/${firm.cfo}](https://meme.market/user.html?account=${firm.cfo})`, true)
+		.addField("Tax", `${firm.tax}%`, true)
 		.addField("Size", size, true)
-		.addField("Estimated Payouts")
-		.addField("Week's best profiteer", `[u/${weekbestprofiteer.name}](https://meme.market/user.html?account=${weekbestprofiteer.name})\n**${client.api.numberWithCommas(Math.trunc(weekbestprofiteer.profit))}** M¢${bfirmconstr}`, true)
-		.addField("Week's worst profiteer", `[u/${weekworstprofiteer.name}](https://meme.market/user.html?account=${weekworstprofiteer.name})\n**${client.api.numberWithCommas(Math.trunc(weekworstprofiteer.profit))}** M¢${wfirmconstr}`, true)
-	if (firmimage) firminfo.setThumbnail(firmimage)
+		.addField("Week's best profiteer", `[u/${weekbestprofiteer.name}](https://meme.market/user.html?account=${weekbestprofiteer.name})\n**${client.api.numberWithCommas(Math.trunc(weekbestprofiteer.profit))}** M¢${bfirmconstr}`, false)
+		.addField("Week's worst profiteer", `[u/${weekworstprofiteer.name}](https://meme.market/user.html?account=${weekworstprofiteer.name})\n**${client.api.numberWithCommas(Math.trunc(weekworstprofiteer.profit))}** M¢${wfirmconstr}`, false)
+		.setThumbnail(firmimage)
 	return message.channel.send({embed: firminfo})
 }
 
