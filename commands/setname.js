@@ -16,7 +16,7 @@ exports.run = async (client, message, [name], level) => {
 	}).catch(err => console.error(err))
 
 	const update = await client.api.updateLink(message.author.id, name.toLowerCase())
-	if (!update) return message.reply(":x: An error occurred while updating. Please contact Thomasvt#2563.")
+	if (!update) return message.reply(":x: An error occurred while updating. Please contact Thomasvt#2563 or Keanu73#2193.")
 
 	return message.reply("I will remember that your Reddit username is " + name)
 }

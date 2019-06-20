@@ -1,12 +1,30 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 const fs = require("fs")
-exports.run = async (client, message, [username, _redditlink, user, _history, firm, firmmembers, firmrole, check], _level) => {
+exports.run = async (client, message, [username, _redditlink, user, _history, firm, _firmmembers, firmrole, check], _level) => {
 	// Here we calculate the average investment profit of the entire firm
 	// by listing out all of each firm member's investments, then pushing them
 	// all into one array. We then average them all out.
+	let firmmembers = []
 	let investments = []
 	let profitprct = 0
+
+	let num_left = firm.size
+	let page = 0
+	let amount = 0
+
+	while (num_left > 0) {
+		if (num_left > 100) {
+			amount = 100
+		} else {
+			amount = num_left
+		}
+
+		const member = await client.api.getFirmMembers(user.firm, page, amount).catch(err => client.logger.error(err.stack))
+		firmmembers = firmmembers.concat(member)
+		num_left -= amount
+		if (num_left > 0) page += 1
+	}
 
 	for (let i = 0; i < firmmembers.length; i++) {
 		let num_left = firmmembers[i].completed
@@ -19,10 +37,10 @@ exports.run = async (client, message, [username, _redditlink, user, _history, fi
 			} else {
 				amount = num_left
 			}
-			const history = await client.api.getInvestorHistory(firmmembers[i].name, amount, page)
+			const history = await client.api.getInvestorHistory(firmmembers[i].name, amount, page).catch(err => client.logger.error(err.stack))
 			investments = investments.concat(history)
 			num_left -= amount
-			page += 1
+			if (num_left > 0) page += 1
 		}
 	}
 
@@ -78,11 +96,9 @@ exports.run = async (client, message, [username, _redditlink, user, _history, fi
 			avginvestments++
 		}
 		avginvestments /= parseInt(Math.trunc(moment().diff(moment.unix(firm.last_payout), "days")))
-		avginvestments = Math.trunc(avginvestments)
-		if (history[0] !== undefined) {
-			inactiveinvestors.push({ name: member.name, avginvestments: avginvestments, timediff: Math.trunc(new Date().getTime() / 1000) - history[0].time })
-			activeinvestors.push({ name: member.name, avginvestments: avginvestments, timediff: Math.trunc(new Date().getTime() / 1000) - history[0].time })
-		}
+		avginvestments = Math.ceil(avginvestments)
+		inactiveinvestors.push({ name: member.name, avginvestments: avginvestments, timediff: Math.trunc(new Date().getTime() / 1000) - history[0].time })
+		activeinvestors.push({ name: member.name, avginvestments: avginvestments, timediff: Math.trunc(new Date().getTime() / 1000) - history[0].time })
 	}
 
 	inactiveinvestors.sort((a, b) => a.avginvestments - b.avginvestments)

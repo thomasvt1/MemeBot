@@ -20,8 +20,6 @@ exports.run = async (client, message, [_username, _redditlink, user, _history, f
 
 	const payout = await client.math.calculateFirmPayout(firm.balance, firm.size, firm.execs, firm.assocs, firm.cfo !== "" && firm.cfo !== "0" ? firm.cfo : false, firm.coo !== "" && firm.coo !== "0" ? firm.coo : false)
 
-	// When my PR is implemented, replace "Completed investments" with "Rank" (in leaderboard)
-
 	const firminfo = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
 		.setColor("GOLD")

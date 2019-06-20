@@ -95,7 +95,7 @@ api.getFirmProfile = async (id) => {
 	return api.doRequest(options)
 }
 
-api.getFirmMembers = async (id, amount = 100, page = 0) => {
+api.getFirmMembers = async (id, page = 0, amount = 100) => {
 	const options = {
 		uri: `https://meme.market/api/firm/${id}/members?per_page=${amount}&page=${page}`,
 		json: true
@@ -104,7 +104,16 @@ api.getFirmMembers = async (id, amount = 100, page = 0) => {
 	return api.doRequest(options)
 }
 
-api.getTop100 = async (page, amount = 25) => {
+api.getTopFirmMembers = async (id, page = 0, amount = 100) => {
+	const options = {
+		uri: `https://meme.market/api/firm/${id}/members/top?per_page=${amount}&page=${page}`,
+		json: true
+	}
+
+	return api.doRequest(options)
+}
+
+api.getTop100 = async (amount = 25, page) => {
 	const options = {
 		uri: `https://meme.market/api/investors/top?per_page=${amount}&page=${page}`,
 		json: true
