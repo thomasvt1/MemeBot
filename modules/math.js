@@ -163,19 +163,19 @@ math.calculateFirmPayout = (balance, size, execs, assocs, cfo, coo) => {
 
 	const info = {
 		total: payout_amount,
-		"board": {
+		board: {
 			amount: board_amount,
 			total: board_total
 		},
-		"exec": {
+		exec: {
 			amount: exec_amount,
 			total: exec_total
 		},
-		"assoc": {
+		assoc: {
 			amount: assoc_amount,
 			total: assoc_total
 		},
-		"trader": {
+		trader: {
 			amount: trader_amount,
 			total: trader_total
 		}
