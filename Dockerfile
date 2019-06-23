@@ -1,6 +1,6 @@
 FROM node:alpine
 
-RUN apk --no-cache --update add git mariadb-dev python
+RUN apk --no-cache --update add git mariadb-dev python build-essential
 
 RUN adduser -D user
 USER user
