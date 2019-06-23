@@ -1,4 +1,4 @@
-FROM node:alpine
+FROM node:8-alpine
 
 RUN apk --no-cache --update add git mariadb-dev python g++ make
 
@@ -7,3 +7,5 @@ USER user
 WORKDIR /home/user
 
 COPY --chown="user:user" . /home/user
+
+RUN chmod +x hooks/deploy.sh
