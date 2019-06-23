@@ -6,8 +6,7 @@
   "scripts": {
     "build": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "preinstall-linux": "export ACCEPT_HIGHCHARTS_LICENSE=1",
-    "preinstall": "SET ACCEPT_HIGHCHARTS_LICENSE=1"
+    "preinstall": "export ACCEPT_HIGHCHARTS_LICENSE=1"
   },
   "engines": {
     "node": ">=8"
