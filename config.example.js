@@ -1,5 +1,6 @@
 const config = {
-	// Development environment for testing
+	// DEVELOPMENT to exclude MySQL functionality
+	// PRODUCTION or just some random value to include it
 	node_env: "DEVELOPMENT",
 	
 	// Store the owner IDs in here. Default is Thomasvt's ID and Keanu73's ID.
