@@ -2,7 +2,8 @@ const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 exports.run = async (client, message, args) => {
 	// arguments: <name> <all, traders, assocs, exec, board> <best/worst> <networth, activity, contribution, investments> <page>
-	const perPage = 10
+	const settings = message.guild ? client.getSettings(message.guild.id) : client.settings.get("default")
+	const perPage = 25
 	const check = await client.api.getLink(message.author.id)
 
 	if (!args[0] && !check) return message.channel.send(":question: Please supply a Reddit username.")
@@ -31,15 +32,15 @@ exports.run = async (client, message, args) => {
 
 	if (ranks[rankarg]) rank = ranks[rankarg]
 
-	if (rank === "") return message.channel.send(":exclamation: Invalid rank type! Use either *traders*, *assocs*, *execs* or *board*.")
+	if (rank === "") return message.channel.send(`:exclamation: Invalid rank type! Refer to ${settings.prefix}help leaderboard.`)
 
 	if (modifiers[modifierarg]) modifier = modifiers[modifierarg]
 
-	if (modifier === "") return message.channel.send(":exclamation: Invalid modifier! Use either *best* or *worst*.")
+	if (modifier === "") return message.channel.send(`:exclamation: Invalid modifier! Refer to ${settings.prefix}help leaderboard.`)
 
 	if (types[typearg]) type = types[typearg]
 
-	if (type === "") return message.channel.send(":exclamation: Invalid specifier type! Use either *networth*, *activity*, *contribution* or *investments*.")
+	if (type === "") return message.channel.send(`:exclamation: Invalid specifier type! Refer to ${settings.prefix}help leaderboard.`)
 
 	if (page && page < 1) return message.channel.send(`:exclamation: There is no page ${page}!`)
 
@@ -61,8 +62,9 @@ exports.run = async (client, message, args) => {
 			const history = await client.api.getInvestorHistory(members[e].name.toLowerCase()).catch(err => client.logger.error(err.stack))
 			let weekcontrib = 0
 			let i = 0
-			const networth = type === "networth" ? members[e].networth : await client.api.getInvestorProfile(members[e].name.toLowerCase()).then(p => p.networth)
+			let networth = type === "networth" ? members[e].networth : members[e].balance
 			while (i < history.length && history[i].time > firm.last_payout) {
+				if (!history[i].done && type !== "networth") networth += history[i].amount
 				weekcontrib += history[i].profit * (history[i].firm_tax / 100)
 				i++
 			}
@@ -81,12 +83,13 @@ exports.run = async (client, message, args) => {
 			if (typeof rank === "object" && rank[members[e].firm_role]) userpayout = payout.board.amount
 			if (members[e].firm_role === "assoc" && rank === "assoc") userpayout = payout.assoc.amount
 			if (members[e].firm_role === "exec" && rank === "exec") userpayout = payout.exec.amount
+
 			members[e].avginvestments = avginvestments
 			members[e].timediff = history[0] ? Math.trunc(new Date().getTime() / 1000) - history[0].time : "Never"
 			members[e].contribution = Math.trunc(weekcontrib)
 			members[e].history = history
 			members[e].networth = networth
-			members[e].payout = Math.trunc(userpayout)
+			members[e].difference = ((weekcontrib - userpayout) / userpayout) * 100.0
 		}
 		firmmems = firmmems.concat(members)
 		num_left -= amount
@@ -94,11 +97,11 @@ exports.run = async (client, message, args) => {
 	}
 
 	const begin = page === 1 ? 0 : (perPage * page) - perPage
-	const offset = (perPage * page) + 1
+	const offset = (perPage * page) - 1
 	const ioffset = page === 1 ? 1 : (perPage * (page - 1)) + 1
 	let firmmembers = rank !== "all" ? firmmems.filter(mem => typeof rank === "object" && rank[mem.firm_role] || rank === "traders" && mem.firm_role === "" || mem.firm_role === rank && rank !== "traders") : firmmems
-	const pages = Math.ceil(firmmembers.length / perPage)
-	firmmembers = firmmembers.slice(begin, offset - 1)
+	const pages = Math.ceil(firmmems.length / perPage)
+	firmmembers = firmmembers.slice(begin, offset)
 
 	if (type === "networth") {
 		if (modifier === "worst") firmmembers.sort((a, b) => a.networth - b.networth)
@@ -158,7 +161,7 @@ exports.run = async (client, message, args) => {
 		stats.addField(`\`${i + ioffset}.\` u/${investor.name} - ${ifirmrole}`, `
 \`Net worth:\` **${client.api.getSuffix(investor.networth)} M¢**
 \`Contribution to firm since payout:\` **${client.api.numberWithCommas(investor.contribution)} M¢**
-\`Estimated payout:\` **${client.api.numberWithCommas(investor.payout)} M¢**
+\`Contribution / estimated payout:\` **${Math.trunc(investor.difference)}**%
 \`Average investments per day:\` **${investor.avginvestments}**
 \`Completed investments:\` **${investor.completed}**
 \`Last invested:\` ${lastinvested}`, false)
@@ -177,6 +180,6 @@ exports.conf = {
 exports.help = {
 	name: "leaderboard",
 	category: "MemeEconomy",
-	description: "Shows you the top 100 investors and their profiles.",
-	usage: "leaderboard [traders, assocs, execs, board] [best, worst] [networth, active, contribution, investments] [page]"
+	description: "Shows you the top members of your firm sorted by arguments. (networth == sorted by networth, activity == sorted by last invested at, contribution === sorted by firm contribution, investments === sorted by average investments.",
+	usage: "leaderboard [all, traders, assocs, execs, board] [best, worst] [networth, activity, contribution, investments] [page]"
 }

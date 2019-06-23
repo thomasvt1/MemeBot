@@ -6,4 +6,6 @@
 ![GitHub contributors](https://img.shields.io/github/contributors/thomasvt1/MemeCord.svg?style=popout)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) 
 
-A Discord bot that provides useful info on investors/firms in [MemeEconomy](https://reddit.com/r/MemeEconomy)
+A Discord bot that provides useful info on investors/firms in [MemeEconomy](https://reddit.com/r/MemeEconomy).
+
+If you would like to deploy the bot in your own [Docker](https://www.docker.com/products/docker-desktop) instance, just run `docker-compose build bot mysql`. For developing purposes, though, all you need to do is just leave "node_env" on "DEVELOPMENT" and run index.js as normal.

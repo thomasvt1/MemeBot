@@ -17,6 +17,8 @@ exports.run = async (client, message, [_username, _redditlink, user, _history, f
 	const assocrank = user.firm_role === "assoc" ? "(Your Role)" : ""
 	const execrank = user.firm_role === "exec" ? "(Your Role)" : ""
 	const boardmems = `(${firm.cfo !== "" && firm.cfo !== "0" ? `${firm.cfo}, ` : ""}${firm.coo !== "" && firm.coo !== "0" ? `${firm.coo}, ` : ""}${firm.cfo !== "" && firm.cfo !== "0" || firm.coo !== "" && firm.coo !== "0" ? "and " : ""}${firm.ceo})`
+	
+	const floortraders = firm.size - firm.execs - firm.assocs
 
 	const payout = await client.math.calculateFirmPayout(firm.balance, firm.size, firm.execs, firm.assocs, firm.cfo !== "" && firm.cfo !== "0" ? firm.cfo : false, firm.coo !== "" && firm.coo !== "0" ? firm.coo : false)
 
@@ -28,9 +30,9 @@ exports.run = async (client, message, [_username, _redditlink, user, _history, f
 		.setURL(`https://meme.market/firm.html?firm=${user.firm}`)
 		.addField("Payout Balance", `**${client.api.numberWithCommas(Math.trunc(payout.total))}** M¢`, true)
 		.addField("Last Payout", lastpayout, true)
-		.addField(`Floor Traders ${floorrank}`, `will get **${client.api.numberWithCommas(Math.trunc(payout.trader.amount))}** M¢ each\n(**${client.api.getSuffix(payout.trader.total)}** M¢ in total)`, false)
-		.addField(`Associates ${assocrank}`, `will get **${client.api.numberWithCommas(Math.trunc(payout.assoc.amount))}** M¢ each\n(**${client.api.getSuffix(payout.assoc.total)}** M¢ in total)`, false)
-		.addField(`Executives ${execrank}`, `will get **${client.api.numberWithCommas(Math.trunc(payout.exec.amount))}** M¢ each\n(**${client.api.getSuffix(payout.exec.total)}** M¢ in total)`, false)
+		.addField(`${floortraders} Floor Traders ${floorrank}`, `will get **${client.api.numberWithCommas(Math.trunc(payout.trader.amount))}** M¢ each\n(**${client.api.getSuffix(payout.trader.total)}** M¢ in total)`, false)
+		.addField(`${firm.assocs} Associates ${assocrank}`, `will get **${client.api.numberWithCommas(Math.trunc(payout.assoc.amount))}** M¢ each\n(**${client.api.getSuffix(payout.assoc.total)}** M¢ in total)`, false)
+		.addField(`${firm.execs} Executives ${execrank}`, `will get **${client.api.numberWithCommas(Math.trunc(payout.exec.amount))}** M¢ each\n(**${client.api.getSuffix(payout.exec.total)}** M¢ in total)`, false)
 		.addField(`Board Members ${boardmems}`, `will get **${client.api.numberWithCommas(Math.trunc(payout.board.amount))}** M¢ each\n(**${client.api.getSuffix(payout.board.total)}** M¢ in total)`, false)
 		.setThumbnail(firmimage)
 	return message.channel.send({ embed: firminfo })

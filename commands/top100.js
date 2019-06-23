@@ -37,7 +37,7 @@ exports.run = async (client, message, [page], _level) => {
 		const ifirm = top100firms[i].firm
 		let firmemoji = ""
 		client.guilds.get("563439683309142016").emojis.forEach(async (e) => {
-			if (e.name === ifirm.toLowerCase().replace(/ /g, "")) firmemoji = `<:${e.identifier.toString()}>`
+			if (ifirm && e.name === ifirm.toLowerCase().replace(/ /g, "")) firmemoji = `<:${e.identifier.toString()}>`
 		})
 
 		const firm = top100firms[i] ? `\n\`Firm:\` **${ifirmrole}** of **${ifirm}**` : ""

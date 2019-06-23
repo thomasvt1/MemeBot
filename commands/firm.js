@@ -83,32 +83,33 @@ exports.run = async (client, message, [username, _redditlink, user, _history, fi
 	// (in terms of **time difference**, not investments.)
 	// List all of them, calculate time difference, format it using moment-duration-format.
 
-	const inactiveinvestors = []
-	const activeinvestors = []
-
 	for (const member of firmmembers) {
 		// Calculate average investment per day since last firm payout
 		let avginvestments = 0
 		const history = await client.api.getInvestorHistory(member.name, 50)
+		let days = moment().diff(moment.unix(firm.last_payout), "days")
+		if (days < 1) days = 7
 		for (const inv of history) {
-			if (inv.time < firm.last_payout)
+			if (moment().diff(moment.unix(firm.last_payout), "days") > 1 && inv.time < firm.last_payout)
+				break
+			if (moment().diff(moment.unix(firm.last_payout), "days") < 1 && inv.time < moment.unix(moment().subtract(7, "days")))
 				break
 			avginvestments++
 		}
-		avginvestments /= parseInt(Math.trunc(moment().diff(moment.unix(firm.last_payout), "days")))
-		avginvestments = Math.ceil(avginvestments)
-		inactiveinvestors.push({ name: member.name, avginvestments: avginvestments, timediff: Math.trunc(new Date().getTime() / 1000) - history[0].time })
-		activeinvestors.push({ name: member.name, avginvestments: avginvestments, timediff: Math.trunc(new Date().getTime() / 1000) - history[0].time })
+		avginvestments /= Math.trunc(days)
+		member.avginvestments = Math.trunc(avginvestments)
+		member.timediff = history[0] ? Math.trunc(new Date().getTime() / 1000) - history[0].time : "Never"
 	}
 
-	inactiveinvestors.sort((a, b) => a.avginvestments - b.avginvestments)
-	activeinvestors.sort((a, b) => b.avginvestments - a.avginvestments)
+	const inactiveinvestors = firmmembers.sort((a, b) => a.avginvestments - b.avginvestments)
+	const activeinvestors = firmmembers.sort((a, b) => b.avginvestments - a.avginvestments)
+	const toorecent = moment().diff(moment.unix(firm.last_payout), "days") < 1 ? "last 7 days (payout too recent)" : "last payout"
 
 	const leastactive = inactiveinvestors[0]
 	const mostactive = activeinvestors[0]
 
-	const leastactiveinvested = moment.duration(leastactive.timediff, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")
-	const mostactiveinvested = moment.duration(mostactive.timediff, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")
+	const leastactiveinvested = leastactive.timediff === "Never" ? "**Never**" : moment.duration(leastactive.timediff, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")
+	const mostactiveinvested = mostactive.timediff === "Never" ? "**Never**" :  moment.duration(mostactive.timediff, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")
 
 	const yourrole = check ? "Your Role" : `${username}'s Role`
 
@@ -145,8 +146,8 @@ exports.run = async (client, message, [username, _redditlink, user, _history, fi
 		.addField("Average investment profit", `${profitprct.toFixed(3)}%`, true)
 		.addField("Total completed investments", investments.length, true)
 		.addField(yourrole, firmrole, true)
-		.addField("Most active investor since last payout", `[u/${mostactive.name}](https://meme.market/user.html?account=${mostactive.name})\n**${mostactive.avginvestments}** average investments per day\nLast invested: ${mostactiveinvested}`, true)
-		.addField("Least active investor since last payout", `[u/${leastactive.name}](https://meme.market/user.html?account=${leastactive.name})\n**${leastactive.avginvestments}** average investments per day\nLast invested: ${leastactiveinvested}`, true)
+		.addField(`Most active investor since ${toorecent}`, `[u/${mostactive.name}](https://meme.market/user.html?account=${mostactive.name})\n**${mostactive.avginvestments}** average investments per day\nLast invested: ${mostactiveinvested}`, true)
+		.addField(`Least active investor since ${toorecent}`, `[u/${leastactive.name}](https://meme.market/user.html?account=${leastactive.name})\n**${leastactive.avginvestments}** average investments per day\nLast invested: ${leastactiveinvested}`, true)
 		.addField("CEO", `[u/${firm.ceo}](https://meme.market/user.html?account=${firm.ceo})`, true)
 		.addField("COO", firm.coo === "" || firm.coo === "0" ? "None" : `[u/${firm.coo}](https://meme.market/user.html?account=${firm.coo})`, true)
 		.addField("CFO", firm.cfo === "" || firm.cfo === "0" ? "None" : `[u/${firm.cfo}](https://meme.market/user.html?account=${firm.cfo})`, true)

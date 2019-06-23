@@ -62,7 +62,7 @@ __**[${lastpost.title}](https://redd.it/${lastinvestment.post})**__\n
 **Invested:** ${client.api.numberWithCommas(lastinvestment.amount)} M¢\n
 **Profit:** ${client.api.numberWithCommas(lastprofit)} M¢ (*${factor.toFixed(2)}%*)\n
 **Broke even at:** ${broke_even} upvotes`, true)
-		.setImage(lastpost.thumbnail)
+		.setImage(lastpost.url)
 	if (check) stats.setThumbnail(client.users.get(message.author.id).displayAvatarURL)
 	if (!check && redditlink) stats.setThumbnail(client.users.get(redditlink).displayAvatarURL)
 	if (redditlink) stats.setThumbnail(client.users.get(redditlink).displayAvatarURL)
