@@ -1,4 +1,4 @@
-FROM node:8-alpine
+FROM node:8.16.0-alpine
 
 RUN apk --no-cache --update add git mariadb-dev python g++ make
 
