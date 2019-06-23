@@ -4,7 +4,7 @@ services:
     bot:
         build: .
         restart: always
-        command: ["node", "index.js"]
+        command: ["node", "./index.js"]
         depends_on:
           - mysql
     mysql:
