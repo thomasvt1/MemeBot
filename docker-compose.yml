@@ -22,4 +22,4 @@ services:
             - ~/MemeBot/hooks:/code/hooks
         env_file: .env
         ports:
-          - 8000:3000
+          - 3000:8000
