@@ -5,7 +5,7 @@ services:
         build: .
         env_file: .env
         restart: always
-        command: ["node", "./index.js"]
+        command: ["node", "index.js"]
         depends_on:
           - mysql
     mysql:
