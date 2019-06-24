@@ -7,5 +7,3 @@ USER user
 WORKDIR /home/user
 
 COPY --chown="user:user" . /home/user
-
-RUN chmod +x hooks/deploy.sh

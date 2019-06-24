@@ -25,5 +25,5 @@ services:
             # Mount the docker socket
             - /var/run/docker.sock:/var/run/docker.sock
         env_file: .env
-        expose:
-            - 3000
+        ports:
+          - 127.0.0.1:8000:3000
