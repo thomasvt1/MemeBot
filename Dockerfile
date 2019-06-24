@@ -8,4 +8,4 @@ COPY --chown="user:user" . /home/user
 WORKDIR /home/user
 
 RUN npm install
-CMD node index.js
+CMD ["npm", "start"]
