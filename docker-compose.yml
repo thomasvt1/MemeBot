@@ -3,9 +3,8 @@ version: '3'
 services:
     bot:
         build: .
-        env_file: .env
         restart: always
-        command: node index.js
+        command: ["node", "index.js"]
         depends_on:
           - mysql
     mysql:
@@ -26,4 +25,4 @@ services:
             - /var/run/docker.sock:/var/run/docker.sock
         env_file: .env
         ports:
-          - 127.0.0.1:8000:3000
+          - 8000:3000
