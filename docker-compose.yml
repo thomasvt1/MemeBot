@@ -19,7 +19,7 @@ services:
         image: staticfloat/docker-webhook
         volumes:
             # Mount this code into /code
-            - ./hooks:/code/hooks
+            - .:/code
             # Mount the docker socket
             - /var/run/docker.sock:/var/run/docker.sock
         env_file: .env
