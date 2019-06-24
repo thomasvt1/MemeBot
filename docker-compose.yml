@@ -18,8 +18,8 @@ services:
         restart: unless-stopped
         image: staticfloat/docker-webhook
         volumes:
-            # Mount the docker socket
             - /var/run/docker.sock:/var/run/docker.sock
+            - ~/MemeBot/hooks:/code/hooks
         env_file: .env
         ports:
           - 8000:3000
