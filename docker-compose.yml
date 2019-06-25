@@ -7,7 +7,7 @@ services:
         depends_on:
           - mysql
         volumes:
-          - "./data:./data"
+          - "./data:~/data"
     mysql:
         image: mariadb:10.2.15
         env_file: .env
@@ -21,7 +21,7 @@ services:
         image: staticfloat/docker-webhook
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
-            - ~/MemeBot/hooks:/code/hooks
+            - ./hooks:/code/hooks
         env_file: .env
         ports:
           - 8000:3000
