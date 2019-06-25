@@ -2,7 +2,7 @@ version: '3'
 
 services:
     bot:
-        build: .
+        image: thomasvt1/memebot
         restart: always
         depends_on:
           - mysql
@@ -14,12 +14,3 @@ services:
           - 127.0.0.1:3306:3306
         volumes:
           - "~/mysql:/var/lib/mysql"
-    webhook:
-        restart: unless-stopped
-        image: staticfloat/docker-webhook
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock
-            - ./hooks:/code/hooks
-        env_file: .env
-        ports:
-          - 8000:3000
