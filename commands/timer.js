@@ -11,7 +11,7 @@ exports.run = async (client, message, [_username, _redditlink, _user, history, _
 	const maturesin = moment.duration(timediff - moment().unix(), "seconds").format("[**]H[**] [hour] [and] [**]m[**] [minutes]")
 
 	message.channel.send(`:white_check_mark: I will remind you in DMs when your investment has matured in ${maturesin}.`)
-	return setTimeoutAt(async () => client.users.get(message.author.id).send("your investment has matured!"), timeout)
+	return setTimeoutAt(async () => client.users.get(message.author.id).send("Your investment has matured!"), timeout)
 }
 
 exports.conf = {
