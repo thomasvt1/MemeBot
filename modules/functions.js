@@ -50,24 +50,12 @@ module.exports = (client) => {
 	// getSettings merges the client defaults with the guild settings. guild settings in
 	// enmap should only have *unique* overrides that are different from defaults.
 	client.getSettings = (guild) => {
+		client.settings.ensure("default", client.config.defaultSettings)
 		if (!guild) return client.settings.get("default")
 		const guildConf = client.settings.get(guild.id) || {}
 		// This "..." thing is the "Spread Operator". It's awesome!
 		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax
 		return ({ ...client.settings.get("default"), ...guildConf })
-	}
-
-	// writeSettings overrides, or adds, any configuration item that is different
-	// than the defaults. This ensures less storage wasted and to detect overrides.
-	client.writeSettings = (id, newSettings) => {
-		const defaults = client.settings.get("default")
-		const settings = client.settings.get(id) || {}
-		// Using the spread operator again, and lodash's "pickby" function to remove any key
-		// from the settings that aren't in the defaults (meaning, they don't belong there)
-		client.settings.set(id, {
-			..._.pickBy(settings, (v, k) => !_.isNil(defaults[k])),
-			..._.pickBy(newSettings, (v, k) => !_.isNil(defaults[k]))
-		})
 	}
 
 	/*
