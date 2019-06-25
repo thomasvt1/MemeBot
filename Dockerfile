@@ -9,3 +9,4 @@ WORKDIR /home/user
 
 RUN npm install
 CMD ["npm", "start"]
+VOLUME ./data:~/data
