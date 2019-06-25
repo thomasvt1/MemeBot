@@ -7,7 +7,7 @@ services:
         depends_on:
           - mysql
         volumes:
-          - "./data:data"
+          - "./data:./data"
     mysql:
         image: mariadb:10.2.15
         env_file: .env
