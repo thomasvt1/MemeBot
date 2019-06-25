@@ -3,7 +3,7 @@ const moment = require("moment")
 exports.run = async (client, message, args) => {
 	// arguments: <name> <all, traders, assocs, exec, board> <best/worst> <networth, activity, contribution, investments> <page>
 	const settings = message.guild ? client.getSettings(message.guild.id) : client.settings.get("default")
-	const perPage = 25
+	const perPage = 20
 	const check = await client.api.getLink(message.author.id)
 
 	if (!args[0] && !check) return message.channel.send(":question: Please supply a Reddit username.")
@@ -78,11 +78,15 @@ exports.run = async (client, message, args) => {
 			avginvestments /= Math.trunc(moment().diff(moment.unix(firm.last_payout), "days"))
 			avginvestments = Math.trunc(avginvestments)
 
-			let userpayout
-			if (rank === "traders" && members[e].firm_role === "") userpayout = payout.trader.amount
-			if (typeof rank === "object" && rank[members[e].firm_role]) userpayout = payout.board.amount
-			if (members[e].firm_role === "assoc" && rank === "assoc") userpayout = payout.assoc.amount
-			if (members[e].firm_role === "exec" && rank === "exec") userpayout = payout.exec.amount
+			const payouts = {
+				"": payout.trader.amount,
+				"assoc": payout.assoc.amount,
+				"exec": payout.exec.amount,
+				"coo": payout.board.amount,
+				"cfo": payout.board.amount,
+				"ceo": payout.board.amount
+			}
+			const userpayout = payouts[members[e].firm_role]
 
 			members[e].avginvestments = avginvestments
 			members[e].timediff = history[0] ? Math.trunc(new Date().getTime() / 1000) - history[0].time : "Never"
@@ -97,7 +101,7 @@ exports.run = async (client, message, args) => {
 	}
 
 	const begin = page === 1 ? 0 : (perPage * page) - perPage
-	const offset = (perPage * page) - 1
+	const offset = (perPage * page)
 	const ioffset = page === 1 ? 1 : (perPage * (page - 1)) + 1
 	let firmmembers = rank !== "all" ? firmmems.filter(mem => typeof rank === "object" && rank[mem.firm_role] || rank === "traders" && mem.firm_role === "" || mem.firm_role === rank && rank !== "traders") : firmmems
 	const pages = Math.ceil(firmmems.length / perPage)
@@ -161,7 +165,7 @@ exports.run = async (client, message, args) => {
 		stats.addField(`\`${i + ioffset}.\` u/${investor.name} - ${ifirmrole}`, `
 \`Net worth:\` **${client.api.getSuffix(investor.networth)} M¢**
 \`Contribution to firm since payout:\` **${client.api.numberWithCommas(investor.contribution)} M¢**
-\`Contribution / estimated payout:\` **${Math.trunc(investor.difference)}**%
+\`Contribution / estimated payout:\` **${investor.difference.toFixed(2)}**%
 \`Average investments per day:\` **${investor.avginvestments}**
 \`Completed investments:\` **${investor.completed}**
 \`Last invested:\` ${lastinvested}`, false)
