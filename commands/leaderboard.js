@@ -105,8 +105,6 @@ exports.run = async (client, message, args) => {
 	const ioffset = page === 1 ? 1 : (perPage * (page - 1)) + 1
 	let firmmembers = rank !== "all" ? firmmems.filter(mem => typeof rank === "object" && rank[mem.firm_role] || rank === "traders" && mem.firm_role === "" || mem.firm_role === rank && rank !== "traders") : firmmems
 	const pages = Math.ceil(firmmems.length / perPage)
-	firmmembers = firmmembers.slice(begin, offset)
-
 	if (type === "networth") {
 		if (modifier === "worst") firmmembers.sort((a, b) => a.networth - b.networth)
 	}
@@ -125,6 +123,8 @@ exports.run = async (client, message, args) => {
 		if (modifier === "best") firmmembers.sort((a, b) => b.avginvestments - a.avginvestments)
 		if (modifier === "worst") firmmembers.sort((a, b) => a.avginvestments - b.avginvestments)
 	}
+	
+	firmmembers = firmmembers.slice(begin, offset)
 
 	const firmranks = {
 		all: "",

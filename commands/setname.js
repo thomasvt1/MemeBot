@@ -3,22 +3,26 @@ exports.run = async (client, message, [name], level) => {
 
 	const check = await client.api.getLink(message.author.id)
 
-	if (!name) message.reply(":question: I don't remember your name, and you haven't given me one.\n```Use $setname reddit_username to set your name```")
+	if (!name) return message.channel.send(":question: I don't remember your name, and you haven't given me one.\n```Use $setname reddit_username to set your name```")
 
-	if (name.length < 3) {
-		message.reply(":thinking: Something tells me that is not a Reddit username")
+	if (name.length < 3) return message.channel.send(":thinking: Something tells me that is not a Reddit username")
+
+	const linkcheck = await client.api.getRedditLink(name)
+
+	if (linkcheck) return message.channel.send(`:exclamation: Someone (<@${linkcheck}>) already has this username.`)
+
+	const profile = await client.api.getInvestorProfile(name).catch(err => client.logger.err(err))
+	if (profile.id === 0) return message.channel.send(":question: I couldn't find that MemeEconomy user.")
+
+	if (!check) {
+		const newlink = await client.api.setLink(message.author.id, profile.name.toLowerCase())
+		if (!newlink) return message.channel.send(":x: An error occurred while inserting. Please contact Thomasvt#2563 or Keanu73#2193.")
+	} else {
+		const update = await client.api.updateLink(message.author.id, name.toLowerCase())
+		if (!update) return message.channel.send(":x: An error occurred while updating. Please contact Thomasvt#2563 or Keanu73#2193.")
 	}
 
-	if (!check) client.api.getInvestorProfile(name).then(body => {
-		if (body.id === 0) return message.reply(":question: I couldn't find that user. Sorry")
-		client.api.setLink(message.author.id, body.name.toLowerCase())
-		return message.reply("I will remember that your Reddit username is " + name)
-	}).catch(err => console.error(err))
-
-	const update = await client.api.updateLink(message.author.id, name.toLowerCase())
-	if (!update) return message.reply(":x: An error occurred while updating. Please contact Thomasvt#2563 or Keanu73#2193.")
-
-	return message.reply("I will remember that your Reddit username is " + name)
+	return message.channel.send(`:white_check_mark: I will remember that your Reddit username is ${name}`)
 }
 
 exports.conf = {

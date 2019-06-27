@@ -97,12 +97,12 @@ exports.run = async (client, message, [username, _redditlink, user, _history, fi
 			avginvestments++
 		}
 		avginvestments /= Math.trunc(days)
-		member.avginvestments = Math.trunc(avginvestments)
+		member.avginvestments = Math.floor(avginvestments)
 		member.timediff = history[0] ? Math.trunc(new Date().getTime() / 1000) - history[0].time : "Never"
 	}
 
-	const inactiveinvestors = firmmembers.sort((a, b) => a.avginvestments - b.avginvestments)
-	const activeinvestors = firmmembers.sort((a, b) => b.avginvestments - a.avginvestments)
+	const inactiveinvestors = [...firmmembers].sort((a, b) => a.avginvestments - b.avginvestments)
+	const activeinvestors = [...firmmembers].sort((a, b) => b.avginvestments - a.avginvestments)
 	const toorecent = moment().diff(moment.unix(firm.last_payout), "days") < 1 ? "last 7 days (payout too recent)" : "last payout"
 
 	const leastactive = inactiveinvestors[0]

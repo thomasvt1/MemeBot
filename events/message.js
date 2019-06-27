@@ -63,14 +63,16 @@ module.exports = async (client, message) => {
 	// If the command exists, **AND** the user has permission, run it.
 	client.logger.cmd(`[CMD] ${client.config.permLevels.find(l => l.level === level).name} ${message.author.username} (${message.author.id}) ran command ${cmd.help.name} with ${args[0] ? `args ${args[0]}` : "no args"}`)
 
-	if (cmd.help.category === "MemeEconomy" && cmd.help.name !== "top100" && cmd.help.name !== "leaderboard") {
+	const excludedcmds = ["top100", "leaderboard", "setname"]
+
+	if (cmd.help.category === "MemeEconomy" && !excludedcmds.some(c => cmd.help.name === c)) {
 		const check = await client.api.getLink(message.author.id)
 
 		if (!args[0] && !check) return message.channel.send(":question: Please supply a Reddit username.")
 
-		if (args[0].length < 3 && !check) return message.channel.send(":thinking: Something tells me that is not a Reddit username")
+		if (!check && args[0].length < 3) return message.channel.send(":thinking: Something tells me that is not a Reddit username")
 
-		args[0] = args[0].replace(/^((\/|)u\/)/g, "")
+		args[0] = check ? args[0] : args[0].replace(/^((\/|)u\/)/g, "")
 		const username = check ? check : args[0]
 
 		const investment = cmd.help.name === "history" ? args[1] : false

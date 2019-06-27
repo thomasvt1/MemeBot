@@ -21,7 +21,7 @@ api.r = new snoowrap({
 })
 
 // Add MySQL database for storing Discord + Reddit links
-const pool = !config.node_env === "DEVELOPMENT" ? mysql.createPool({
+const pool = config.node_env !== "DEVELOPMENT" ? mysql.createPool({
 	host: config.mysql.host,
 	port: config.mysql.port,
 	user: config.mysql.user,
@@ -125,7 +125,7 @@ api.getTop100 = async (amount = 25, page) => {
 api.getRedditLink = async (reddit_name) => {
 	if (config.node_env === "DEVELOPMENT") return false
 
-	const [link] = await pool.execute("SELECT discord_id FROM reddit_link WHERE reddit_name = ?", [reddit_name])
+	const [link] = await pool.query("SELECT discord_id FROM reddit_link WHERE reddit_name = ?", [reddit_name])
 
 	if (!link[0]) return false
 
@@ -135,7 +135,7 @@ api.getRedditLink = async (reddit_name) => {
 api.getLink = async (discord_id) => {
 	if (config.node_env === "DEVELOPMENT") return false
 
-	const [link] = await pool.execute("SELECT reddit_name FROM reddit_link WHERE discord_id = ?", [discord_id])
+	const [link] = await pool.query("SELECT reddit_name FROM reddit_link WHERE discord_id = ?", [discord_id])
 
 	if (!link[0]) return false
 
@@ -145,7 +145,7 @@ api.getLink = async (discord_id) => {
 api.setLink = async (discord_id, reddit_name) => {
 	if (config.node_env === "DEVELOPMENT") return false
 
-	const res = await pool.execute("INSERT INTO reddit_link (discord_id, reddit_name) VALUES (?, ?)", [discord_id, reddit_name])
+	const res = await pool.query("INSERT INTO reddit_link (discord_id, reddit_name) VALUES (?, ?)", [discord_id, reddit_name])
 
 	if (!res) return false
 
@@ -155,7 +155,7 @@ api.setLink = async (discord_id, reddit_name) => {
 api.updateLink = async (discord_id, reddit_name) => {
 	if (config.node_env === "DEVELOPMENT") return false
 
-	const res = await pool.execute("UPDATE reddit_link SET reddit_name = ? WHERE reddit_link.discord_id = ?", [reddit_name, discord_id])
+	const res = await pool.query("UPDATE reddit_link SET reddit_name = ? WHERE discord_id = ?", [reddit_name, discord_id])
 
 	if (!res) return false
 
