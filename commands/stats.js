@@ -73,7 +73,7 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 		.addField("Net worth", `**${client.api.numberWithCommas(user.networth)}** M¢ ${profitdifference}`, true)
 		.addField("Completed investments", `${client.api.numberWithCommas(user.completed)}`, true)
 		.addField("Rank", `**\`#${user.rank}\`**`, true)
-		.addField("Firm", `**\`${firmrole}\`** of **\`${firm.name}\`**`, true)
+	if (user.firm !== 0) stats.addField("Firm", `**\`${firmrole}\`** of **\`${firm.name}\`**`, true)
 		.addField("Average investment profit", `${profitprct.toFixed(2)}%`, true)
 		.addField("Average investment profit (last 5)", `${profitprct_5.toFixed(2)}%`, true)
 		.addField("Investments in the past day", `${investments_today}`, true)
