@@ -1,3 +1,23 @@
+/*
+/* api.numberWithCommas
+/* Copyright (c) 2019 thomasvt1 / MemeBot
+/* Original copyright (c) 2018 - 2019 dzervas
+/* Last modified by Keanu73 <keanu@keanu73.net> on 2019-06-30
+/* All rights reserved.
+/*
+/* parseInvestmentAmount
+/* Copyright (c) 2019 thomasvt1 / MemeBot
+/* Original copyright (c) 2019 thomasvt1
+/* Last modified by Keanu73 <keanu@keanu73.net> on 2019-06-30
+/* All rights reserved.
+/*
+/* api.getInvestments
+/* Copyright (c) 2019 thomasvt1 / MemeBot
+/* Original copyright (c) 2019 thomasvt1
+/* Last modified by Keanu73 <keanu@keanu73.net> on 2019-06-30
+/* All rights reserved.
+*/
+
 // Interface with Meme.Market API
 // Most of these functions are self-explanatory
 // and further explanation for the
@@ -163,6 +183,7 @@ api.updateLink = async (discord_id, reddit_name) => {
 }
 
 // Some hacky regex to make numbers look nicer
+
 api.numberWithCommas = function (x) {
 	return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 }

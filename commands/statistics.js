@@ -1,3 +1,8 @@
+/*
+/* Copyright (c) 2019 thomasvt1 / MemeBot
+/* Last modified by Keanu73 <keanu@keanu73.net> on 2019-06-30
+/* All rights reserved.
+*/
 const { RichEmbed, version } = require("discord.js")
 const moment = require("moment")
 require("moment-duration-format")

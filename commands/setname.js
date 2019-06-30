@@ -1,14 +1,18 @@
+/*
+/* Copyright (c) 2019 thomasvt1 / MemeBot
+/* Last modified by Keanu73 <keanu@keanu73.net> on 2019-06-30
+/* All rights reserved.
+*/
+
 exports.run = async (client, message, [name], level) => {
 	if (client.config.node_env === "DEVELOPMENT") return false
 
 	const check = await client.api.getLink(message.author.id)
 
 	if (!name) return message.channel.send(":question: I don't remember your name, and you haven't given me one.\n```Use $setname reddit_username to set your name```")
-
 	if (name.length < 3) return message.channel.send(":thinking: Something tells me that is not a Reddit username")
 
 	const linkcheck = await client.api.getRedditLink(name)
-
 	if (linkcheck) return message.channel.send(`:exclamation: Someone (<@${linkcheck}>) already has this username.`)
 
 	const profile = await client.api.getInvestorProfile(name).catch(err => client.logger.err(err))
