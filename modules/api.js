@@ -139,7 +139,7 @@ api.getRedditLink = async (client, reddit_name) => {
 api.getLink = async (client, discord_id) => {
 	if (config.node_env === "DEVELOPMENT") return false
 
-	const link = await client.names.findOne({ _id: discord_id}).lean()
+	const link = await client.names.findOne({ _id: discord_id }).lean()
 
 	if (!link) return false
 

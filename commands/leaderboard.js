@@ -6,9 +6,9 @@ const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 exports.run = async (client, message, args) => {
 	// arguments: <name> <all, traders, assocs, exec, board> <best/worst> <networth, activity, contribution, investments> <page>
-	const settings = message.guild ? client.getSettings(message.guild.id) : client.settings.get("default")
+	const settings = await client.getSettings(client, message.guild.id)
 	const perPage = 20
-	const check = await client.api.getLink(message.author.id)
+	const check = await client.api.getLink(client, message.author.id)
 
 	if (!args[0] && !check) return message.channel.send(":question: Please supply a Reddit username.")
 
