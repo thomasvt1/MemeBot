@@ -9,29 +9,14 @@ const config = {
 	// Your Bot's Token. Available on https://discordapp.com/developers/applications/me
 	token: "bottoken",
 
-	// Default per-server settings. New guilds have these settings. 
-
-	// DO NOT LEAVE ANY OF THESE BLANK, AS YOU WILL NOT BE ABLE TO UPDATE THEM
-	// VIA COMMANDS IN THE GUILD.
-  
-	defaultSettings: {
-		prefix: "&",
-		investmentChannel: 0,
-		mentionEveryone: false
-	},
-
 	// Websocket settings for #investment-watch
 	websocket: {
 		url: "wss://meme.ws.thomasvt.xyz"
 	},
 	
-	//MySQL DB for storing reddit usernames
-	mysql: {
-		host: "127.0.0.1",
-		port: 3306,
-		user: "user",
-		password: "password",
-		database: "memecord"
+	//MongoDB for storing reddit usernames and guild settings
+	mongodb: {
+		url: "mongodb://127.0.0.1:27017/memebot"
 	},
 
 	// What we use to fetch submissions, etc

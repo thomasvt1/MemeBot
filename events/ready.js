@@ -2,8 +2,8 @@ const WebSocket = require("ws")
 const websockethandler = require("../modules/websocket.js")
 module.exports = async client => {
 
-	// Set the default config
-	client.settings.set("default", client.config.defaultSettings)
+	const defaultq = await client.settings.findOne({ _id: "default" })
+	if (!defaultq) await client.settings.create({ _id: "default" })
 
 	// Log that the bot is online.
 	client.logger.log(`${client.user.tag}, ready to serve ${client.users.size} users in ${client.guilds.size} servers.`, "ready")

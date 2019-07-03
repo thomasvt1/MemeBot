@@ -43,7 +43,7 @@
     "lru-cache": "^5.1.1",
     "moment": "^2.24.0",
     "moment-duration-format": "^2.3.2",
-    "mysql2": "^1.6.5",
+    "mongoose": "^5.6.2",
     "pastebin-js": "^1.0.2",
     "plotly": "^1.0.6",
     "pngjs": "^3.4.0",

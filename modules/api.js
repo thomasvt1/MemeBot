@@ -2,19 +2,16 @@
 /* api.numberWithCommas
 /* Copyright (c) 2019 thomasvt1 / MemeBot
 /* Original copyright (c) 2018 - 2019 dzervas
-/* Last modified by Keanu73 <keanu@keanu73.net> on 2019-06-30
 /* All rights reserved.
 /*
 /* parseInvestmentAmount
 /* Copyright (c) 2019 thomasvt1 / MemeBot
 /* Original copyright (c) 2019 thomasvt1
-/* Last modified by Keanu73 <keanu@keanu73.net> on 2019-06-30
 /* All rights reserved.
 /*
 /* api.getInvestments
 /* Copyright (c) 2019 thomasvt1 / MemeBot
 /* Original copyright (c) 2019 thomasvt1
-/* Last modified by Keanu73 <keanu@keanu73.net> on 2019-06-30
 /* All rights reserved.
 */
 
@@ -25,7 +22,6 @@
 const api = {}
 
 const config = require("../config.js")
-const mysql = require("mysql2/promise")
 const rp = require("request-promise")
 const snoowrap = require("snoowrap")
 const LRU = require("lru-cache")
@@ -39,18 +35,6 @@ api.r = new snoowrap({
 	clientSecret: config.reddit.clientSecret,
 	refreshToken: config.reddit.refreshToken
 })
-
-// Add MySQL database for storing Discord + Reddit links
-const pool = config.node_env !== "DEVELOPMENT" ? mysql.createPool({
-	host: config.mysql.host,
-	port: config.mysql.port,
-	user: config.mysql.user,
-	password: config.mysql.password,
-	database: config.mysql.database,
-	waitForConnections: true,
-	connectionLimit: 10,
-	queueLimit: 0
-}) : false
 
 api.doRequest = async (options, usecache = true, time = MAX_CACHE_TIME) => {
 	console.log(options.uri)
@@ -142,44 +126,51 @@ api.getTop100 = async (amount = 25, page) => {
 	return api.doRequest(options)
 }
 
-api.getRedditLink = async (reddit_name) => {
+api.getRedditLink = async (client, reddit_name) => {
 	if (config.node_env === "DEVELOPMENT") return false
 
-	const [link] = await pool.query("SELECT discord_id FROM reddit_link WHERE reddit_name = ?", [reddit_name])
+	const link = await client.names.findOne({ reddit_name: reddit_name }).lean()
 
-	if (!link[0]) return false
+	if (!link) return false
 
-	return link[0].discord_id
+	return link.discord_id
 }
 
-api.getLink = async (discord_id) => {
+api.getLink = async (client, discord_id) => {
 	if (config.node_env === "DEVELOPMENT") return false
 
-	const [link] = await pool.query("SELECT reddit_name FROM reddit_link WHERE discord_id = ?", [discord_id])
+	const link = await client.names.findOne({ _id: discord_id}).lean()
 
-	if (!link[0]) return false
+	if (!link) return false
 
-	return link[0].reddit_name
+	return link.reddit_name
 }
 
-api.setLink = async (discord_id, reddit_name) => {
+api.setLink = async (client, discord_id, reddit_name) => {
 	if (config.node_env === "DEVELOPMENT") return false
 
-	const res = await pool.query("INSERT INTO reddit_link (discord_id, reddit_name) VALUES (?, ?)", [discord_id, reddit_name])
+	const res = await client.names.create({
+		_id: discord_id,
+		reddit_name: reddit_name
+	})
 
 	if (!res) return false
 
 	return res
 }
 
-api.updateLink = async (discord_id, reddit_name) => {
+api.updateLink = async (client, discord_id, reddit_name) => {
 	if (config.node_env === "DEVELOPMENT") return false
 
-	const res = await pool.query("UPDATE reddit_link SET reddit_name = ? WHERE discord_id = ?", [reddit_name, discord_id])
+	const link = await client.names.findOne({ _id: discord_id })
 
-	if (!res) return false
+	if (!link) return false
 
-	return res
+	link.reddit_name = reddit_name
+
+	await link.save()
+
+	return true
 }
 
 // Some hacky regex to make numbers look nicer

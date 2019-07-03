@@ -1,6 +1,5 @@
 /* Copyright (c) 2019 thomasvt1 / MemeBot
-/* Original copyright (c) 2018 YorkAARGH
-/* Last modified by Keanu73 <keanu@keanu73.net> on 2019-06-30
+/* Original copyright (c) 2018 YorkAARGH (AnIdiotsGuide / guidebot)
 /* All rights reserved.
 /*
 MIT License
@@ -37,7 +36,7 @@ module.exports = async (client, message) => {
 
 	// Grab the settings for this server from Enmap.
 	// If there is no guild, get default conf (DMs)
-	const settings = message.guild ? client.getSettings(message.guild.id) : client.settings.get("default")
+	const settings = await client.getSettings(message.guild.id)
 
 	// Checks if the bot was mentioned, with no message after it, returns the prefix.
 	const prefixMention = new RegExp(`^<@!?${client.user.id}>( |)$`)
@@ -94,7 +93,7 @@ module.exports = async (client, message) => {
 	const excludedcmds = ["top100", "leaderboard", "setname"]
 
 	if (cmd.help.category === "MemeEconomy" && !excludedcmds.some(c => cmd.help.name === c)) {
-		const check = await client.api.getLink(message.author.id)
+		const check = await client.api.getLink(client, message.author.id)
 
 		if (!args[0] && !check) return message.channel.send(":question: Please supply a Reddit username.")
 
@@ -120,7 +119,7 @@ module.exports = async (client, message) => {
 
 		const firmrole = profile.firm_role === "" ? "Floor Trader" : firmroles[profile.firm_role]
 
-		const discord_id = await client.api.getRedditLink(username.toLowerCase())
+		const discord_id = await client.api.getRedditLink(client, username.toLowerCase())
 
 		const history = await client.api.getInvestorHistory(username.toLowerCase()).catch(err => client.logger.error(err.stack))
 

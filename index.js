@@ -1,6 +1,5 @@
 /* Copyright (c) 2019 thomasvt1 / MemeBot
 /* Original copyright (c) 2018 YorkAARGH
-/* Last modified by Keanu73 <keanu@keanu73.net> on 2019-06-30
 /* All rights reserved.
 /*
 MIT License
@@ -33,6 +32,7 @@ if (Number(process.version.slice(1).split(".")[0]) < 8) throw new Error("Node 8.
 
 // Load up the discord.js library
 const Discord = require("discord.js")
+
 // We also load the rest of the things we need in this file:
 const { promisify } = require("util")
 const readdir = promisify(require("fs").readdir)
@@ -48,6 +48,8 @@ if (!require("./config.js")) throw new Error("You don't have a config file! Plea
 client.config = require("./config.js")
 // client.config.token contains the bot's token
 // client.config.prefix contains the message prefix
+
+
 
 // Add Meme.Market and Reddity related functions into codebase
 client.api = require("./modules/api.js")
@@ -66,11 +68,6 @@ require("./modules/functions.js")(client)
 // catalogued, listed, etc.
 client.commands = new Enmap()
 client.aliases = new Enmap()
-
-// Now we integrate the use of Evie's awesome Enhanced Map module, which
-// essentially saves a collection to disk. This is great for per-server configs,
-// and makes things extremely easy for this purpose.
-client.settings = new Enmap({ name: "settings" })
 
 // We're doing real fancy node 8 async/await stuff here, and to do that
 // we need to wrap stuff in an anonymous function. It's annoying but it works.
@@ -109,6 +106,17 @@ const init = async () => {
 
 	// Here we login the client.
 	client.login(client.config.token)
+
+	const database = await require("./database/database").initialize(client.config.mongodb.url).catch(err => {
+		client.logger.error(`Failed to intialize Database: ${err}`)
+		process.exit(1)
+	})
+
+	// eslint-disable-next-line no-undef
+	client.settings = database.Guilds
+
+	// eslint-disable-next-line no-undef
+	client.names = database.Names
 
 	// End top-level async/await function.
 }
