@@ -24,6 +24,11 @@ exports.run = async (client, message, [_username, _redditlink, user, _history, f
 	
 	const floortraders = firm.size - firm.execs - firm.assocs
 
+	let boardmemc = 0
+	if (firm.cfo !== "" && firm.cfo !== "0") boardmemc += 1
+	if (firm.coo !== "" && firm.coo !== "0") boardmemc += 1
+	if (firm.ceo !== "" && firm.ceo !== "0") boardmemc += 1
+
 	const payout = await client.math.calculateFirmPayout(firm.balance, firm.size, firm.execs, firm.assocs, firm.cfo !== "" && firm.cfo !== "0" ? firm.cfo : false, firm.coo !== "" && firm.coo !== "0" ? firm.coo : false)
 
 	const firminfo = new RichEmbed()

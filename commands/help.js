@@ -33,10 +33,10 @@ a command, it is not shown to them. If a command name is given with the
 help command, its extended help is shown.
 */
 const { RichEmbed } = require("discord.js")
-exports.run = (client, message, args, level) => {
+exports.run = async (client, message, args, level) => {
 	// If no specific command is called, show all filtered commands.
 	if (!args[0]) {
-		const settings = message.guild ? client.getSettings(message.guild.id) : client.settings.get("default")
+		const settings = message.guild ? await client.getSettings(message.guild.id) : await client.settings.findOne({ _id: "default" })
 		const prefix = settings.prefix
 		const help = new RichEmbed()
 			.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")

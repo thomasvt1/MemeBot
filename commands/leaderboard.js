@@ -6,7 +6,7 @@ const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 exports.run = async (client, message, args) => {
 	// arguments: <name> <all, traders, assocs, exec, board> <best/worst> <networth, activity, contribution, investments> <page>
-	const settings = await client.getSettings(client, message.guild.id)
+	const settings = message.guild ? await client.getSettings(message.guild.id) : await client.settings.findOne({ _id: "default" })
 	const perPage = 20
 	const check = await client.api.getLink(client, message.author.id)
 

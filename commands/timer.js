@@ -5,8 +5,7 @@
 
 const moment = require("moment")
 const setTimeoutAt = require("safe-timers").setTimeoutAt
-exports.run = async (client, message, [_username, _redditlink, _user, history, _firm, _firmmembers, _firmrole, check], _level) => {
-	//if (!check) return message.channel.send(":exclamation: Please run `$setname` first.") 
+exports.run = async (client, message, [_username, _redditlink, _user, history, _firm, _firmmembers, _firmrole, _check], _level) => {
 
 	const currentinvestment = history[0]
 	if (currentinvestment.done) return message.channel.send(":exclamation: You don't have an active investment!")

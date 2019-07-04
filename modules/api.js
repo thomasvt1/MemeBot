@@ -133,7 +133,7 @@ api.getRedditLink = async (client, reddit_name) => {
 
 	if (!link) return false
 
-	return link.discord_id
+	return link._id
 }
 
 api.getLink = async (client, discord_id) => {
