@@ -42,7 +42,7 @@ exports.run = async (client, message, [_username, _redditlink, user, _history, f
 	if (floortraders > 0) firminfo.addField(`${floortraders} Floor Traders ${floorrank}`, `will get **${client.api.numberWithCommas(Math.trunc(payout.trader.amount))}** M¢ each\n(**${client.api.getSuffix(payout.trader.total)}** M¢ in total)`, false)
 	if (firm.assocs > 0) firminfo.addField(`${firm.assocs} Associates ${assocrank}`, `will get **${client.api.numberWithCommas(Math.trunc(payout.assoc.amount))}** M¢ each\n(**${client.api.getSuffix(payout.assoc.total)}** M¢ in total)`, false)
 	if (firm.execs > 0)	firminfo.addField(`${firm.execs} Executives ${execrank}`, `will get **${client.api.numberWithCommas(Math.trunc(payout.exec.amount))}** M¢ each\n(**${client.api.getSuffix(payout.exec.total)}** M¢ in total)`, false)
-	if (boardmems > 0) firminfo.addField(`Board Members ${boardmems}`, `will get **${client.api.numberWithCommas(Math.trunc(payout.board.amount))}** M¢ each\n(**${client.api.getSuffix(payout.board.total)}** M¢ in total)`, false)
+	if (boardmemc > 0) firminfo.addField(`Board Members ${boardmems}`, `will get **${client.api.numberWithCommas(Math.trunc(payout.board.amount))}** M¢ each\n(**${client.api.getSuffix(payout.board.total)}** M¢ in total)`, false)
 		.setThumbnail(firmimage)
 	return message.channel.send({ embed: firminfo })
 }
