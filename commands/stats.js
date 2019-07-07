@@ -91,7 +91,7 @@ exports.run = async (client, message, [username, discord_id, user, history, firm
 		.addField("Average investment profit (last 5)", `${profitprct_5.toFixed(2)}%`, true)
 		.addField("Investments in the past day", `${investments_today}`, true)
 		.addField("Last invested", `${lastinvested}`, true)
-		.addField("This week's profit", `${client.api.numberWithCommas(Math.trunc(weekprofit))} M¢`, true)
+		.addField("This week's profit", `**${client.api.numberWithCommas(Math.trunc(weekprofit))}** M¢`, true)
 		.addField("Week profit ratio", `${weekratio}%`, true)
 	if (discord_id) stats.setThumbnail(client.users.get(discord_id).displayAvatarURL)
 	if (!discord_id) stats.setThumbnail(redditpfp)
