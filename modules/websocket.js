@@ -8,15 +8,16 @@ const moment = require("moment")
 module.exports = async (client, investment) => {
 	// note: investment watch should return something like this
 	// { submid: reddit_post_id, upvotes: reddit_post_upvotes, comments: reddit_comments, timediff: postedat (seconds), investments: investments, highinvestments: highinvestments, username: reddit_poster, famous: false }
+	const famousmemers = ["organic_crystal_meth", "Hyp3r__", "SlothySurprise", "RegularNoodles", "JonathanTheZero", "TooEarlyForFlapjacks", "UncreativeFilth", "bleach_tastes_bad"]
 	client.guilds.forEach(async (guild) => {
 		// investment watch channel will equal as channel id
-		const settings = client.getSettings(guild)
+		const settings = await client.getSettings(guild)
 
 		if (settings.investmentChannel === 0) return
 
-		if (!client.channels.get(settings.investmentChannel)) return client.users.get("115156616256552962").send("Your #investment-watch channel is configured incorrectly!\nPlease use `&set edit investmentChannel <mention channel here>` to fix this problem.")
+		if (!client.channels.get(settings.investmentChannel)) return client.users.get(guild.ownerID).send("Your #investment-watch channel is configured incorrectly!\nPlease use `&set edit investmentChannel <mention channel here>` to fix this problem.")
 
-		const mentioneveryone = settings.mentionEveryone === "true" ? "@everyone" : ""
+		const mentioneveryone = settings.mentionEveryone === true ? "@everyone" : ""
 
 		const submission = await client.api.r.getSubmission(investment.submid).fetch().then((sub) => sub).catch(err => console.error(err))
 
@@ -24,7 +25,7 @@ module.exports = async (client, investment) => {
 
 		const firm = await client.api.getFirmProfile(user.firm).catch(err => client.logger.error(err.stack))
 
-		const famous = investment.famous ? "<:famousmemer:582821955489628166>" : ""
+		const famous = famousmemers.some(c => investment.username === c) ? "<:famousmemer:582821955489628166>" : ""
 
 		let firmemoji = ""
 		client.guilds.get("563439683309142016").emojis.forEach(async (e) => {
@@ -36,7 +37,7 @@ module.exports = async (client, investment) => {
 		let msg = ""
 		msg += `This meme was posted ${timeposted} and should be profitable!\n`
 		msg += `There are currently ${investment.comments} comments and ${investment.upvotes} upvotes. I also count ${investment.investments} investments and ${investment.highinvestments} high investments.\n`
-		msg += `https://reddit.com/r/MemeEconomy/comments/${investment.submid}`
+		msg += `https://redd.it/${investment.submid}`
 
 		const investmentinfo = new RichEmbed()
 			.setAuthor("MemeBot Investment Watch", client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
@@ -45,12 +46,7 @@ module.exports = async (client, investment) => {
 			.setTitle(`${famous} u/${investment.username} ${firmemoji}`)
 			.setURL(`https://meme.market/user.html?account=${investment.username}`)
 			.setThumbnail(submission.thumbnail)
-			.addField(`**[${submission.title}](https://redd.it/${investment.submid})** by [u/${investment.username}](https://meme.market/user.html?account=${investment.username})`)
-			.addField("Time posted", timeposted, true)
-			.addField("Upvotes", investment.upvotes.toString(), true)
-			.addField("Investments", investment.investments.toString(), true)
-			.addField("High investments", investment.highinvestments.toString(), true)
-			.addField("Comments", investment.comments.toString(), true)
+			.addField(`**__[${submission.title}](https://redd.it/${investment.submid})__**`, msg)
 		client.channels.get(settings.investmentChannel).send(mentioneveryone, { embed: investmentinfo })
 	})
 	return "Investment Watch: Success"
