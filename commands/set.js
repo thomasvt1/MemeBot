@@ -40,7 +40,8 @@ SOFTWARE.
 exports.run = async (client, message, [action, key, ...value], level) => { // eslint-disable-line no-unused-vars
 
 	// Retrieve current guild settings (merged) and overrides only.
-	const settings = await client.getSettings(message.guild)
+	const settings = await client.settings.findOne({ _id: message.guild.id })
+	const settingsObj = await client.settings.findOne({ _id: message.guild.id }).lean()
 	const defaults = await client.settings.findOne({ _id: "default" })
 	if (!settings) await client.settings.create({
 		_id: message.guild.id
@@ -56,10 +57,7 @@ exports.run = async (client, message, [action, key, ...value], level) => { // es
 		// User must specify a value to change.
 		if (joinedValue.length < 1) return message.reply("Please specify a new value")
 		// User must specify a different value than the current one.
-		if (joinedValue === settings[key]) return message.reply("This setting already has that value!")
-
-		// If the guild does not have any overrides, initialize it.
-		if (!client.settings.has(message.guild.id)) client.settings.set(message.guild.id, {})
+		if (joinedValue === settings.get(key)) return message.reply("This setting already has that value!")
 
 		if (key === "investmentChannel" && message.mentions.channels.first()) joinedValue = message.mentions.channels.first().id
 
@@ -68,7 +66,8 @@ exports.run = async (client, message, [action, key, ...value], level) => { // es
 		if (key === "mentionEveryone" && joinedValue !== "true" && joinedValue !== "false") return message.reply("`mentionEveryone` can only be true or false.")
 
 		// Modify the guild overrides directly.
-		client.settings.set(message.guild.id, joinedValue, key)
+		settings[key] = joinedValue
+		await settings.save()
 
 		// Confirm everything is fine!
 		message.reply(`\`${key}\` successfully edited to \`${joinedValue}\``)
@@ -85,7 +84,8 @@ exports.run = async (client, message, [action, key, ...value], level) => { // es
 		// If they respond with y or yes, continue.
 		if (["y", "yes"].includes(response.toLowerCase())) {
 			// We delete the `key` here.
-			client.settings.delete(message.guild.id, key)
+			settings[key] = defaults[key]
+			await settings.save()
 			message.reply(`\`${key}\` was successfully reset to default.`)
 		} else
 		// If they respond with n or no, we inform them that the action has been cancelled.
@@ -101,8 +101,8 @@ exports.run = async (client, message, [action, key, ...value], level) => { // es
 	} else {
 		// Otherwise, the default action is to return the whole configuration;
 		const array = []
-		Object.entries(settings).forEach(([key, value]) => {
-			array.push(`${key}${" ".repeat(20 - key.length)}::  ${value}`)
+		Object.entries(settingsObj).forEach(([key, value]) => {
+			if (key !== "_id" && key !== "__v") array.push(`${key}${" ".repeat(20 - key.length)}::  ${value}`)
 		})
 		await message.channel.send(`= Current Guild Settings =\n${array.join("\n")}`, { code: "asciidoc" })
 	}

@@ -8,4 +8,4 @@
 
 A Discord bot that provides useful info on investors/firms in [MemeEconomy](https://reddit.com/r/MemeEconomy).
 
-If you would like to deploy the bot in your own [Docker](https://www.docker.com/products/docker-desktop) instance, just run `docker-compose build bot mysql`. For developing purposes, though, all you need to do is just leave "node_env" on "DEVELOPMENT" and run index.js as normal.
+If you would like to deploy the bot in your own [Docker](https://www.docker.com/products/docker-desktop) instance, just run `deploy.sh` or if on Windows, run the commands in the script manually. For developing purposes, though, all you need to do is just leave "node_env" on "DEVELOPMENT" and run index.js as normal.
