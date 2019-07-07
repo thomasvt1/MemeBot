@@ -6,7 +6,7 @@
 const moment = require("moment")
 const setTimeoutAt = require("safe-timers").setTimeoutAt
 exports.run = async (client, message, args, _level) => {
-	const settings = message.guild ? await client.getSettings(message.guild.id) : await client.settings.findOne({ _id: "default" })
+	const settings = message.guild ? await client.getSettings(message.guild) : await client.settings.findOne({ _id: "default" })
 	let username = args[0] === undefined ? args[0] : args[0].replace(/^((\/|)u\/)/g, "")
 	const check = await client.api.getLink(client, message.author.id)
 	let user = await client.api.getInvestorProfile(username).catch(err => client.logger.error(err.stack))

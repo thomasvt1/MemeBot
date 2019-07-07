@@ -36,7 +36,7 @@ module.exports = async (client, message) => {
 
 	// Grab the settings for this server from Enmap.
 	// If there is no guild, get default conf (DMs)
-	const settings = message.guild ? await client.getSettings(message.guild.id) : await client.settings.findOne({ _id: "default" })
+	const settings = message.guild ? await client.getSettings(message.guild) : await client.settings.findOne({ _id: "default" })
 
 	// Checks if the bot was mentioned, with no message after it, returns the prefix.
 	const prefixMention = new RegExp(`^<@!?${client.user.id}>( |)$`)
@@ -81,7 +81,7 @@ module.exports = async (client, message) => {
 	// To simplify message arguments, the author's level is now put on level (not member so it is supported in DMs)
 	// The "level" command module argument will be deprecated in the future.
 	message.author.permLevel = level
-  
+
 	message.flags = []
 	while (args[0] && args[0][0] === "-") {
 		message.flags.push(args.shift().slice(1))
@@ -93,7 +93,7 @@ module.exports = async (client, message) => {
 	const excludedcmds = ["top100", "leaderboard", "setname", "history", "timer"]
 
 	if (cmd.help.category === "MemeEconomy" && !excludedcmds.some(c => cmd.help.name === c)) {
-		const settings = message.guild ? await client.getSettings(message.guild.id) : await client.settings.findOne({ _id: "default" })
+		const settings = message.guild ? await client.getSettings(message.guild) : await client.settings.findOne({ _id: "default" })
 		let isusername = true
 		let username = args[0] === undefined ? args[0] : args[0].replace(/^((\/|)u\/)/g, "")
 		const check = await client.api.getLink(client, message.author.id)
@@ -114,7 +114,7 @@ module.exports = async (client, message) => {
 		const history = await client.api.getInvestorHistory(username.toLowerCase()).catch(err => client.logger.error(err.stack))
 
 		const firmmembers = await client.api.getFirmMembers(user.firm).catch(err => client.logger.error(err.stack))
-		
+
 		const arguments = [username, discord_id, user, history, firm, firmmembers, check]
 
 		args = arguments

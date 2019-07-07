@@ -92,12 +92,10 @@ exports.run = async (client, message, [username, _discord_id, user, _history, fi
 		// Calculate average investment per day since last firm payout
 		let avginvestments = 0
 		const history = await client.api.getInvestorHistory(member.name, 50)
-		let days = moment().diff(moment.unix(firm.last_payout), "days")
-		if (days < 1) days = 7
+		const days = moment().diff(moment.unix(firm.last_payout), "days")
+		const weekago = moment(moment().subtract(7, "days")).unix()
 		for (const inv of history) {
-			if (moment().diff(moment.unix(firm.last_payout), "days") > 1 && inv.time < firm.last_payout)
-				break
-			if (moment().diff(moment.unix(firm.last_payout), "days") < 1 && inv.time < moment.unix(moment().subtract(7, "days")))
+			if (inv.time < firm.last_payout)
 				break
 			avginvestments++
 		}
@@ -164,11 +162,11 @@ exports.run = async (client, message, [username, _discord_id, user, _history, fi
 		.addField(yourrole, firmrole, true)
 		.addField(`Most active investor since ${toorecent}`, `[u/${mostactive.name}](https://meme.market/user.html?account=${mostactive.name})\n**${mostactive.avginvestments}** average investments per day\nLast invested: ${mostactiveinvested}`, true)
 		.addField(`Least active investor since ${toorecent}`, `[u/${leastactive.name}](https://meme.market/user.html?account=${leastactive.name})\n**${leastactive.avginvestments}** average investments per day\nLast invested: ${leastactiveinvested}`, true)
-		.addField("CEO", `[u/${firm.ceo}](https://meme.market/user.html?account=${firm.ceo})`, true)
-		.addField("COO", firm.coo === "" || firm.coo === "0" ? "None" : `[u/${firm.coo}](https://meme.market/user.html?account=${firm.coo})`, true)
-		.addField("CFO", firm.cfo === "" || firm.cfo === "0" ? "None" : `[u/${firm.cfo}](https://meme.market/user.html?account=${firm.cfo})`, true)
-		.addField("Tax", `${firm.tax}%`, true)
-		.addField("Size", size, true)
+		.addField("CEO", `[u/${firm.ceo}](https://meme.market/user.html?account=${firm.ceo})`, false)
+		.addField("COO", firm.coo === "" || firm.coo === "0" ? "None" : `[u/${firm.coo}](https://meme.market/user.html?account=${firm.coo})`, false)
+		.addField("CFO", firm.cfo === "" || firm.cfo === "0" ? "None" : `[u/${firm.cfo}](https://meme.market/user.html?account=${firm.cfo})`, false)
+		.addField("Tax", `${firm.tax}%`, false)
+		.addField("Size", size, false)
 		.addField("Week's best profiteer", `[u/${weekbestprofiteer.name}](https://meme.market/user.html?account=${weekbestprofiteer.name})\n**${client.api.numberWithCommas(Math.trunc(weekbestprofiteer.profit))}** M¢${bfirmconstr}`, false)
 		.addField("Week's worst profiteer", `[u/${weekworstprofiteer.name}](https://meme.market/user.html?account=${weekworstprofiteer.name})\n**${client.api.numberWithCommas(Math.trunc(weekworstprofiteer.profit))}** M¢${wfirmconstr}`, false)
 		.setThumbnail(firmimage)

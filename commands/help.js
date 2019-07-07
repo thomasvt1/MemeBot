@@ -36,7 +36,7 @@ const { RichEmbed } = require("discord.js")
 exports.run = async (client, message, args, level) => {
 	// If no specific command is called, show all filtered commands.
 	if (!args[0]) {
-		const settings = message.guild ? await client.getSettings(message.guild.id) : await client.settings.findOne({ _id: "default" })
+		const settings = message.guild ? await client.getSettings(message.guild) : await client.settings.findOne({ _id: "default" })
 		const prefix = settings.prefix
 		const help = new RichEmbed()
 			.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
@@ -45,7 +45,7 @@ exports.run = async (client, message, args, level) => {
 			.setThumbnail(client.user.avatarURL)
 			.setTitle("List of Commands")
 			.setDescription(`You can set a default account to run these commands with by using ${prefix}setname.`)
-			// Filter all commands by which are available for the user's level, using the <Collection>.filter() method.
+		// Filter all commands by which are available for the user's level, using the <Collection>.filter() method.
 		const myCommands = message.guild ? client.commands.filter(cmd => client.levelCache[cmd.conf.permLevel] <= level) : client.commands.filter(cmd => client.levelCache[cmd.conf.permLevel] <= level && cmd.conf.guildOnly !== true)
 		myCommands.forEach(c => {
 			help.addField(c.help.name, c.help.description, false)

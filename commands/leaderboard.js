@@ -7,7 +7,7 @@ const moment = require("moment")
 exports.run = async (client, message, args) => {
 	// arguments: <name> <all, traders, assocs, exec, board> <best/worst> <networth, activity, contribution, investments> <page>
 	const perPage = 20
-	const settings = message.guild ? await client.getSettings(message.guild.id) : await client.settings.findOne({ _id: "default" })
+	const settings = message.guild ? await client.getSettings(message.guild) : await client.settings.findOne({ _id: "default" })
 	let isusername = true
 	let username = args[0] === undefined ? args[0] : args[0].replace(/^((\/|)u\/)/g, "")
 	const check = await client.api.getLink(client, message.author.id)
@@ -24,13 +24,13 @@ exports.run = async (client, message, args) => {
 	const firm = await client.api.getFirmProfile(user.firm).catch(err => client.logger.error(err.stack))
 	const payout = await client.math.calculateFirmPayout(firm.balance, firm.size, firm.execs, firm.assocs, firm.cfo !== "" && firm.cfo !== "0" ? firm.cfo : false, firm.coo !== "" && firm.coo !== "0" ? firm.coo : false)
 
-	const ranks = {all: "all", traders: "traders", assocs: "assoc", execs: "exec", board: { cfo: "cfo", coo: "coo", ceo: "ceo"} }
+	const ranks = { all: "all", traders: "traders", assocs: "assoc", execs: "exec", board: { cfo: "cfo", coo: "coo", ceo: "ceo" } }
 	const modifiers = { best: "best", worst: "worst" }
 	const types = { networth: "networth", activity: "activity", contribution: "contribution", investments: "investments" }
-	const typestrs = { networth: "Net Worth", activity: "Last Invested", contribution: "Contribution", investments: "Average Investments"}
+	const typestrs = { networth: "Net Worth", activity: "Last Invested", contribution: "Contribution", investments: "Average Investments" }
 	const rankarg = isusername ? args[1] : args[0]
 	const modifierarg = isusername ? args[2] : args[1]
-	const typearg = isusername ? args[3] : args[2] 
+	const typearg = isusername ? args[3] : args[2]
 	let rank = ""
 	let modifier = ""
 	let type = ""
@@ -132,7 +132,7 @@ exports.run = async (client, message, args) => {
 		if (modifier === "best") firmmembers.sort((a, b) => b.avginvestments - a.avginvestments)
 		if (modifier === "worst") firmmembers.sort((a, b) => a.avginvestments - b.avginvestments)
 	}
-	
+
 	firmmembers = firmmembers.slice(begin, offset)
 
 	const firmranks = {
@@ -175,10 +175,10 @@ exports.run = async (client, message, args) => {
 		stats.addField(`\`${i + ioffset}.\` u/${investor.name} - ${ifirmrole}`, `
 💰 \`Net worth:\` **${client.api.getSuffix(investor.networth)} M¢**
 📤 \`Contribution since payout:\` **${client.api.numberWithCommas(investor.contribution)} M¢**
-🎯 \`Contribution / estimated payout:\` **${investor.difference.toFixed(2)}**%
+🎯 \`Contribution / payout:\` **${investor.difference.toFixed(2)}**%
 🏅 \`Average investments per day:\` **${investor.avginvestments}**
 🎖 \`Completed investments:\` **${investor.completed}**
-⏲ \`Last invested:\` ${lastinvested}\n\u200b`, false)
+⏲ \`Last invested:\` ${lastinvested}\n${i === firmmembers.length ? "" : "\u200b"}`, false)
 	}
 
 	return message.channel.send({ embed: stats })

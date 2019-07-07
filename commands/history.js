@@ -6,7 +6,7 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 exports.run = async (client, message, args, _level) => {
-	const settings = message.guild ? await client.getSettings(message.guild.id) : await client.settings.findOne({ _id: "default" })
+	const settings = message.guild ? await client.getSettings(message.guild) : await client.settings.findOne({ _id: "default" })
 	let isusername = true
 	let username = args[0] === undefined ? args[0] : args[0].replace(/^((\/|)u\/)/g, "")
 	const check = await client.api.getLink(client, message.author.id)
@@ -66,7 +66,7 @@ exports.run = async (client, message, args, _level) => {
 			break
 		investments_on_day++
 	}
-    
+
 	if (isNaN(investment) || investment === undefined) return message.channel.send(":thinking: Is this a real number?")
 
 	if (!history[investment]) return message.channel.send(":exclamation: You specified an investment past your time!")
@@ -83,7 +83,7 @@ exports.run = async (client, message, args, _level) => {
 	const maturedat = moment.unix(lastinvestment.time + 14400).format("ddd Do MMM YYYY [at] HH:mm [UTC]ZZ") // 14400 = 4 hours
 
 	const investments = await client.api.getInvestments(await lastpost.comments.fetchAll())
-    
+
 	const broke_even = Math.round(client.math.calculateBreakEvenPoint(lastinvestment.upvotes))
 	const redditpfp = await client.api.r.getUser(username).fetch().then((usr) => usr.icon_img)
 
