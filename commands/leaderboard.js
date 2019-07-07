@@ -27,12 +27,14 @@ exports.run = async (client, message, args) => {
 	const ranks = {all: "all", traders: "traders", assocs: "assoc", execs: "exec", board: { cfo: "cfo", coo: "coo", ceo: "ceo"} }
 	const modifiers = { best: "best", worst: "worst" }
 	const types = { networth: "networth", activity: "activity", contribution: "contribution", investments: "investments" }
+	const typestrs = { networth: "Net Worth", activity: "Last Invested", contribution: "Contribution", investments: "Average Investments"}
 	const rankarg = isusername ? args[1] : args[0]
 	const modifierarg = isusername ? args[2] : args[1]
 	const typearg = isusername ? args[3] : args[2] 
 	let rank = ""
 	let modifier = ""
 	let type = ""
+	let typestr = ""
 	let page = check ? args[4] : args[3]
 
 	if (ranks[rankarg]) rank = ranks[rankarg]
@@ -46,6 +48,8 @@ exports.run = async (client, message, args) => {
 	if (types[typearg]) type = types[typearg]
 
 	if (type === "") return message.channel.send(`:exclamation: Invalid specifier type! Refer to ${settings.prefix}help leaderboard.`)
+
+	if (typestrs[typearg]) typestr = typestrs[typearg]
 
 	if (page && page < 1) return message.channel.send(`:exclamation: There is no page ${page}!`)
 
@@ -159,7 +163,7 @@ exports.run = async (client, message, args) => {
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
 		.setColor("GOLD")
 		.setFooter(`Page ${page} of ${pages} | Made by Thomas van Tilburg and Keanu73 with ❤️`, "https://i.imgur.com/1t8gmE7.png")
-		.setTitle(`${modifiers[modifierarg] === "best" ? "Top" : "Bottom"} ${rank === "all" ? "Investors" : firmranks[rankarg]} of ${firm.name}`)
+		.setTitle(`${modifiers[modifierarg] === "best" ? "Top" : "Bottom"} ${rank === "all" ? "Investors" : firmranks[rankarg]} of ${firm.name} by ${typestr}`)
 		.setURL("https://meme.market/leaderboards.html?season=1")
 		.setThumbnail(firmimage)
 
