@@ -6,7 +6,7 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 const fs = require("fs")
-exports.run = async (client, message, [username, _redditlink, user, _history, firm, _firmmembers, firmrole, check], _level) => {
+exports.run = async (client, message, [username, _discord_id, user, _history, firm, _firmmembers, check], _level) => {
 	// Here we calculate the average investment profit of the entire firm
 	// by listing out all of each firm member's investments, then pushing them
 	// all into one array. We then average them all out.
@@ -138,6 +138,17 @@ exports.run = async (client, message, [username, _redditlink, user, _history, fi
 	if (firm.assocs > 0) size += `\n**${firm.assocs}** associate${firm.assocs > 1 ? "s" : ""}`
 	if (firm.execs > 0) size += `\n**${firm.execs}** executive${firm.execs > 1 ? "s" : ""}`
 	size += `\n**${board_members}** board member${board_members > 1 ? "s" : ""}`
+
+	const firmroles = {
+		"": "Floor Trader",
+		assoc: "Associate",
+		exec: "Executive",
+		coo: "COO",
+		cfo: "CFO",
+		ceo: "COO"
+	}
+
+	const firmrole = firmroles[user.firm_role]
 
 	// When my PR is implemented, replace "Completed investments" with "Rank" (in leaderboard)
 

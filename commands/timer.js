@@ -5,16 +5,31 @@
 
 const moment = require("moment")
 const setTimeoutAt = require("safe-timers").setTimeoutAt
-exports.run = async (client, message, [_username, _redditlink, _user, history, _firm, _firmmembers, _firmrole, _check], _level) => {
+exports.run = async (client, message, args, _level) => {
+	const settings = message.guild ? await client.getSettings(message.guild.id) : await client.settings.findOne({ _id: "default" })
+	let username = args[0] === undefined ? args[0] : args[0].replace(/^((\/|)u\/)/g, "")
+	const check = await client.api.getLink(client, message.author.id)
+	let user = await client.api.getInvestorProfile(username).catch(err => client.logger.error(err.stack))
+	let isusername = true
+	if (user.id === 0 && check) {
+		user = await client.api.getInvestorProfile(check).catch(err => client.logger.error(err.stack))
+		username = user.name
+		isusername = false
+	}
+
+	if (username && user.id === 0 && !check) return message.channel.send(":question: I couldn't find that MemeEconomy user.")
+	if (username === undefined && user.id === 0 && !check) return message.channel.send(`:question: Please supply a Reddit username, or use \`${settings.prefix}setname <reddit username>\`.`)
+
+	const history = await client.api.getInvestorHistory(username.toLowerCase()).catch(err => client.logger.error(err.stack))
 
 	const currentinvestment = history[0]
-	if (currentinvestment.done) return message.channel.send(":exclamation: You don't have an active investment!")
+	if (currentinvestment.done) return message.channel.send(`:exclamation: ${isusername ? "They" : "You"} don't have an active investment!`)
 
 	const timediff = currentinvestment.time + 14400
 	const timeout = timediff * 1000
 	const maturesin = moment.duration(timediff - moment().unix(), "seconds").format("[**]H[**] [hour] [and] [**]m[**] [minutes]")
 
-	message.channel.send(`:white_check_mark: I will remind you in DMs when your investment has matured in ${maturesin}.`)
+	message.channel.send(`:bell: I will remind you in DMs when your investment has matured in ${maturesin}.`)
 	return setTimeoutAt(async () => client.users.get(message.author.id).send("Your investment has matured!"), timeout)
 }
 

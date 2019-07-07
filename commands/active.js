@@ -5,7 +5,7 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 require("moment-duration-format")
-exports.run = async (client, message, [username, _redditlink, user, history, firm, _firmmembers, _firmrole, check], _level) => {
+exports.run = async (client, message, [username, _discord_id, user, history, firm, _firmmembers, check], _level) => {
 	if (!history || !history.length) return message.channel.send(`:exclamation: ${check ? "You" : "They"} haven't invested before!`)
 
 	const currentinvestment = !history[0].done ? history[0] : false // Simple ternary to check whether current investment is running
@@ -45,6 +45,7 @@ exports.run = async (client, message, [username, _redditlink, user, history, fir
 	const investments = await client.api.getInvestments(await currentpost.comments.fetchAll())
 
 	const redditpfp = await client.api.r.getUser(currentpost.author.name).fetch().then((usr) => usr.icon_img)
+	const discord_id = await client.api.getRedditLink(client, currentpost.author.name)
 
 	const opfirmid = await client.api.getInvestorProfile(currentpost.author.name).then(investor => investor.firm).catch(err => client.logger.error(err.stack))
 	const opfirm = opfirmid !== 0 ? await client.api.getFirmProfile(opfirmid).then(firm => firm.name).catch(err => client.logger.error(err.stack)) : false
@@ -61,12 +62,10 @@ exports.run = async (client, message, [username, _redditlink, user, history, fir
 		.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
 		.setURL(`https://meme.market/user.html?account=${username}`)
 		.setImage(currentpost.thumbnail)
-		.setThumbnail(redditpfp)
+		.setThumbnail(discord_id ? client.users.get(discord_id).displayAvatarURL : redditpfp)
 		.addField("Current investment", `[u/${currentpost.author.name}](https://reddit.com/u/${currentpost.author.name}) ${opfirmemoji}\n**__[${currentpost.title}](https://redd.it/${currentinvestment.post})__**\n\n**Matures in:** ${maturesin}\n**Amount of investments:** ${investments}\n\u200b`)
 		.addField("Upvotes", text_upvotes)
 		.addField("Profit", text_profit)
-	
-
 	return message.channel.send({ embed: stats })
 }
 

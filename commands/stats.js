@@ -5,7 +5,7 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 require("moment-duration-format")
-exports.run = async (client, message, [username, redditlink, user, history, firm, _firmmembers, firmrole, check], _level) => {
+exports.run = async (client, message, [username, discord_id, user, history, firm, _firmmembers, _check], _level) => {
 
 	// Calculate profit %
 	let profitprct = 0
@@ -34,7 +34,7 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 		weekprofit += profit
 		i++
 	}
-	
+
 	// Calculate amount of investments today
 	let investments_today = 0
 	for (const inv of history) {
@@ -43,7 +43,7 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 			break
 		investments_today++
 	}
-	
+
 	const weekratio = ((weekprofit / (user.networth - weekprofit)) * 100.0).toFixed(2)
 
 	const lastinvested = moment.duration(moment().unix() - history[0].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
@@ -62,11 +62,20 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 	const profitdifference = !history[0].done ? `\n(${forecastedprofit < 0 ? "-" : "+"}**${client.api.numberWithCommas(Math.trunc(forecastedprofit))}** M¢)` : ""
 
 	const redditpfp = await client.api.r.getUser(username).fetch().then((usr) => usr.icon_img)
-	
+
 	let firmemoji = ""
 	client.guilds.get("563439683309142016").emojis.forEach(async (e) => {
 		if (e.name === firm.name.toLowerCase().replace(/ /g, "")) firmemoji = `<:${e.identifier.toString()}>`
 	})
+
+	const firmroles = {
+		"": "Floor Trader",
+		assoc: "Associate",
+		exec: "Executive",
+		coo: "COO",
+		cfo: "CFO",
+		ceo: "COO"
+	}
 
 	const stats = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
@@ -77,16 +86,15 @@ exports.run = async (client, message, [username, redditlink, user, history, firm
 		.addField("Net worth", `**${client.api.numberWithCommas(user.networth)}** M¢ ${profitdifference}`, true)
 		.addField("Completed investments", `${client.api.numberWithCommas(user.completed)}`, true)
 		.addField("Rank", `**\`#${user.rank}\`**`, true)
-	if (user.firm !== 0) stats.addField("Firm", `**\`${firmrole}\`** of **\`${firm.name}\`**`, true)
+	if (user.firm !== 0) stats.addField("Firm", `**\`${firmroles[user.firm_role]}\`** of **\`${firm.name}\`**`, true)
 		.addField("Average investment profit", `${profitprct.toFixed(2)}%`, true)
 		.addField("Average investment profit (last 5)", `${profitprct_5.toFixed(2)}%`, true)
 		.addField("Investments in the past day", `${investments_today}`, true)
 		.addField("Last invested", `${lastinvested}`, true)
 		.addField("This week's profit", `${client.api.numberWithCommas(Math.trunc(weekprofit))} M¢`, true)
 		.addField("Week profit ratio", `${weekratio}%`, true)
-	if (!redditlink && check) stats.setThumbnail(client.users.get(message.author.id).displayAvatarURL)
-	if (redditlink) stats.setThumbnail(client.users.get(redditlink).displayAvatarURL)
-	if (!redditlink && !check) stats.setThumbnail(redditpfp)
+	if (discord_id) stats.setThumbnail(client.users.get(discord_id).displayAvatarURL)
+	if (!discord_id) stats.setThumbnail(redditpfp)
 	return message.channel.send({ embed: stats })
 }
 

@@ -14,6 +14,7 @@ exports.run = async (client, message, [page], _level) => {
 	const top100firms = []
 
 	const firmroles = {
+		"": "Floor Trader",
 		assoc: "Associate",
 		exec: "Executive",
 		coo: "COO",
@@ -31,7 +32,7 @@ exports.run = async (client, message, [page], _level) => {
 	for (let f = 0; f < 25; f++) {
 		const investor = top100[f]
 		const ifirm = investor.firm !== 0 ? await client.api.getFirmProfile(investor.firm).catch(err => client.logger.error(err.stack)) : false
-		!ifirm ? top100firms.push(false) : top100firms.push({ firm: ifirm.name, firmrole: investor.firm_role === "" ? "Floor Trader" : firmroles[investor.firm_role] })
+		!ifirm ? top100firms.push(false) : top100firms.push({ firm: ifirm.name, firmrole: firmroles[investor.firm_role] })
 	}
 
 	for (let i = 0; i < 25; i++) {

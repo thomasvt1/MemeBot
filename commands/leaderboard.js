@@ -6,33 +6,34 @@ const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 exports.run = async (client, message, args) => {
 	// arguments: <name> <all, traders, assocs, exec, board> <best/worst> <networth, activity, contribution, investments> <page>
-	const settings = message.guild ? await client.getSettings(message.guild.id) : await client.settings.findOne({ _id: "default" })
 	const perPage = 20
+	const settings = message.guild ? await client.getSettings(message.guild.id) : await client.settings.findOne({ _id: "default" })
+	let isusername = true
+	let username = args[0] === undefined ? args[0] : args[0].replace(/^((\/|)u\/)/g, "")
 	const check = await client.api.getLink(client, message.author.id)
+	let user = await client.api.getInvestorProfile(username).catch(err => client.logger.error(err.stack))
+	if (user.id === 0 && check) {
+		user = await client.api.getInvestorProfile(check).catch(err => client.logger.error(err.stack))
+		username = user.name
+		isusername = false
+	}
 
-	if (!args[0] && !check) return message.channel.send(":question: Please supply a Reddit username.")
+	if (username && user.id === 0 && !check) return message.channel.send(":question: I couldn't find that MemeEconomy user.")
+	if (username === undefined && user.id === 0 && !check) return message.channel.send(`:question: Please supply a Reddit username, or use \`${settings.prefix}setname <reddit username>\`.`)
 
-	if (args[0].length < 3 && !check) return message.channel.send(":thinking: Something tells me that is not a Reddit username")
-
-	args[0] = args[0].replace(/^((\/|)u\/)/g, "")
-	const username = check ? check : args[0]
-
-	const profile = await client.api.getInvestorProfile(username.toLowerCase()).catch(err => client.logger.error(err.stack))
-	if (profile.id === 0) return message.channel.send(":question: I couldn't find that MemeEconomy user.")
-
-	const firm = await client.api.getFirmProfile(profile.firm).catch(err => client.logger.error(err.stack))
+	const firm = await client.api.getFirmProfile(user.firm).catch(err => client.logger.error(err.stack))
 	const payout = await client.math.calculateFirmPayout(firm.balance, firm.size, firm.execs, firm.assocs, firm.cfo !== "" && firm.cfo !== "0" ? firm.cfo : false, firm.coo !== "" && firm.coo !== "0" ? firm.coo : false)
 
 	const ranks = {all: "all", traders: "traders", assocs: "assoc", execs: "exec", board: { cfo: "cfo", coo: "coo", ceo: "ceo"} }
 	const modifiers = { best: "best", worst: "worst" }
 	const types = { networth: "networth", activity: "activity", contribution: "contribution", investments: "investments" }
-	const rankarg = check ? args[0] : args[1]
-	const modifierarg = check ? args[1] : args[2]
-	const typearg = check ? args[2] : args[3] 
+	const rankarg = isusername ? args[1] : args[0]
+	const modifierarg = isusername ? args[2] : args[1]
+	const typearg = isusername ? args[3] : args[2] 
 	let rank = ""
 	let modifier = ""
 	let type = ""
-	let page = check ? args[3] : args[4]
+	let page = check ? args[4] : args[3]
 
 	if (ranks[rankarg]) rank = ranks[rankarg]
 
@@ -61,7 +62,7 @@ exports.run = async (client, message, args) => {
 			amount = num_left
 		}
 
-		const members = type === "networth" ? await client.api.getTopFirmMembers(profile.firm, fpage, amount).catch(err => client.logger.error(err.stack)) : await client.api.getFirmMembers(profile.firm, fpage, amount).catch(err => client.logger.error(err.stack))
+		const members = type === "networth" ? await client.api.getTopFirmMembers(user.firm, fpage, amount).catch(err => client.logger.error(err.stack)) : await client.api.getFirmMembers(user.firm, fpage, amount).catch(err => client.logger.error(err.stack))
 		for (let e = 0; e < members.length; e++) {
 			const history = await client.api.getInvestorHistory(members[e].name.toLowerCase()).catch(err => client.logger.error(err.stack))
 			let weekcontrib = 0
@@ -139,6 +140,7 @@ exports.run = async (client, message, args) => {
 	}
 
 	const firmroles = {
+		"": "Floor Trader",
 		assoc: "Associate",
 		exec: "Executive",
 		coo: "COO",
@@ -165,7 +167,7 @@ exports.run = async (client, message, args) => {
 	for (let i = 0; i < firmmembers.length; i++) {
 		const investor = firmmembers[i]
 		const lastinvested = investor.timediff !== "Never" ? moment.duration(investor.timediff, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") : "Never"
-		const ifirmrole = investor.firm_role === "" ? "Floor Trader" : firmroles[investor.firm_role]
+		const ifirmrole = firmroles[investor.firm_role]
 		stats.addField(`\`${i + ioffset}.\` u/${investor.name} - ${ifirmrole}`, `
 \`Net worth:\` **${client.api.getSuffix(investor.networth)} M¢**
 \`Contribution to firm since payout:\` **${client.api.numberWithCommas(investor.contribution)} M¢**
@@ -188,6 +190,6 @@ exports.conf = {
 exports.help = {
 	name: "leaderboard",
 	category: "MemeEconomy",
-	description: "Shows you the top members of your firm sorted by arguments. (networth == sorted by networth, activity == sorted by last invested at, contribution === sorted by firm contribution, investments === sorted by average investments.",
+	description: "Shows you the top members of your firm sorted by arguments. (networth == sorted by networth, activity == sorted by last invested at, contribution === sorted by firm contribution, investments === sorted by average investments)",
 	usage: "leaderboard [all, traders, assocs, execs, board] [best, worst] [networth, activity, contribution, investments] [page]"
 }

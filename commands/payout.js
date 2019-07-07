@@ -5,17 +5,15 @@
 
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
-exports.run = async (client, message, [_username, _redditlink, user, _history, firm, firmmembers, firmrole, check], _level) => {
+exports.run = async (client, message, [_username, _discord_id, user, _history, firm, _firmmembers, _check], _level) => {
 
 	const firmname = firm.name.endsWith("s") ? `${firm.name}'` : `${firm.name}'s`
 	const lastpayout = moment.duration((new Date().getTime() / 1000) - firm.last_payout, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")
 
-	let firmimage = false
+	let firmimage = "https://cdn.discordapp.com/emojis/588029928063107230.png"
 	client.guilds.get("563439683309142016").emojis.forEach(async (e) => {
 		if (e.name === firm.name.toLowerCase().replace(/ /g, "")) firmimage = e.url
 	})
-
-	if (!firmimage) firmimage = "https://cdn.discordapp.com/emojis/588029928063107230.png"
     
 	const floorrank = user.firm_role === "" ? "(Your Role)" : ""
 	const assocrank = user.firm_role === "assoc" ? "(Your Role)" : ""
