@@ -35,6 +35,7 @@ module.exports = async (client, investment) => {
 		const timeposted = moment.duration(investment.timediff, "seconds").format("[**]m[**] [minutes] [ago], [**]s[**] [seconds] [ago]")
 
 		let msg = ""
+		msg += `${famous} [u/${investment.username}](https://reddit.com/u/${investment.username}) ${firmemoji}\n**__[${submission.title}](https://redd.it/${investment.submid})__**\n\n`
 		msg += `This meme was posted ${timeposted} and should be profitable!\n`
 		msg += `There are currently **${investment.comments}** comments and **${investment.upvotes}** upvotes. I also count **${investment.investments}** investments and **${investment.highinvestments}** high investments.\n`
 		msg += `https://redd.it/${investment.submid}`
@@ -43,10 +44,9 @@ module.exports = async (client, investment) => {
 			.setAuthor("MemeBot Investment Watch", client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
 			.setColor("BLUE")
 			.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
-			.setTitle(":fire: I found a hot investment! :fire:")
 			.setURL(`https://meme.market/user.html?account=${investment.username}`)
 			.setThumbnail(submission.thumbnail)
-			.addField(`${famous} [u/${investment.username}](https://reddit.com/u/${investment.username}) ${firmemoji}\n**__[${submission.title}](https://redd.it/${investment.submid})__**`, msg)
+			.addField(":fire: I found a hot investment! :fire:", msg)
 		client.channels.get(settings.investmentChannel).send(mentioneveryone, { embed: investmentinfo })
 	})
 	return "Success"

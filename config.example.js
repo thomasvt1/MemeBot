@@ -3,6 +3,7 @@ const config = {
 	// PRODUCTION or just some random value to include it
 	node_env: "DEVELOPMENT",
 
+	// Sentry.io functionality - error logging 
 	sentry: {
 		enabled: false,
 		dsn: ""
