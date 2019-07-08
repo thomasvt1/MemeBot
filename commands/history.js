@@ -43,6 +43,8 @@ exports.run = async (client, message, args, _level) => {
 
 	const investment = isusername ? args[1] : args[0]
 
+	if (investment === undefined) return message.channel.send(":exclamation: You haven't specified how many investments to go back!")
+
 	if (!history || !history.length) return message.channel.send(":exclamation: You haven't invested before!")
 
 	// Calculate profit %
