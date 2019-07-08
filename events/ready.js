@@ -11,8 +11,19 @@ module.exports = async client => {
 
 	// Make the bot "play the game" which is the help command with default prefix.
 	client.user.setPresence({ game: { name: `MemeEconomy for ${client.guilds.size} servers ❤️`, type: "WATCHING" }, status: "online" })
-	
-	const ws = new WebSocket(client.config.websocket.url)
+
+	startWebSocket(client)
+}
+
+var ws // The websocket client
+
+/**
+ * @description Start the websocket server.
+ * @example startWebsocket(client)
+ * @param client The client.
+ */
+function startWebSocket(client) {
+	ws = new WebSocket(client.config.websocket.url)
 
 	ws.addEventListener("error", (err) => {
 		client.logger.error(`WebSocket: ${err.message}\nPlease configure your WebSocket server in ./config.js!`)
@@ -32,6 +43,10 @@ module.exports = async client => {
 	ws.on("close", function clear() {
 		clearTimeout(this.pingTimeout)
 		client.logger.log("Investment Watch: Connection Closed", "cmd")
+		setTimeout(() => {
+			startWebSocket(client)
+		}, 5000)
+		
 	})
 }
 
