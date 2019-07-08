@@ -42,9 +42,10 @@ function startWebSocket(client) {
 	ws.on("ping", heartbeat)
 	ws.on("close", function clear() {
 		clearTimeout(this.pingTimeout)
-		client.logger.log("Investment Watch: Connection Closed", "cmd")
+		client.logger.log("Investment Watch: Connection Closed, Reconnecting...", "cmd")
 		setTimeout(() => {
 			startWebSocket(client)
+                        client.logger.log("Investment Watch: Reconnected", "cmd")
 		}, 5000)
 		
 	})
