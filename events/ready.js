@@ -15,12 +15,16 @@ module.exports = async client => {
 	startWebSocket(client)
 }
 
-var ws // The websocket client
+let ws // The websocket client
 
 /**
- * @description Start the websocket server.
- * @example startWebsocket(client)
- * @param client The client.
+ * 
+ * @description Starts the websocket server, binds events to proper locations.
+ * 
+ * @example 
+ * startWebsocket(client)
+ * 
+ * @param {object} client - The Discord.js client object.
  */
 function startWebSocket(client) {
 	ws = new WebSocket(client.config.websocket.url)
@@ -34,7 +38,7 @@ function startWebSocket(client) {
 		client.logger.log(`Investment Watch: ${data}`, "cmd")
 		if (data.toString().includes("submid")) {
 			const res = await websockethandler(client, JSON.parse(data.toString()))
-			client.logger.log(res)
+			client.logger.log(`Investment Watch: ${res}`, "cmd")
 		}
 	})
 
@@ -45,13 +49,19 @@ function startWebSocket(client) {
 		client.logger.log("Investment Watch: Connection Closed, Reconnecting...", "cmd")
 		setTimeout(() => {
 			startWebSocket(client)
-                        client.logger.log("Investment Watch: Reconnected", "cmd")
+			client.logger.log("Investment Watch: Reconnected", "cmd")
 		}, 5000)
 		
 	})
 }
 
-// eslint-disable-next-line jsdoc/require-jsdoc
+/**
+ * 
+ * @description Stops the connection from being terminated and sets it again until another ping is sent.
+ * 
+ * @example 
+ * ws.on("ping", heartbeat)
+ */
 function heartbeat() {
 	clearTimeout(this.pingTimeout)
 	logger.log("Investment Watch: Heartbeat", "cmd")

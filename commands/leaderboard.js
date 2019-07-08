@@ -173,8 +173,8 @@ exports.run = async (client, message, args) => {
 		const lastinvested = investor.timediff !== "Never" ? moment.duration(investor.timediff, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") : "Never"
 		const ifirmrole = firmroles[investor.firm_role]
 		stats.addField(`\`${i + ioffset}.\` u/${investor.name} - ${ifirmrole}`, `
-💰 \`Net worth:\` **${client.api.getSuffix(investor.networth)} M¢**
-📤 \`Contribution since payout:\` **${client.api.numberWithCommas(investor.contribution)} M¢**
+💰 \`Net worth:\` **${client.api.getSuffix(investor.networth)}** M¢
+📤 \`Contribution since payout:\` **${client.api.numberWithCommas(investor.contribution)}** M¢
 🎯 \`Contribution / payout:\` **${investor.difference.toFixed(2)}**%
 🏅 \`Average investments per day:\` **${investor.avginvestments}**
 🎖 \`Completed investments:\` **${investor.completed}**

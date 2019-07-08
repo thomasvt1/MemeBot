@@ -28,6 +28,7 @@ SOFTWARE.
 // This will check if the node version you are running is the required
 // Node version, if it isn't it will throw the following error to inform
 // you.
+
 if (Number(process.version.slice(1).split(".")[0]) < 8) throw new Error("Node 8.0.0 or higher is required. Update Node on your system.")
 
 // Load up the discord.js library
@@ -49,7 +50,11 @@ client.config = require("./config.js")
 // client.config.token contains the bot's token
 // client.config.prefix contains the message prefix
 
-
+// Here we initialise Sentry error logging because.. why not and also pure laziness.
+if (client.config.sentry.enabled) {
+	const Sentry = require("@sentry/node")
+	Sentry.init({ dsn: client.config.sentry.dsn })
+}
 
 // Add Meme.Market and Reddity related functions into codebase
 client.api = require("./modules/api.js")
@@ -107,17 +112,18 @@ const init = async () => {
 	// Here we login the client.
 	client.login(client.config.token)
 
+	// Then we initialize the database and the schemas with it. If not possible, exit the bot, since you need it anyway.
 	const database = await require("./database/database").initialize(client.config.mongodb.url).catch(err => {
 		client.logger.error(`Failed to intialize Database: ${err}`)
 		process.exit(1)
 	})
 
-	// eslint-disable-next-line no-undef
+	// Bind the databases to the client for easy access.
 	client.settings = database.Guilds
 
-	// eslint-disable-next-line no-undef
+	// Same again.
 	client.names = database.Names
-
+	
 	// End top-level async/await function.
 }
 

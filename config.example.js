@@ -1,7 +1,12 @@
 const config = {
-	// DEVELOPMENT to exclude MySQL functionality
+	// DEVELOPMENT to exclude MongoDB functionality
 	// PRODUCTION or just some random value to include it
 	node_env: "DEVELOPMENT",
+
+	sentry: {
+		enabled: false,
+		dsn: ""
+	},
 	
 	// Store the owner IDs in here. Default is Thomasvt's ID and Keanu73's ID.
 	ownerIDs: ["213704185517047808", "115156616256552962"],

@@ -29,6 +29,7 @@
     "@hapi/hawk": "^7.1.0",
     "@hapi/hoek": "^7.1.0",
     "@hapi/sntp": "^3.1.1",
+    "@sentry/node": "^5.5.0",
     "better-sqlite3": "^5.4.0",
     "bufferutil": "^4.0.1",
     "chalk": "^2.4.2",

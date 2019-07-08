@@ -81,7 +81,7 @@ exports.run = async (client, message, args, _level) => {
 
 	const lastprofit = user.firm !== 0 ? Math.trunc(lastinvestment.profit - lastinvestment.profit * (firm.tax / 100)) : lastinvestment.profit
 
-	const lastinvested = moment.duration(lastinvestment.time - history[(history.length - 1) - investment + 1].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
+	const lastinvested = moment.duration(lastinvestment.time - history[investment + 1].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
 	const maturedat = moment.unix(lastinvestment.time + 14400).format("ddd Do MMM YYYY [at] HH:mm [UTC]ZZ") // 14400 = 4 hours
 
 	const investments = await client.api.getInvestments(await lastpost.comments.fetchAll())
@@ -116,7 +116,8 @@ exports.run = async (client, message, args, _level) => {
 		.addField("Investments on the day", `${investments_on_day}`, false)
 		.addField("Last invested", lastinvested, false)
 		.addField("Last investment", `[u/${lastpost.author.name}](https://reddit.com/u/${lastpost.author.name}) ${opfirmemoji}\n__**[${lastpost.title}](https://redd.it/${lastinvestment.post})**__\n\n**Matured at:** ${maturedat}\n**Amount of investments:** ${investments}\n\u200b`, true)
-
+		.addField("Upvotes", text_upvotes)
+		.addField("Profit", text_profit)
 		.setImage(lastpost.url)
 	if (discord_id) stats.setThumbnail(client.users.get(discord_id).displayAvatarURL)
 	if (!discord_id) stats.setThumbnail(redditpfp)

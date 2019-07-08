@@ -6,9 +6,7 @@
 const mongoose = require("mongoose")
 mongoose.Promise = global.Promise
 mongoose.pluralize(null)
-const addToGlobal = (name, val) => {
-	global[name] = val
-}
+let Database = {}
 exports.initialize = async url => new Promise((resolve, reject) => {
 	mongoose.connect(url, {
 		promiseLibrary: global.Promise,
@@ -21,15 +19,14 @@ exports.initialize = async url => new Promise((resolve, reject) => {
 	mongoose.connection
 		.on("error", err => reject(err))
 		.once("open", () => {
-			addToGlobal("Guilds", Guilds)
-			addToGlobal("Names", Names)
-			addToGlobal("Database", {
+			Database = {
 				Guilds, guilds: Guilds,
 				Names, names: Names,
 				Raw: mongoose.connection,
-			})
-			resolve(global.Database)
+			}
+
+			resolve(Database)
 		})
 })
 
-exports.get = exports.getConnection = () => global.Database
+exports.get = exports.getConnection = () => Database

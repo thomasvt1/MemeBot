@@ -53,14 +53,13 @@ api.doRequest = async (options, usecache = true, time = MAX_CACHE_TIME) => {
 
 api.getInvestorProfile = async (name) => {
 	/**
-		* This gets the investor profile of a Reddit user.
+		* @description This gets the investor profile of a Reddit user.
 		*
 		* @param {string} name - The user's Reddit username
 		* @return {InvestorProfile} See more at https://meme.market/api/investor/Keanu73
 		*
 		* @example
-		*
-		*     await api.getInvestorProfile("Keanu73")
+		* await api.getInvestorProfile("Keanu73")
 		*/
 	const options = {
 		uri: "https://meme.market/api/investor/" + name,
@@ -72,15 +71,14 @@ api.getInvestorProfile = async (name) => {
 
 api.getInvestorHistory = async (name, amount = 100, page = 0) => {
 	/**
-	* This gets the investor history of a Reddit user
+	* @description This gets the investor history of a Reddit user
 	*
 	* @param {string} name - The user's Reddit username
     * @param {number} amount - The amount of posts to query
 	* @return {InvestorHistory} See more at https://meme.market/api/investor/Keanu73/investments?per_page=50&page=0
 	*
 	* @example
-	*
-	*     await api.getInvestorHistory("Keanu73")
+	* await api.getInvestorHistory("Keanu73")
 	*/
 	const options = {
 		uri: `https://meme.market/api/investor/${name}/investments?per_page=${amount}&page=${page}`,
