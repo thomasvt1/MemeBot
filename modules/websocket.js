@@ -46,7 +46,7 @@ module.exports = async (client, investment) => {
 			.setTitle(`${famous} u/${investment.username} ${firmemoji}`)
 			.setURL(`https://meme.market/user.html?account=${investment.username}`)
 			.setThumbnail(submission.thumbnail)
-			.addField(`**__[${submission.title}](https://redd.it/${investment.submid})__**`, msg)
+			.addField(`**__${submission.title__**`, msg)
 		client.channels.get(settings.investmentChannel).send(mentioneveryone, { embed: investmentinfo })
 	})
 	return "Investment Watch: Success"
