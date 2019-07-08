@@ -37,7 +37,7 @@ module.exports = async (client, investment) => {
 		let msg = ""
 		msg += `This meme was posted **${timeposted}** and should be profitable!\n`
 		msg += `There are currently **${investment.comments}** comments and **${investment.upvotes}** upvotes. I also count **${investment.investments}** investments and **${investment.highinvestments}** high investments.\n`
-		msg += `[Post URL](https://redd.it/${investment.submid})`
+		msg += `[The post URL is here](https://redd.it/${investment.submid})`
 
 		const investmentinfo = new RichEmbed()
 			.setAuthor("MemeBot Investment Watch", client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
