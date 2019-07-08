@@ -27,9 +27,13 @@ module.exports = async client => {
 	})
 
 	ws.on("open", heartbeat)
-	ws.on("ping", heartbeat)
+	ws.on("ping", function () {
+		heartbeat()
+		client.logger.log("Investment Watch: Ping Event", "cmd")
+	})
 	ws.on("close", function clear() {
 		clearTimeout(this.pingTimeout)
+		client.logger.log("Investment Watch: Connection Closed", "cmd")
 	})
 }
 
