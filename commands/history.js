@@ -60,10 +60,10 @@ exports.run = async (client, message, args, _level) => {
 	profitprct /= history.length // Calculate average % return
 
 
-	// Calculate amount of investments today
+	// Calculate amount of investments then
 	let investments_on_day = 0
 	for (let i = 0; i < history.length; i++) {
-		const timediff = Math.trunc((history[investment].time - history[i].time) / 36e2) // 36e3 will result in hours between date objects
+		const timediff = Math.trunc((history[investment - 1].time - history[i].time) / 36e2) // 36e3 will result in hours between date objects
 		if (timediff > 24)
 			break
 		investments_on_day++
@@ -73,7 +73,7 @@ exports.run = async (client, message, args, _level) => {
 
 	if (!history[investment]) return message.channel.send(":exclamation: You specified an investment past your time!")
 
-	const lastinvestment = history[investment]
+	const lastinvestment = history[investment - 1]
 
 	const lastpost = await client.api.r.getSubmission(lastinvestment.post).fetch().then((sub) => sub).catch(err => console.error(err))
 
@@ -81,7 +81,7 @@ exports.run = async (client, message, args, _level) => {
 
 	const lastprofit = user.firm !== 0 ? Math.trunc(lastinvestment.profit - lastinvestment.profit * (firm.tax / 100)) : lastinvestment.profit
 
-	const lastinvested = moment.duration(lastinvestment.time - history[investment + 1].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
+	const lastinvested = moment.duration(lastinvestment.time - history[parseInt(investment) + 1].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
 	const maturedat = moment.unix(lastinvestment.time + 14400).format("ddd Do MMM YYYY [at] HH:mm [UTC]ZZ") // 14400 = 4 hours
 
 	const investments = await client.api.getInvestments(await lastpost.comments.fetchAll())

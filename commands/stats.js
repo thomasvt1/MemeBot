@@ -98,7 +98,7 @@ exports.run = async (client, message, [username, discord_id, user, history, firm
 		.addField("Rank", `**\`#${user.rank}\`**`, true)
 	if (user.firm !== 0) stats.addField("Firm", `**\`${firmroles[user.firm_role]}\`** of **\`${firm.name}\`**`, true)
 		.addField("Average investment profit", `${profitprct.toFixed(2)}%`, true)
-		.addField("Average investments per day since last payout", avginvestments, true)
+		.addField("Average investments per day", avginvestments, true)
 		.addField("Investments in the past day", `${investments_today}`, true)
 		.addField("Last invested", `${lastinvested}`, true)
 		.addField("This week's profit", `**${client.api.numberWithCommas(Math.trunc(weekprofit))}** M¢`, true)
