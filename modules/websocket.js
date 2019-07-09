@@ -29,7 +29,7 @@ module.exports = async (client, investment) => {
 
 		let firmemoji = ""
 		client.guilds.get("563439683309142016").emojis.forEach(async (e) => {
-			if (e.name === firm.name.toLowerCase().replace(/ /g, "")) firmemoji = `<:${e.identifier.toString()}>`
+			if (firm && e.name === firm.name.toLowerCase().replace(/ /g, "")) firmemoji = `<:${e.identifier.toString()}>`
 		})
 
 		const timeposted = moment.duration(investment.timediff, "seconds").format("[**]m[**] [minutes] [ago], [**]s[**] [seconds] [ago]")
