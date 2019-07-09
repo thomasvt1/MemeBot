@@ -59,12 +59,11 @@ function startWebSocket(client) {
  * 
  * @description Stops the connection from being terminated and sets it again until another ping is sent.
  * 
- * @example 
+ * @example
  * ws.on("ping", heartbeat)
  */
 function heartbeat() {
 	clearTimeout(this.pingTimeout)
-	logger.log("Investment Watch: Heartbeat", "cmd")
 	// Use `WebSocket#terminate()` and not `WebSocket#close()`. Delay should be
 	// equal to the interval at which your server sends out pings plus a
 	// conservative assumption of the latency.
