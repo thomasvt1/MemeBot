@@ -9,7 +9,10 @@ exports.run = async (client, message, [page], _level) => {
 	if (page > 4 || page < 1) return message.channel.send(`:exclamation: There is no page ${page}!`)
 
 	if (!page) page = 1
-	const top100 = await client.api.getTop100(25, page - 1).then(body => body).catch(err => client.logger.error(err.stack))
+	const top100 = await client.api.getTop100(25, page - 1).then(body => body).catch(err => {
+		if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+		client.logger.error(err.stack)
+	})
 	const offset = page === 1 ? 1 : (25 * (page - 1)) + 1
 	const top100firms = []
 
