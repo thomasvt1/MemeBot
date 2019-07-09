@@ -43,7 +43,7 @@ module.exports = async (client, investment) => {
 			.setAuthor("MemeBot Investment Watch", client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
 			.setColor("#202225")
 			.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
-			.setTitle(`${famous} [u/${investment.username}](https://reddit.com/u/${investment.username}) ${firmemoji}`)
+			.setTitle(`${famous} u/${investment.username} ${firmemoji}`)
 			.setURL(`https://meme.market/user.html?account=${investment.username}`)
 			.setThumbnail(submission.thumbnail)
 			.addField(`**__${submission.title}__**`, msg)
