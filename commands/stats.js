@@ -44,6 +44,16 @@ exports.run = async (client, message, [username, discord_id, user, history, firm
 		investments_today++
 	}
 
+	// Calculate average investments since last payout
+	let avginvestments = 0
+	for (const inv of history) {
+		if (inv.time < firm.last_payout)
+			break
+		avginvestments++
+	}
+	avginvestments /= Math.trunc(moment().diff(moment.unix(firm.last_payout), "days"))
+	avginvestments = Math.trunc(avginvestments)
+
 	const weekratio = ((weekprofit / (user.networth - weekprofit)) * 100.0).toFixed(2)
 
 	const lastinvested = moment.duration(moment().unix() - history[0].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
@@ -88,7 +98,7 @@ exports.run = async (client, message, [username, discord_id, user, history, firm
 		.addField("Rank", `**\`#${user.rank}\`**`, true)
 	if (user.firm !== 0) stats.addField("Firm", `**\`${firmroles[user.firm_role]}\`** of **\`${firm.name}\`**`, true)
 		.addField("Average investment profit", `${profitprct.toFixed(2)}%`, true)
-		.addField("Average investment profit (last 5)", `${profitprct_5.toFixed(2)}%`, true)
+		.addField("Average investments per day since last payout", avginvestments, true)
 		.addField("Investments in the past day", `${investments_today}`, true)
 		.addField("Last invested", `${lastinvested}`, true)
 		.addField("This week's profit", `**${client.api.numberWithCommas(Math.trunc(weekprofit))}** M¢`, true)

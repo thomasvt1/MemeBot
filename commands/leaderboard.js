@@ -164,7 +164,7 @@ exports.run = async (client, message, args) => {
 		.setColor("GOLD")
 		.setFooter(`Page ${page} of ${pages} | Made by Thomas van Tilburg and Keanu73 with ❤️`, "https://i.imgur.com/1t8gmE7.png")
 		.setTitle(`${modifiers[modifierarg] === "best" ? "Top" : "Bottom"} ${rank === "all" ? "Investors" : firmranks[rankarg]} of ${firm.name} by ${typestr}`)
-		.setURL("https://meme.market/leaderboards.html?season=1")
+		.setURL(`https://meme.market/firm.html?firm=${firm.id}`)
 		.setThumbnail(firmimage)
 
 	await firmmembers
