@@ -23,7 +23,7 @@ module.exports = async (client, investment) => {
 
 		const user = await client.api.getInvestorProfile(investment.username).catch(err => client.logger.error(err.stack))
 
-		const firm = await client.api.getFirmProfile(user.firm).catch(err => client.logger.error(err.stack))
+		const firm = user ? await client.api.getFirmProfile(user.firm).catch(err => client.logger.error(err.stack)) : false
 
 		const famous = famousmemers.some(c => investment.username === c.toLowerCase()) ? "<:famousmemer:582821955489628166>" : ""
 
