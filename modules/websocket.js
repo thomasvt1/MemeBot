@@ -41,7 +41,7 @@ module.exports = async (client, investment) => {
 
 		const investmentinfo = new RichEmbed()
 			.setAuthor("MemeBot Investment Watch", client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
-			.setColor("#202225")
+			.setColor("GOLD")
 			.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
 			.setTitle(`${famous} u/${investment.username} ${firmemoji}`)
 			.setURL(`https://meme.market/user.html?account=${investment.username}`)
