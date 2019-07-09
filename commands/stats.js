@@ -74,7 +74,7 @@ exports.run = async (client, message, [username, discord_id, user, history, firm
 		exec: "Executive",
 		coo: "COO",
 		cfo: "CFO",
-		ceo: "COO"
+		ceo: "CEO"
 	}
 
 	const stats = new RichEmbed()
