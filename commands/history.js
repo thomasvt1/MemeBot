@@ -15,7 +15,10 @@ exports.run = async (client, message, args, _level) => {
 		client.logger.error(err.stack)
 	})
 	if (user.id === 0 && check) {
-		user = await client.api.getInvestorProfile(check).catch(err => client.logger.error(err.stack))
+		user = await client.api.getInvestorProfile(check).catch(err => {
+			if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+			client.logger.error(err.stack)
+		})
 		username = user.name
 		isusername = false
 	}
@@ -23,7 +26,10 @@ exports.run = async (client, message, args, _level) => {
 	if (username && user.id === 0 && !check) return message.channel.send(":question: I couldn't find that MemeEconomy user.")
 	if (username === undefined && user.id === 0 && !check) return message.channel.send(`:question: Please supply a Reddit username, or use \`${settings.prefix}setname <reddit username>\`.`)
 
-	const firm = await client.api.getFirmProfile(user.firm).catch(err => client.logger.error(err.stack))
+	const firm = await client.api.getFirmProfile(user.firm).catch(err => {
+		if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+		client.logger.error(err.stack)
+	})
 
 	const discord_id = await client.api.getRedditLink(client, username.toLowerCase())
 
@@ -38,7 +44,10 @@ exports.run = async (client, message, args, _level) => {
 		} else {
 			amount = num_left
 		}
-		const investments = await client.api.getInvestorHistory(username, amount, page).catch(err => client.logger.error(err.stack))
+		const investments = await client.api.getInvestorHistory(username, amount, page).catch(err => {
+			if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+			client.logger.error(err.stack)
+		})
 		history = history.concat(investments)
 		num_left -= amount
 		if (num_left > 0) page += 1
@@ -78,7 +87,7 @@ exports.run = async (client, message, args, _level) => {
 
 	const lastinvestment = history[investment - 1]
 
-	const lastpost = await client.api.r.getSubmission(lastinvestment.post).fetch().then((sub) => sub).catch(err => console.error(err))
+	const lastpost = await client.api.r.getSubmission(lastinvestment.post).fetch().then((sub) => sub).catch(err => client.logger.error(err))
 
 	const [factor] = await client.math.calculate_factor(lastinvestment.upvotes, lastinvestment.final_upvotes, user.networth)
 
@@ -87,7 +96,7 @@ exports.run = async (client, message, args, _level) => {
 	const lastinvested = moment.duration(lastinvestment.time - history[parseInt(investment) + 1].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
 	const maturedat = moment.unix(lastinvestment.time + 14400).format("ddd Do MMM YYYY [at] HH:mm [UTC]ZZ") // 14400 = 4 hours
 
-	const investments = await client.api.getInvestments(await lastpost.comments.fetchAll())
+	const investments = await client.api.getInvestments(await lastpost.comments.fetchAll()).catch(err => client.logger.error(err))
 
 	const broke_even = Math.round(client.math.calculateBreakEvenPoint(lastinvestment.upvotes))
 	const redditpfp = await client.api.r.getUser(username).fetch().then((usr) => usr.icon_img)
@@ -99,8 +108,14 @@ exports.run = async (client, message, args, _level) => {
 	let text_profit = `**Invested:** ${client.api.numberWithCommas(lastinvestment.amount)} M¢\n`
 	text_profit += `**Profit:** ${client.api.numberWithCommas(Math.trunc(lastprofit))} M¢ (*${factor.toFixed(2)}%*)`
 
-	const opfirmid = await client.api.getInvestorProfile(lastpost.author.name).then(investor => investor.firm).catch(err => client.logger.error(err.stack))
-	const opfirm = opfirmid !== 0 ? await client.api.getFirmProfile(opfirmid).then(firm => firm.name).catch(err => client.logger.error(err.stack)) : false
+	const opfirmid = await client.api.getInvestorProfile(lastpost.author.name).then(investor => investor.firm).catch(err => {
+		if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+		client.logger.error(err.stack)
+	})
+	const opfirm = opfirmid !== 0 ? await client.api.getFirmProfile(opfirmid).then(firm => firm.name).catch(err => {
+		if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+		client.logger.error(err.stack)
+	}) : false
 	const lower = opfirmid !== 0 ? opfirm.toLowerCase().replace(/ /g, "") : false
 
 	let opfirmemoji = ""
