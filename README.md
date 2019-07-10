@@ -8,4 +8,4 @@
 
 A Discord bot that provides useful info on investors/firms in [MemeEconomy](https://reddit.com/r/MemeEconomy).
 
-If you would like to deploy the bot in your own [Docker](https://www.docker.com/products/docker-desktop) instance, just run `deploy.sh` or if on Windows, run the commands in the script manually. For developing purposes, though, all you need to do is just leave "node_env" on "DEVELOPMENT" and run index.js as normal.
+If you would like to deploy the bot in your own [Docker](https://www.docker.com/products/docker-desktop) instance (Linux), just run `setup.sh` (run the commands manually on Windows), then to update it with recent commits, use `deploy.sh` (again, if on Windows, run the commands in the script manually). You'll need to install [MongoDB](https://www.mongodb.com/download-center/community?jmp=docs) to run the bot locally. Personally, debugging is a lot easier with an editor like [Visual Studio Code](https://code.visualstudio.com/).
