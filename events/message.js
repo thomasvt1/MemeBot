@@ -101,20 +101,32 @@ module.exports = async (client, message) => {
 			client.logger.error(err.stack)
 		}) 
 		if (user.id === 0 && check) {
-			user = await client.api.getInvestorProfile(check).catch(err => client.logger.error(err.stack))
+			user = await client.api.getInvestorProfile(check).catch(err => {
+				if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+				client.logger.error(err.stack)
+			})
 			username = user.name
 		}
 
 		if (username && user.id === 0 && !check) return message.channel.send(":question: I couldn't find that MemeEconomy user.")
 		if (username === undefined && user.id === 0 && !check) return message.channel.send(`:question: Please supply a Reddit username, or use \`${settings.prefix}setname <reddit username>\`.`)
 
-		const firm = await client.api.getFirmProfile(user.firm).catch(err => client.logger.error(err.stack))
+		const firm = await client.api.getFirmProfile(user.firm).catch(err => {
+			if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+			client.logger.error(err.stack)
+		})
 
 		const discord_id = await client.api.getRedditLink(client, username.toLowerCase())
 
-		const history = await client.api.getInvestorHistory(username.toLowerCase()).catch(err => client.logger.error(err.stack))
+		const history = await client.api.getInvestorHistory(username.toLowerCase()).catch(err => {
+			if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+			client.logger.error(err.stack)
+		})
 
-		const firmmembers = await client.api.getFirmMembers(user.firm).catch(err => client.logger.error(err.stack))
+		const firmmembers = await client.api.getFirmMembers(user.firm).catch(err => {
+			if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+			client.logger.error(err.stack)
+		})
 
 		const arguments = [username, discord_id, user, history, firm, firmmembers, check]
 
