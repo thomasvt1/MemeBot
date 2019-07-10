@@ -6,7 +6,7 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 const fs = require("fs")
-exports.run = async (client, message, [username, _discord_id, user, _history, firm, _firmmembers, check], _level) => {
+exports.run = async (client, message, [username, _discord_id, user, _history, firm, _firmmembers, isusername], _level) => {
 	// Here we calculate the average investment profit of the entire firm
 	// by listing out all of each firm member's investments, then pushing them
 	// all into one array. We then average them all out.

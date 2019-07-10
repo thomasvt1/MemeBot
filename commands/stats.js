@@ -5,25 +5,19 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 require("moment-duration-format")
-exports.run = async (client, message, [username, discord_id, user, history, firm, _firmmembers, _check], _level) => {
+exports.run = async (client, message, [username, discord_id, user, history, firm, _firmmembers, _isusernamre], _level) => {
 
 	// Calculate profit %
 	let profitprct = 0
-	let profitprct_5 = 0
 	for (let i = 0; i < history.length; i++) {
 		if (history[i].done === true) {
 			let profit = history[i].profit
 			if (user.firm !== 0) profit -= profit * (history[i].firm_tax / 100)
 			profitprct += profit / history[i].amount * 100
-
-			if (i <= 5) { // Use for average last 5
-				profitprct_5 += profit / history[i].amount * 100
-			}
 		}
 	}
 
 	profitprct /= history.length // Calculate average % return
-	profitprct_5 /= 5 // Calculate average % return for last 5
 
 	// Calculate this week's profit
 	let weekprofit = 0

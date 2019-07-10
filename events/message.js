@@ -99,13 +99,15 @@ module.exports = async (client, message) => {
 		let user = await client.api.getInvestorProfile(username).catch(err => {
 			if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 			client.logger.error(err.stack)
-		}) 
+		})
+		let isusername = true
 		if (user.id === 0 && check) {
 			user = await client.api.getInvestorProfile(check).catch(err => {
 				if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 				client.logger.error(err.stack)
 			})
 			username = user.name
+			isusername = false
 		}
 
 		if (username && user.id === 0 && !check) return message.channel.send(":question: I couldn't find that MemeEconomy user.")
@@ -128,7 +130,7 @@ module.exports = async (client, message) => {
 			client.logger.error(err.stack)
 		})
 
-		const arguments = [username, discord_id, user, history, firm, firmmembers, check]
+		const arguments = [username, discord_id, user, history, firm, firmmembers, isusername]
 
 		args = arguments
 	}

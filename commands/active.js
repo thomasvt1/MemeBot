@@ -5,12 +5,12 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 require("moment-duration-format")
-exports.run = async (client, message, [username, _discord_id, user, history, firm, _firmmembers, check], _level) => {
-	if (!history || !history.length) return message.channel.send(`:exclamation: ${check ? "You" : "They"} haven't invested before!`)
+exports.run = async (client, message, [username, _discord_id, user, history, firm, _firmmembers, isusername], _level) => {
+	if (!history || !history.length) return message.channel.send(`:exclamation: ${isusername ? "They" : "You"} haven't invested before!`)
 
 	const currentinvestment = !history[0].done ? history[0] : false // Simple ternary to check whether current investment is running
 
-	if (!currentinvestment) return message.channel.send(`:exclamation: ${check ? "You" : "They"} last invested ${moment.duration(moment().unix() - history[0].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")}`)
+	if (!currentinvestment) return message.channel.send(`:exclamation: ${isusername ? "They" : "You"} last invested ${moment.duration(moment().unix() - history[0].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")}`)
 
 	const currentpost = currentinvestment ? await client.api.r.getSubmission(currentinvestment.post).fetch().then((sub) => sub).catch(err => console.error(err)) : false
 
