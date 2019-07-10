@@ -114,7 +114,7 @@ exports.run = async (client, message, [username, _discord_id, user, _history, fi
 	const leastactiveinvested = leastactive.timediff === "Never" ? "**Never**" : moment.duration(leastactive.timediff, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")
 	const mostactiveinvested = mostactive.timediff === "Never" ? "**Never**" :  moment.duration(mostactive.timediff, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")
 
-	const yourrole = check ? "Your Role" : `${username}'s Role`
+	const yourrole = isusername ? "Their Role" : "Your Role"
 
 	let firmimage = false
 	client.guilds.get("563439683309142016").emojis.forEach(async (e) => {
@@ -143,7 +143,7 @@ exports.run = async (client, message, [username, _discord_id, user, _history, fi
 		exec: "Executive",
 		coo: "COO",
 		cfo: "CFO",
-		ceo: "COO"
+		ceo: "CEO"
 	}
 
 	const firmrole = firmroles[user.firm_role]
