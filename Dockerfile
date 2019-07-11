@@ -6,7 +6,7 @@
 
 FROM node:alpine
 
-RUN apk --no-cache --update add git g++ make
+RUN apk --no-cache --update add python git g++ make
 
 RUN adduser -D user
 USER user
