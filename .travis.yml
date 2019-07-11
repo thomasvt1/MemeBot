@@ -8,14 +8,13 @@ env:
   - DOCKER_REPO_SLUG=thomasvt1/memebot
 
 script:
-  # build latest image always
-  - docker build -t $DOCKER_REPO_SLUG:latest .
+  - echo 'BRANCH= ' $TRAVIS_BRANCH
+  # build latest image if master branch
+  - if [[ $TRAVIS_BRANCH = master ]]; then docker build -t $DOCKER_REPO_SLUG:latest .; else true ; fi
   # build the tagged image
   - if [[ $TRAVIS_BRANCH != master ]]; then docker build -t $DOCKER_REPO_SLUG:$TRAVIS_BRANCH .; else true ; fi
 
 after_success:
-  - echo 'BRANCH= ' $TRAVIS_BRANCH
-  - echo 'TAG= ' $TRAVIS_TAG
   # IMPORTANT! Add the environment variables in Travis Build Environment (one time!)
   - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
   # push to latest if master branch
