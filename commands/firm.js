@@ -31,10 +31,14 @@ exports.run = async (client, message, [username, _discord_id, user, _history, fi
 		if (num_left > 0) page += 1
 	}
 
+	history_promise = [];
+
 	for (let i = 0; i < firmmembers.length; i++) {
-		const history = await client.api.getInvestorHistory(firmmembers[i].name, 100).catch(err => client.logger.error(err.stack))
-		investments = investments.concat(history)
+		history_promise.push(client.api.getInvestorHistory(firmmembers[i].name, 100).then(history => investments = investments.concat(history)).catch(err => client.logger.error(err.stack)))
 	}
+
+	await Promise.all(history_promise);
+	delete history_promise;
 
 	for (let i = 0; i < investments.length; i++) {
 		if (investments[i].done === true && investments[i].time > firm.last_payout) {
