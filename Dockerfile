@@ -15,4 +15,3 @@ WORKDIR /home/user
 
 RUN npm install
 CMD ["npm", "start"]
-VOLUME config.js:./config.js
