@@ -21,4 +21,4 @@ after_success:
   # push to latest if master branch
   - if [[ $TRAVIS_BRANCH = master ]]; then docker push $DOCKER_REPO_SLUG:latest; else true; fi
   # push tag as well
-  - if [[ $TRAVIS_TAG = $TRAVIS_BRANCH ]]; then docker push $DOCKER_REPO_SLUG:$TRAVIS_TAG; else true ; fi
+  - if [[ $TRAVIS_BRANCH != master ]]; then docker push $DOCKER_REPO_SLUG:$TRAVIS_BRANCH; else true ; fi
