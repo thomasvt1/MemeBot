@@ -17,14 +17,14 @@ const PastebinAPI = require("pastebin-js"),
 	pastebin = new PastebinAPI("38d22ed98a3a3134febb112c1be23189")
 exports.run = async (client, message, args, level) => { // eslint-disable-line no-unused-vars
 	const code = args.join(" ")
+	const evaled = eval(code)
 	try {
-		const evaled = eval(code)
 		const clean = await client.clean(client, evaled)
 		if (!(clean.length <= 1980)) {
 			pastebin.createPaste(`// Eval results: \n//${moment().format("DD/MM/YYYY HH:mm:ss")}\n${clean}`, "MemeBot eval results", null, 1).then(r => {
 				const emb = new Discord.RichEmbed()
 					.setTitle("The eval results were too large")
-					.setDescription("So I uploaded them to Hastebin!")
+					.setDescription("So I uploaded them to Pastebin!")
 					.setAuthor(client.user.username, client.user.avatarURL)
 					.setColor(0x3669FA)
 					.setFooter("Sorry for the inconvenience", client.user.avatarURL)
@@ -36,7 +36,7 @@ exports.run = async (client, message, args, level) => { // eslint-disable-line n
 				console.log(err)
 				const emb = new Discord.RichEmbed()
 					.setTitle(":x: Error!")
-					.setDescription(`An unexpected error occurred while uploading to Hastebin.\`\`\`js\n${client.clean(client, err.stack)}\`\`\``)
+					.setDescription(`An unexpected error occurred while uploading to Pastebin.\`\`\`js\n${client.clean(client, err.stack)}\`\`\``)
 					.setAuthor(client.user.username, client.user.avatarURL)
 					.setColor("RED")
 					.setFooter(client.user.username, client.user.avatarURL)
@@ -56,10 +56,10 @@ exports.run = async (client, message, args, level) => { // eslint-disable-line n
 		}
 	} catch (err) {
 		if (!(err.length <= 1980)) {
-			pastebin.createPaste(`// Eval results: \n//${moment().format("DD/MM/YYYY HH:mm:ss")}\n${await client.clean(client, err)}`, "MemeBot eval results", null, 1).then(r => {
+			pastebin.createPaste(`// Eval results: \n//${moment().format("DD/MM/YYYY HH:mm:ss")}\n // Error:\n${await client.clean(client, err)}\n // Result:\n${await client.clean(client, evaled)}`, "MemeBot eval results", null, 1).then(r => {
 				const emb = new Discord.RichEmbed()
 					.setTitle("The eval results were too large")
-					.setDescription("So I uploaded them to Hastebin!")
+					.setDescription("So I uploaded them to Pastebin!")
 					.setAuthor(client.user.username, client.user.avatarURL)
 					.setColor(0x3669FA)
 					.setFooter("Sorry for the inconvenience", client.user.avatarURL)
@@ -71,7 +71,7 @@ exports.run = async (client, message, args, level) => { // eslint-disable-line n
 				console.log(err)
 				const emb = new Discord.RichEmbed()
 					.setTitle(":x: Error!")
-					.setDescription(`An unexpected error occurred while uploading to Hastebin.\`\`\`js\n${client.clean(client, err.stack)}\`\`\``)
+					.setDescription(`An unexpected error occurred while uploading to Pastebin.\`\`\`js\n${client.clean(client, err.stack)}\`\`\``)
 					.setAuthor(client.user.username, client.user.avatarURL)
 					.setColor("RED")
 					.setFooter(client.user.username, client.user.avatarURL)
