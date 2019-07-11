@@ -1,0 +1,23 @@
+sudo: required
+
+services:
+  - docker
+
+env:
+  # IMPORTANT! Add your docker slug here (commit once)
+  - DOCKER_REPO_SLUG=thomasvt1/memebot
+
+script:
+  - echo 'BRANCH= ' $TRAVIS_BRANCH
+  # build latest image if master branch
+  - if [[ $TRAVIS_BRANCH = master ]]; then docker build -t $DOCKER_REPO_SLUG:latest .; else true ; fi
+  # build the tagged image
+  - if [[ $TRAVIS_BRANCH != master ]]; then docker build -t $DOCKER_REPO_SLUG:$TRAVIS_BRANCH .; else true ; fi
+
+after_success:
+  # IMPORTANT! Add the environment variables in Travis Build Environment (one time!)
+  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+  # push to latest if master branch
+  - if [[ $TRAVIS_BRANCH = master ]]; then docker push $DOCKER_REPO_SLUG:latest; else true; fi
+  # push tag as well
+  - if [[ $TRAVIS_BRANCH != master ]]; then docker push $DOCKER_REPO_SLUG:$TRAVIS_BRANCH; else true ; fi

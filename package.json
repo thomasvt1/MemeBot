@@ -1,29 +1,45 @@
 {
-  "name": "memecord",
-  "version": "1.0.0",
-  "description": "Discord client for MemeBot",
-  "main": "discord.js",
+  "name": "memebot",
+  "version": "2.0.0",
+  "description": "A Discord bot which gives you daily investments and statistics on the Meme Economy.",
+  "main": "index.js",
   "scripts": {
-    "build": "tsc -p tsconfig.json --removeComments"
+    "build": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
   },
-  "author": "Thomas van Tilburg",
-  "license": "ISC",
-  "devDependencies": {
-    "@types/lru-cache": "^5.1.0",
-    "@types/mysql2": "github:types/mysql2",
-    "@types/node": "^12.0.4",
-    "@types/request": "^2.48.1",
-    "@types/snoowrap": "^1.15.3",
-    "@types/ws": "^6.0.1",
-    "typescript": "^3.5.1"
+  "engines": {
+    "node": ">=8"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thomasvt1/MemeBot.git"
+  },
+  "author": "Thomas van Tilburg <thomasvt@me.com> (https://thomasvt.xyz)",
+  "contributors": [
+    "Keanu C. <keanu@keanu73.net> (https://github.com/Keanu73)"
+  ],
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/thomasvt1/MemeBot/issues"
+  },
+  "homepage": "https://github.com/thomasvt1/MemeBot#readme",
   "dependencies": {
-    "bufferutil": "^4.0.1",
+    "@sentry/node": "^5.5.0",
+    "chalk": "^2.4.2",
     "discord.js": "^11.5.1",
     "lru-cache": "^5.1.1",
-    "mysql2": "^1.6.5",
-    "request": "^2.88.0",
-    "snoowrap": "^1.15.2",
+    "moment": "^2.24.0",
+    "moment-duration-format": "^2.3.2",
+    "mongoose": "^5.6.2",
+    "pastebin-js": "^1.0.2",
+    "request-promise": "^4.2.4",
+    "safe-timers": "^1.1.0",
+    "snoowrap": "^1.16.0",
+    "tunnel-agent": "^0.6.0",
     "ws": "^7.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-plugin-jsdoc": "^8.0.1"
   }
 }
