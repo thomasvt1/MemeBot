@@ -32,25 +32,12 @@ exports.run = async (client, message, [username, _discord_id, user, _history, fi
 	}
 
 	for (let i = 0; i < firmmembers.length; i++) {
-		let num_left = firmmembers[i].completed
-		let page = 0
-		let amount = 0
-
-		while (num_left > 0) {
-			if (num_left > 100) {
-				amount = 100
-			} else {
-				amount = num_left
-			}
-			const history = await client.api.getInvestorHistory(firmmembers[i].name, amount, page).catch(err => client.logger.error(err.stack))
-			investments = investments.concat(history)
-			num_left -= amount
-			if (num_left > 0) page += 1
-		}
+		const history = await client.api.getInvestorHistory(firmmembers[i].name, 100).catch(err => client.logger.error(err.stack))
+		investments = investments.concat(history)
 	}
 
 	for (let i = 0; i < investments.length; i++) {
-		if (investments[i].done === true) {
+		if (investments[i].done === true && investments[i].time > firm.last_payout) {
 			profitprct += (investments[i].profit - investments[i].profit * (investments[i].firm_tax / 100)) / investments[i].amount * 100 // investor profit ratio
 		}
 	}
@@ -148,7 +135,7 @@ exports.run = async (client, message, [username, _discord_id, user, _history, fi
 
 	const firmrole = firmroles[user.firm_role]
 
-	// When my PR is implemented, replace "Completed investments" with "Rank" (in leaderboard)
+	// When my PR is implemented, replace "Completed investments" with "Rank" (in leaderboard) (it was below average investment profit)
 
 	const firminfo = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
@@ -158,7 +145,6 @@ exports.run = async (client, message, [username, _discord_id, user, _history, fi
 		.setURL(`https://meme.market/firm.html?firm=${user.firm}`)
 		.addField("Balance", `**${client.api.numberWithCommas(firm.balance)}** M¢`, true)
 		.addField("Average investment profit", `${profitprct.toFixed(3)}%`, true)
-		.addField("Total completed investments", investments.length, true)
 		.addField(yourrole, firmrole, true)
 		.addField(`Most active investor since ${toorecent}`, `[u/${mostactive.name}](https://meme.market/user.html?account=${mostactive.name})\n**${mostactive.avginvestments}** average investments per day\nLast invested: ${mostactiveinvested}`, true)
 		.addField(`Least active investor since ${toorecent}`, `[u/${leastactive.name}](https://meme.market/user.html?account=${leastactive.name})\n**${leastactive.avginvestments}** average investments per day\nLast invested: ${leastactiveinvested}`, true)
