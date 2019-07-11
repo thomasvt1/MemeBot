@@ -14,7 +14,7 @@ script:
   - if [[ $TRAVIS_TAG = $TRAVIS_BRANCH ]]; then docker build -t $DOCKER_REPO_SLUG:$TRAVIS_BRANCH .; else true ; fi
 
 after_success:
-  - echo "GIT BRANCH: " + $TRAVIS_BRANCH
+  - echo $TRAVIS_BRANCH
   # IMPORTANT! Add the environment variables in Travis Build Environment (one time!)
   - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
   # push to latest if master branch
