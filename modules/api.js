@@ -125,8 +125,6 @@ api.getTop100 = async (amount = 25, page) => {
 }
 
 api.getRedditLink = async (client, reddit_name) => {
-	if (config.node_env === "DEVELOPMENT") return false
-
 	const link = await client.names.findOne({ reddit_name: reddit_name }).lean()
 
 	if (!link) return false
@@ -135,8 +133,6 @@ api.getRedditLink = async (client, reddit_name) => {
 }
 
 api.getLink = async (client, discord_id) => {
-	if (config.node_env === "DEVELOPMENT") return false
-
 	const link = await client.names.findOne({ _id: discord_id }).lean()
 
 	if (!link) return false
@@ -145,8 +141,6 @@ api.getLink = async (client, discord_id) => {
 }
 
 api.setLink = async (client, discord_id, reddit_name) => {
-	if (config.node_env === "DEVELOPMENT") return false
-
 	const res = await client.names.create({
 		_id: discord_id,
 		reddit_name: reddit_name
@@ -158,8 +152,6 @@ api.setLink = async (client, discord_id, reddit_name) => {
 }
 
 api.updateLink = async (client, discord_id, reddit_name) => {
-	if (config.node_env === "DEVELOPMENT") return false
-
 	const link = await client.names.findOne({ _id: discord_id })
 
 	if (!link) return false

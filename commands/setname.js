@@ -4,8 +4,6 @@
 */
 
 exports.run = async (client, message, [name], _level) => {
-	if (client.config.node_env === "DEVELOPMENT") return false
-
 	const check = await client.api.getLink(client, message.author.id).catch(err => client.logger.error(err.stack))
 
 	if (!name && !check) return message.channel.send(":question: I don't remember your name, and you haven't given me one.\n```Use $setname reddit_username to set your name```")
