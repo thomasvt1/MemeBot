@@ -8,7 +8,6 @@ env:
   - DOCKER_REPO_SLUG=thomasvt1/memebot
 
 script:
-  - echo "GIT BRANCH: " + $TRAVIS_BRANCH
   # build latest image always
   - docker build -t $DOCKER_REPO_SLUG:latest .
   # build the tagged image
