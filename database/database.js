@@ -10,7 +10,8 @@ let Database = {}
 exports.initialize = async url => new Promise((resolve, reject) => {
 	mongoose.connect(url, {
 		promiseLibrary: global.Promise,
-		useNewUrlParser: true
+		useNewUrlParser: true,
+		useFindAndModify: false
 	})
 	const [Guilds, Names] = [
 		mongoose.model("guilds", require("./guildSchema")),

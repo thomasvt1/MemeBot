@@ -95,17 +95,18 @@ module.exports = async (client, message) => {
 	if (cmd.help.category === "MemeEconomy" && !excludedcmds.some(c => cmd.help.name === c)) {
 		const settings = message.guild ? await client.getSettings(message.guild) : await client.settings.findOne({ _id: "default" })
 		let username = args[0] === undefined ? args[0] : args[0].replace(/^((\/|)u\/)/g, "")
+		let isusername
 		const check = await client.api.getLink(client, message.author.id)
-		let user = await client.api.getInvestorProfile(username).catch(err => {
-			if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-			client.logger.error(err.stack)
-		})
-		let isusername = true
-		if (user.id === 0 && check) {
-			user = await client.api.getInvestorProfile(check).catch(err => {
+		let user
+		if (username !== undefined) {
+			user = await client.api.getInvestorProfile(username).catch(err => {
 				if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 				client.logger.error(err.stack)
 			})
+			if (user.id !== 0) isusername = true
+		}
+		if (user === undefined && check) {
+			user = await client.api.getInvestorProfile(check).catch(err => client.logger.error(err.stack))
 			username = user.name
 			isusername = false
 		}
