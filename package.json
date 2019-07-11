@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "preinstall": "export ACCEPT_HIGHCHARTS_LICENSE=1"
+    "start": "node index.js"
   },
   "engines": {
     "node": ">=8"
