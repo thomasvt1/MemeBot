@@ -23,37 +23,37 @@ client.on('error', () => {
 });
 
 client.on('message', msg => {
-    if (!msg.content.startsWith("$")) {
+    if (!msg.content.startsWith("&")) {
         return;
     }
 
     const args = msg.content.split(/ +/);
 
-    if (msg.content.startsWith("$help")) {
+    if (msg.content.startsWith("&help")) {
         return help(msg, args);
     }
 
-    if (msg.content.startsWith("$setname")) {
+    if (msg.content.startsWith("&setname")) {
         return tryFunction(msg, setname(msg, args));
     }
 
-    if (msg.content.startsWith("$stats")) {
+    if (msg.content.startsWith("&stats")) {
         return tryFunction(msg, stats(msg, args));
     }
 
-    if (msg.content.startsWith("$inactive")) {
+    if (msg.content.startsWith("&inactive")) {
         return tryFunction(msg, inactive(msg, args));
     }
 
-    if (msg.content.startsWith("$firmtop")) {
+    if (msg.content.startsWith("&firmtop")) {
         return tryFunction(msg, firmtop(msg, args));
     }
 
-    if (msg.content.startsWith("$active")) {
+    if (msg.content.startsWith("&active")) {
         return tryFunction(msg, active(msg, args));
     }
 
-    if (msg.content.startsWith("$average")) {
+    if (msg.content.startsWith("&average")) {
         return tryFunction(msg, average_investments(msg, args));
     }
 });
@@ -64,15 +64,15 @@ function help(msg: Discord.Message, args: string[]) {
     reply += `Hi ${msg.author.username}, here's a quick list of what I can help you with\n`;
 
     reply += "```";
-    reply += "• $help - The menu you are in now!\n";
-    reply += "• $stats - See your statistics\n";
-    reply += "• $inactive - See the inactive members in your firm\n";
-    reply += "• $firmtop - See the leaderboard of your firm\n";
-    reply += "• $active - See the leaderboard of your firm\n";
-    reply += "• $average - See the average investments\n";
-    reply += "• $setname - Make MemeBot remember your Reddit name\n";
+    reply += "• &help - The menu you are in now!\n";
+    reply += "• &stats - See your statistics\n";
+    reply += "• &inactive - See the inactive members in your firm\n";
+    reply += "• &firmtop - See the leaderboard of your firm\n";
+    reply += "• &active - See the leaderboard of your firm\n";
+    reply += "• &average - See the average investments\n";
+    reply += "• &setname - Make MemeBot remember your Reddit name\n";
 
-    reply += "\n\nYou can use every command with a Reddit name behind it, but using $setname you can set a default account";
+    reply += "\n\nYou can use every command with a Reddit name behind it, but using &setname you can set a default account";
     reply += "```";
 
     msg.channel.send(reply);
@@ -89,7 +89,7 @@ async function tryFunction(msg: Discord.Message, func: any) {
 
 async function setname(msg: Discord.Message, args: string[]) {
     if (args.length < 2) {
-        msg.reply("The correct usage is ``$setname yourname``");
+        msg.reply("The correct usage is ``&setname yourname``");
         return;
     }
 
