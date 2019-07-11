@@ -11,7 +11,7 @@ script:
   # build latest image always
   - docker build -t $DOCKER_REPO_SLUG:latest .
   # build the tagged image
-  - if [[ $TRAVIS_TAG = $TRAVIS_BRANCH ]]; then docker build -t $DOCKER_REPO_SLUG:$TRAVIS_BRANCH .; else true ; fi
+  - if [[ $TRAVIS_BRANCH != master ]]; then docker build -t $DOCKER_REPO_SLUG:$TRAVIS_BRANCH .; else true ; fi
 
 after_success:
   - echo 'BRANCH= ' $TRAVIS_BRANCH
