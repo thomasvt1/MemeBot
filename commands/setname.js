@@ -6,8 +6,8 @@
 exports.run = async (client, message, [name], _level) => {
 	const check = await client.api.getLink(client, message.author.id).catch(err => client.logger.error(err.stack))
 
-	if (!name && !check) return message.channel.send(":question: I don't remember your name, and you haven't given me one.\n```Use $setname reddit_username to set your name```")
-	if (!name && check) return message.channel.send(`:question: You haven't given me what you want to change your name to, ${check}.`)
+	if (name === undefined && !check) return message.channel.send(":question: I don't remember your name, and you haven't given me one.\n```Use $setname reddit_username to set your name```")
+	if (name === undefined && check) return message.channel.send(`:question: You haven't given me what you want to change your name to, ${check}.`)
 	if (name.length < 3) return message.channel.send(":thinking: Something tells me that is not a Reddit username")
 
 	const linkcheck = await client.api.getRedditLink(client, name).catch(err => client.logger.error(err.stack))

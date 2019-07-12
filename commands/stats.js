@@ -5,7 +5,7 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 require("moment-duration-format")
-exports.run = async (client, message, [username, discord_id, user, history, firm, _firmmembers, _isusernamre], _level) => {
+exports.run = async (client, message, [username, discord_id, user, history, firm, _firmmembers, _isusername], _level) => {
 
 	// Calculate profit %
 	let profitprct = 0

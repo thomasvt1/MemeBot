@@ -17,8 +17,8 @@ const PastebinAPI = require("pastebin-js"),
 	pastebin = new PastebinAPI("38d22ed98a3a3134febb112c1be23189")
 exports.run = async (client, message, args, level) => { // eslint-disable-line no-unused-vars
 	const code = args.join(" ")
-	const evaled = eval(code)
 	try {
+		const evaled = eval(code)
 		const clean = await client.clean(client, evaled)
 		if (!(clean.length <= 1980)) {
 			pastebin.createPaste(`// Eval results: \n//${moment().format("DD/MM/YYYY HH:mm:ss")}\n${clean}`, "MemeBot eval results", null, 1).then(r => {
@@ -56,7 +56,7 @@ exports.run = async (client, message, args, level) => { // eslint-disable-line n
 		}
 	} catch (err) {
 		if (!(err.length <= 1980)) {
-			pastebin.createPaste(`// Eval results: \n//${moment().format("DD/MM/YYYY HH:mm:ss")}\n // Error:\n${await client.clean(client, err)}\n // Result:\n${await client.clean(client, evaled)}`, "MemeBot eval results", null, 1).then(r => {
+			pastebin.createPaste(`// Eval results: \n//${moment().format("DD/MM/YYYY HH:mm:ss")}\n${await client.clean(client, err)}`, "MemeBot eval results", null, 1).then(r => {
 				const emb = new Discord.RichEmbed()
 					.setTitle("The eval results were too large")
 					.setDescription("So I uploaded them to Pastebin!")

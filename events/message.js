@@ -82,17 +82,13 @@ module.exports = async (client, message) => {
 	// The "level" command module argument will be deprecated in the future.
 	message.author.permLevel = level
 
-	message.flags = []
-	while (args[0] && args[0][0] === "-") {
-		message.flags.push(args.shift().slice(1))
-	}
-
 	// If the command exists, **AND** the user has permission, run it.
 	client.logger.cmd(`[CMD] ${client.config.permLevels.find(l => l.level === level).name} ${message.author.username} (${message.author.id}) ran command ${cmd.help.name} with ${args[0] ? `args ${args[0]}` : "no args"}`)
 
 	const excludedcmds = ["top100", "leaderboard", "setname", "history", "timer"]
+	const exclude = excludedcmds.some(c => c === cmd.help.name)
 
-	if (cmd.help.category === "MemeEconomy" && !excludedcmds.some(c => cmd.help.name === c)) {
+	if (cmd.help.category === "MemeEconomy" && !exclude) {
 		const settings = message.guild ? await client.getSettings(message.guild) : await client.settings.findOne({ _id: "default" })
 		let username = args[0] === undefined ? args[0] : args[0].replace(/^((\/|)u\/)/g, "")
 		let isusername
@@ -105,14 +101,14 @@ module.exports = async (client, message) => {
 			})
 			if (user.id !== 0) isusername = true
 		}
-		if (user === undefined && check) {
+		if (username === undefined && check) {
 			user = await client.api.getInvestorProfile(check).catch(err => client.logger.error(err.stack))
 			username = user.name
 			isusername = false
 		}
 
 		if (username && user.id === 0 && !check) return message.channel.send(":question: I couldn't find that MemeEconomy user.")
-		if (username === undefined && user.id === 0 && !check) return message.channel.send(`:question: Please supply a Reddit username, or use \`${settings.prefix}setname <reddit username>\`.`)
+		if (username === undefined && !check) return message.channel.send(`:question: Please supply a Reddit username, or use \`${settings.prefix}setname <reddit username>\`.`)
 
 		const firm = await client.api.getFirmProfile(user.firm).catch(err => {
 			if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
@@ -136,5 +132,8 @@ module.exports = async (client, message) => {
 		args = arguments
 	}
 
+	const start = Math.trunc(Date.now() / 1000)
 	cmd.run(client, message, args, level)
+	const end = Math.trunc(Date.now() / 1000)
+	
 }
