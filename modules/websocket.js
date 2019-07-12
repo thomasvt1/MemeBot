@@ -13,6 +13,8 @@ module.exports = async (client, investment) => {
 		// investment watch channel will equal as channel id
 		const settings = await client.getSettings(guild)
 
+		client.logger.log(`Guild ${guild.name} with owner ${client.users.get(guild.ownerID).name} (${guild.ownerID}), channel ${settings.investmentChannel} with mentionEveryone ${settings.mentionEveryone}`)
+
 		if (settings.investmentChannel === 0) return
 
 		if (!client.channels.get(settings.investmentChannel)) return client.users.get(guild.ownerID).send("Your #investment-watch channel is configured incorrectly!\nPlease use `&set edit investmentChannel <mention channel here>` to fix this problem.")

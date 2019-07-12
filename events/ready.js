@@ -34,10 +34,10 @@ function startWebSocket(client) {
 	})
 
 	ws.on("message", async (data) => {
-		client.logger.log(`Investment Watch: ${data}`, "cmd")
+		client.logger.log(`Investment Watch: ${data}`)
 		if (data.toString().includes("submid")) {
 			const res = await websockethandler(client, JSON.parse(data.toString()))
-			client.logger.log(`Investment Watch: ${res}`, "cmd")
+			client.logger.log(`Investment Watch: ${res}`)
 		}
 	})
 
@@ -45,10 +45,10 @@ function startWebSocket(client) {
 	ws.on("ping", heartbeat)
 	ws.on("close", function clear() {
 		clearTimeout(this.pingTimeout)
-		client.logger.log("Investment Watch: Connection Closed, Reconnecting...", "cmd")
+		client.logger.log("Investment Watch: Connection Closed, Reconnecting...")
 		setTimeout(() => {
 			startWebSocket(client)
-			client.logger.log("Investment Watch: Reconnected", "cmd")
+			client.logger.log("Investment Watch: Reconnected")
 		}, 5000)
 		
 	})
@@ -67,7 +67,7 @@ function heartbeat() {
 	// equal to the interval at which your server sends out pings plus a
 	// conservative assumption of the latency.
 	this.pingTimeout = setTimeout(() => {
-		logger.log("Investment Watch: Terminating Connection", "cmd")
+		logger.log("Investment Watch: Terminating Connection")
 		this.terminate()
 	}, 30000 + 20)
 }
