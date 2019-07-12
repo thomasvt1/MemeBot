@@ -18,7 +18,6 @@ exports.run = async (client, message, [page], _level) => {
 		client.logger.error(err.stack)
 	})
 	const offset = page === 1 ? 1 : (perPage * (page - 1)) + 1
-	const top100firms = []
 
 	const firmroles = {
 		"": "Floor Trader",
@@ -39,7 +38,7 @@ exports.run = async (client, message, [page], _level) => {
 
 	for (let i = 0; i < perPage; i++) {
 		const investor = top100[i]
-		promises.push(client.api.getFirmProfile(investor.firm).then(firm => top100firms.push(firm)).catch(err => {
+		promises.push(client.api.getFirmProfile(investor.firm).then(firm => top100[i].firm = firm).catch(err => {
 			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 			client.logger.error(err.stack)
 		}))
@@ -55,7 +54,7 @@ exports.run = async (client, message, [page], _level) => {
 	for (let i = 0; i < perPage; i++) {
 		const investor = top100[i]
 		const firmrole = firmroles[investor.firm_role]
-		const firm = top100firms[i]
+		const firm = investor.firm
 		const history = investor.history
 
 		const lastinvested = history[0] ? moment.duration(moment().unix() - history[0].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") : "Never"		
@@ -73,7 +72,7 @@ exports.run = async (client, message, [page], _level) => {
 
 		const firmemoji = client.firmEmoji(firm.name)
 
-		const firmstr = top100firms[i].id !== 0 ? `\n👔 \`Firm:\` **${firmrole}** of **${firm.name}**` : ""
+		const firmstr = firm.id !== 0 ? `\n👔 \`Firm:\` **${firmrole}** of **${firm.name}**` : ""
 		stats.addField(`\`${i + offset}.\` u/${investor.name} ${firmemoji}`, `
 💰 \`Net worth:\` **${client.api.getSuffix(investor.networth)} M¢**${firmstr}
 🏅 \`Average investments per day:\` **${avginvestments}**
