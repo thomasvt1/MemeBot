@@ -6,64 +6,74 @@ const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 require("moment-duration-format")
 exports.run = async (client, message, [username, discord_id, user, history, firm, _firmmembers, _isusername], _level) => {
+	let profitdifference
+	let profitprct
+	let avginvestments
+	let investments_today
+	let lastinvested
+	let weekprofit
+	let weekratio
+	let currentpost
 
-	// Calculate profit %
-	let profitprct = 0
-	for (let i = 0; i < history.length; i++) {
-		if (history[i].done === true) {
+	if (history.length) {
+		// Calculate profit %
+		profitprct = 0
+		for (let i = 0; i < history.length; i++) {
+			if (history[i].done === true) {
+				let profit = history[i].profit
+				if (user.firm !== 0) profit -= profit * (history[i].firm_tax / 100)
+				profitprct += profit / history[i].amount * 100
+			}
+		}
+
+		profitprct /= history.length // Calculate average % return
+
+		// Calculate this week's profit
+		weekprofit = 0
+		let i = 0
+		while (i < history.length && history[i].time > firm.last_payout) {
 			let profit = history[i].profit
 			if (user.firm !== 0) profit -= profit * (history[i].firm_tax / 100)
-			profitprct += profit / history[i].amount * 100
+			weekprofit += profit
+			i++
 		}
+
+		// Calculate amount of investments today
+		investments_today = 0
+		for (const inv of history) {
+			const timediff = Math.trunc(((new Date().getTime() / 1000) - inv.time) / 36e2) // 36e3 will result in hours between date objects
+			if (timediff > 24)
+				break
+			investments_today++
+		}
+
+		// Calculate average investments since last payout
+		let avginvestments = 0
+		for (const inv of history) {
+			if (inv.time < firm.last_payout)
+				break
+			avginvestments++
+		}
+		avginvestments /= Math.trunc(moment().diff(moment.unix(firm.last_payout), "days"))
+		avginvestments = Math.trunc(avginvestments)
+
+		weekratio = ((weekprofit / (user.networth - weekprofit)) * 100.0).toFixed(2)
+
+		lastinvested = moment.duration(moment().unix() - history[0].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
+
+		currentpost = !history[0].done ? await client.api.r.getSubmission(history[0].post).fetch().then((sub) => sub).catch(err => client.logger.error(err.stack)) : false
+
+		let factor
+		if (!history[0].done) {
+			const array = await client.math.calculate_factor(history[0].upvotes, currentpost.score, user.networth)
+			factor = array[0]
+		}
+
+		let forecastedprofit = !history[0].done ? history[0].amount * factor / 100 : false
+		if (user.firm !== 0 && !history[0].done) forecastedprofit -= forecastedprofit * (firm.tax / 100)
+
+		profitdifference = !history[0].done ? `\n(${forecastedprofit < 0 ? "-" : "+"}**${client.api.numberWithCommas(Math.trunc(forecastedprofit))}** M¢)` : ""
 	}
-
-	profitprct /= history.length // Calculate average % return
-
-	// Calculate this week's profit
-	let weekprofit = 0
-	let i = 0
-	while (i < history.length && history[i].time > firm.last_payout) {
-		let profit = history[i].profit
-		if (user.firm !== 0) profit -= profit * (history[i].firm_tax / 100)
-		weekprofit += profit
-		i++
-	}
-
-	// Calculate amount of investments today
-	let investments_today = 0
-	for (const inv of history) {
-		const timediff = Math.trunc(((new Date().getTime() / 1000) - inv.time) / 36e2) // 36e3 will result in hours between date objects
-		if (timediff > 24)
-			break
-		investments_today++
-	}
-
-	// Calculate average investments since last payout
-	let avginvestments = 0
-	for (const inv of history) {
-		if (inv.time < firm.last_payout)
-			break
-		avginvestments++
-	}
-	avginvestments /= Math.trunc(moment().diff(moment.unix(firm.last_payout), "days"))
-	avginvestments = Math.trunc(avginvestments)
-
-	const weekratio = ((weekprofit / (user.networth - weekprofit)) * 100.0).toFixed(2)
-
-	const lastinvested = moment.duration(moment().unix() - history[0].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
-
-	const currentpost = !history[0].done ? await client.api.r.getSubmission(history[0].post).fetch().then((sub) => sub).catch(err => client.logger.error(err.stack)) : false
-
-	let factor
-	if (!history[0].done) {
-		const array = await client.math.calculate_factor(history[0].upvotes, currentpost.score, user.networth)
-		factor = array[0]
-	}
-
-	let forecastedprofit = !history[0].done ? history[0].amount * factor / 100 : false
-	if (user.firm !== 0 && !history[0].done) forecastedprofit -= forecastedprofit * (firm.tax / 100)
-
-	const profitdifference = !history[0].done ? `\n(${forecastedprofit < 0 ? "-" : "+"}**${client.api.numberWithCommas(Math.trunc(forecastedprofit))}** M¢)` : ""
 
 	const redditpfp = await client.api.r.getUser(username).fetch().then((usr) => usr.icon_img).catch(err => client.logger.error(err.stack))
 
@@ -88,12 +98,14 @@ exports.run = async (client, message, [username, discord_id, user, history, firm
 		.addField("Completed investments", `${client.api.numberWithCommas(user.completed)}`, true)
 		.addField("Rank", `**\`#${user.rank}\`**`, true)
 	if (user.firm !== 0) stats.addField("Firm", `**\`${firmroles[user.firm_role]}\`** of **\`${firm.name}\`**`, true)
-	stats.addField("Average investment profit", `${profitprct.toFixed(2)}%`, true)
-		.addField("Average investments per day", avginvestments, true)
-		.addField("Investments in the past day", `${investments_today}`, true)
-		.addField("Last invested", `${lastinvested}`, true)
-		.addField("This week's profit", `**${client.api.numberWithCommas(Math.trunc(weekprofit))}** M¢`, true)
-		.addField("Week profit ratio", `${weekratio}%`, true)
+	if (history.length) {
+		stats.addField("Average investment profit", `${profitprct.toFixed(2)}%`, true)
+			.addField("Average investments per day", avginvestments, true)
+			.addField("Investments in the past day", `${investments_today}`, true)
+			.addField("Last invested", `${lastinvested}`, true)
+			.addField("This week's profit", `**${client.api.numberWithCommas(Math.trunc(weekprofit))}** M¢`, true)
+			.addField("Week profit ratio", `${weekratio}%`, true)
+	}
 	if (discord_id) stats.setThumbnail(client.users.get(discord_id).displayAvatarURL)
 	if (!discord_id) stats.setThumbnail(redditpfp)
 	return message.channel.send({ embed: stats })
