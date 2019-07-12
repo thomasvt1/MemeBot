@@ -1,5 +1,5 @@
 /* Copyright (c) 2019 thomasvt1 / MemeBot
-/* Original copyright (c) 2018 YorkAARGH
+/* Original copyright (c) 2018 YorkAARGH (https://github.com/AnIdiotsGuide/guidebot)
 /* All rights reserved.
 /*
 MIT License
@@ -36,7 +36,7 @@ const { RichEmbed } = require("discord.js")
 exports.run = async (client, message, args, level) => {
 	// If no specific command is called, show all filtered commands.
 	if (!args[0]) {
-		const settings = message.guild ? await client.getSettings(message.guild) : await client.settings.findOne({ _id: "default" })
+		const settings = await client.getSettings(message.guild)
 		const prefix = settings.prefix
 		const help = new RichEmbed()
 			.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")

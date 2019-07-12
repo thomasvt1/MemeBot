@@ -7,9 +7,14 @@ const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 const fs = require("fs")
 exports.run = async (client, message, [username, _discord_id, user, _history, firm, _firmmembers, isusername], _level) => {
-	// Here we calculate the average investment profit of the entire firm
-	// by listing out all of each firm member's investments, then pushing them
-	// all into one array. We then average them all out.
+	if (firm.id === 0) return message.channel.send(`:exclamation: ${isusername ? `${username} is` : "You are"} not in a firm!`)
+
+	// Here we have a promises variable to store all the API-related requests and
+	//  execute all at once for efficiency using Promise.all().
+	const promises = []
+
+	// Here we gather up all of the firm members by keeping track of
+	// how many we have left and so on, combining them into one array.
 	let firmmembers = []
 	let investments = []
 	let profitprct = 0
@@ -25,19 +30,26 @@ exports.run = async (client, message, [username, _discord_id, user, _history, fi
 			amount = num_left
 		}
 
-		const member = await client.api.getFirmMembers(user.firm, page, amount).catch(err => client.logger.error(err.stack))
-		firmmembers = firmmembers.concat(member)
+		const members = await client.api.getFirmMembers(user.firm, page, amount).catch(err => {
+			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+			client.logger.error(err.stack)
+		})
+		firmmembers = firmmembers.concat(members)
 		num_left -= amount
 		if (num_left > 0) page += 1
 	}
 
-	const history_promise = []
-
 	for (let i = 0; i < firmmembers.length; i++) {
-		history_promise.push(client.api.getInvestorHistory(firmmembers[i].name, 100).then(history => investments = investments.concat(history)).catch(err => client.logger.error(err.stack)))
+		promises.push(client.api.getInvestorHistory(firmmembers[i].name, 100).then(history => {
+			investments = investments.concat(history)
+			firmmembers[i].history = history
+		}).catch(err => {
+			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+			client.logger.error(err.stack)
+		}))
 	}
 
-	await Promise.all(history_promise)
+	await Promise.all(promises)
 
 	for (let i = 0; i < investments.length; i++) {
 		if (investments[i].done === true && investments[i].time > firm.last_payout) {
@@ -47,71 +59,12 @@ exports.run = async (client, message, [username, _discord_id, user, _history, fi
 
 	profitprct /= investments.length // Calculate average % return
 
-	// Calculate week's best profiteer, also include contribution to firm balance
-
-	const weekprofiteers = []
-
-	for (const member of firmmembers) {
-		const history = await client.api.getInvestorHistory(member.name)
-		let weekprofit = 0
-		let weekcontrib = 0
-		let i = 0
-		while (i < history.length && history[i].time > firm.last_payout) {
-			weekprofit += history[i].profit - history[i].profit * (history[i].firm_tax / 100)
-			weekcontrib += history[i].profit * (history[i].firm_tax / 100)
-			i++
-		}
-
-		weekprofiteers.push({ name: member.name, profit: weekprofit, contrib: weekcontrib})
-	}
-
-	weekprofiteers.sort((a, b) => b.profit - a.profit)
-
-	const weekbestprofiteer = weekprofiteers[0]
-	const weekworstprofiteer = weekprofiteers[weekprofiteers.length - 1]
-	const bfirmcontribution = weekbestprofiteer.contrib
-	const wfirmcontribution = weekworstprofiteer.contrib
-	const bfirmconstr = bfirmcontribution > 0 ? `\nContributed **${client.api.numberWithCommas(Math.trunc(bfirmcontribution))}** M¢ to firm (**${((bfirmcontribution / firm.balance) * 100).toFixed(2)}%**)` : ""
-	const wfirmconstr = wfirmcontribution > 0 ? `\nContributed **${client.api.numberWithCommas(Math.trunc(wfirmcontribution))}** M¢ to firm (**${((wfirmcontribution / firm.balance) * 100).toFixed(2)}%**)` : ""
-
-	// Calculate most inactive investors and most active investors
-	// (in terms of **time difference**, not investments.)
-	// List all of them, calculate time difference, format it using moment-duration-format.
-
-	for (const member of firmmembers) {
-		// Calculate average investment per day since last firm payout
-		let avginvestments = 0
-		const history = await client.api.getInvestorHistory(member.name, 50)
-		const days = moment().diff(moment.unix(firm.last_payout), "days")
-		const weekago = moment(moment().subtract(7, "days")).unix()
-		for (const inv of history) {
-			if (inv.time < firm.last_payout)
-				break
-			avginvestments++
-		}
-		avginvestments /= Math.trunc(days)
-		member.avginvestments = Math.floor(avginvestments)
-		member.timediff = history[0] ? Math.trunc(new Date().getTime() / 1000) - history[0].time : "Never"
-	}
-
-	const inactiveinvestors = [...firmmembers].sort((a, b) => a.avginvestments - b.avginvestments)
-	const activeinvestors = [...firmmembers].sort((a, b) => b.avginvestments - a.avginvestments)
-	const toorecent = moment().diff(moment.unix(firm.last_payout), "days") < 1 ? "last 7 days (payout too recent)" : "last payout"
-
-	const leastactive = inactiveinvestors[0]
-	const mostactive = activeinvestors[0]
-
-	const leastactiveinvested = leastactive.timediff === "Never" ? "**Never**" : moment.duration(leastactive.timediff, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")
-	const mostactiveinvested = mostactive.timediff === "Never" ? "**Never**" :  moment.duration(mostactive.timediff, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")
-
 	const yourrole = isusername ? "Their Role" : "Your Role"
 
-	let firmimage = false
+	let firmimage = "https://cdn.discordapp.com/emojis/588029928063107230.png"
 	client.guilds.get("563439683309142016").emojis.forEach(async (e) => {
 		if (e.name === firm.name.toLowerCase().replace(/ /g, "")) firmimage = e.url
 	})
-
-	if (!firmimage) firmimage = "https://cdn.discordapp.com/emojis/588029928063107230.png"
 
 	let board_members = 1
 
@@ -148,18 +101,14 @@ exports.run = async (client, message, [username, _discord_id, user, _history, fi
 		.setURL(`https://meme.market/firm.html?firm=${user.firm}`)
 		.addField("Balance", `**${client.api.numberWithCommas(firm.balance)}** M¢`, true)
 		.addField("Average investment profit", `${profitprct.toFixed(3)}%`, true)
-		.addField(yourrole, firmrole, false)
-		.addField(`Most active investor since ${toorecent}`, `[u/${mostactive.name}](https://meme.market/user.html?account=${mostactive.name})\n**${mostactive.avginvestments}** average investments per day\nLast invested: ${mostactiveinvested}`, false)
-		.addField(`Least active investor since ${toorecent}`, `[u/${leastactive.name}](https://meme.market/user.html?account=${leastactive.name})\n**${leastactive.avginvestments}** average investments per day\nLast invested: ${leastactiveinvested}`, false)
-		.addField("CEO", `[u/${firm.ceo}](https://meme.market/user.html?account=${firm.ceo})`, false)
-		.addField("COO", firm.coo === "" || firm.coo === "0" ? "None" : `[u/${firm.coo}](https://meme.market/user.html?account=${firm.coo})`, false)
-		.addField("CFO", firm.cfo === "" || firm.cfo === "0" ? "None" : `[u/${firm.cfo}](https://meme.market/user.html?account=${firm.cfo})`, false)
-		.addField("Tax", `${firm.tax}%`, false)
-		.addField("Size", size, false)
-		.addField("Week's best profiteer", `[u/${weekbestprofiteer.name}](https://meme.market/user.html?account=${weekbestprofiteer.name})\n**${client.api.numberWithCommas(Math.trunc(weekbestprofiteer.profit))}** M¢${bfirmconstr}`, false)
-		.addField("Week's worst profiteer", `[u/${weekworstprofiteer.name}](https://meme.market/user.html?account=${weekworstprofiteer.name})\n**${client.api.numberWithCommas(Math.trunc(weekworstprofiteer.profit))}** M¢${wfirmconstr}`, false)
+		.addField(yourrole, firmrole, true)
+		.addField("CEO", `[u/${firm.ceo}](https://meme.market/user.html?account=${firm.ceo})`, true)
+		.addField("COO", firm.coo === "" || firm.coo === "0" ? "None" : `[u/${firm.coo}](https://meme.market/user.html?account=${firm.coo})`, true)
+		.addField("CFO", firm.cfo === "" || firm.cfo === "0" ? "None" : `[u/${firm.cfo}](https://meme.market/user.html?account=${firm.cfo})`, true)
+		.addField("Size", size, true)
+		.addField("Tax", `${firm.tax}%`, true)
 		.setThumbnail(firmimage)
-	return message.channel.send({embed: firminfo})
+	return message.channel.send({ embed: firminfo })
 }
 
 exports.conf = {

@@ -19,7 +19,7 @@ module.exports = async (client, investment) => {
 
 		const mentioneveryone = settings.mentionEveryone === true ? "@everyone" : ""
 
-		const submission = await client.api.r.getSubmission(investment.submid).fetch().then((sub) => sub).catch(err => console.error(err))
+		const submission = await client.api.r.getSubmission(investment.submid).fetch().then((sub) => sub).catch(err => client.logger.error(err.stack))
 
 		const user = await client.api.getInvestorProfile(investment.username).catch(err => client.logger.error(err.stack))
 
@@ -27,10 +27,7 @@ module.exports = async (client, investment) => {
 
 		//const famous = famousmemers.some(c => investment.username === c.toLowerCase()) ? "<:famousmemer:582821955489628166>" : ""
 
-		let firmemoji = ""
-		client.guilds.get("563439683309142016").emojis.forEach(async (e) => {
-			if (firm && e.name === firm.name.toLowerCase().replace(/ /g, "")) firmemoji = `<:${e.identifier.toString()}>`
-		})
+		const firmemoji = client.firmEmoji(firm.name)
 
 		const timeposted = moment.duration(investment.timediff, "seconds").format("[**]m[**] [minutes] [ago], [**]s[**] [seconds] [ago]")
 

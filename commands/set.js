@@ -1,5 +1,5 @@
 /* Copyright (c) 2019 thomasvt1 / MemeBot
-/* Original copyright (c) 2018 YorkAARGH
+/* Original copyright (c) 2018 YorkAARGH (https://github.com/AnIdiotsGuide/guidebot)
 /* All rights reserved.
 /*
 MIT License
@@ -41,11 +41,8 @@ exports.run = async (client, message, [action, key, ...value], level) => { // es
 
 	// Retrieve current guild settings (merged) and overrides only.
 	const settings = await client.settings.findOne({ _id: message.guild.id })
-	const settingsObj = await client.settings.findOne({ _id: message.guild.id }).lean()
-	const defaults = await client.settings.findOne({ _id: "default" })
-	if (!settings) await client.settings.create({
-		_id: message.guild.id
-	})
+	const settingsObj = await client.getSettings(message.guild.id)
+	const defaults = await client.settings.findById("default")
 
 	// Edit an existing key value
 	if (action === "edit") {

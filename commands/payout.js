@@ -5,7 +5,8 @@
 
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
-exports.run = async (client, message, [_username, _discord_id, user, _history, firm, _firmmembers, _isusername], _level) => {
+exports.run = async (client, message, [username, _discord_id, user, _history, firm, _firmmembers, isusername], _level) => {
+	if (firm.id === 0) return message.channel.send(`:exclamation: ${isusername ? `${username} is` : "You are"} not in a firm!`)
 
 	const firmname = firm.name.endsWith("s") ? `${firm.name}'` : `${firm.name}'s`
 	const lastpayout = moment.duration((new Date().getTime() / 1000) - firm.last_payout, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")

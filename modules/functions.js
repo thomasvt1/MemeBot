@@ -1,5 +1,5 @@
 /* Copyright (c) 2019 thomasvt1 / MemeBot
-/* Original copyright (c) 2018 YorkAARGH
+/* Original copyright (c) 2018 YorkAARGH (https://github.com/AnIdiotsGuide/guidebot)
 /* Last modified by Keanu73 <keanu@keanu73.net> on 2019-06-30
 /* All rights reserved.
 /*
@@ -30,17 +30,33 @@ SOFTWARE.
 module.exports = (client) => {
 
 	/*
+	FIRM EMOJI FUNCTION
+
+	Here we just take the firm's name, lowercase it and format it, then look for it in the MemeBot guild.
+
+	*/
+
+	client.firmEmoji = (name) => {
+		let emoji = ""
+		name = name.toLowerCase().replace(/ /g, "")
+		client.guilds.get("563439683309142016").emojis.forEach(async (e) => {
+			if (e.name === name) emoji = `<:${e.identifier.toString()}>`
+		})
+		return emoji
+	}
+
+	/*
    CHECK EMBED FUNCTION
 
    This is just a nifty little snippet to check whether you can send
    lovely embeds or you are denied le permission.
 
-*/
+	*/
 	client.checkEmbed = guild => {
 		if (!guild.me.hasPermission("EMBED_LINKS")) return false
 		else return true
 	}
-	
+
 	/*
   PERMISSION LEVEL FUNCTION
 
@@ -78,9 +94,13 @@ module.exports = (client) => {
 	// getSettings merges the client defaults with the guild settings. guild settings in
 	// enmap should only have *unique* overrides that are different from defaults.
 	client.getSettings = async (guild) => {
-		const d = await client.settings.findOne({ _id: "default" }).lean()
-		if (!guild) return await client.settings.findOne({ _id: "default" }).lean()
-		const guildConf = await client.settings.findOne({ _id: guild.id }).lean() || {}
+		const d = await client.settings.findById("default").lean()
+		if (!guild) return await client.settings.findById("default").lean()
+		let guildConf = await client.settings.findById(guild.id).lean()
+		if (!guildConf) {
+			await client.settings.create({ _id: guild.id })
+			guildConf = await client.settings.findById(guild.id).lean()
+		}
 		// This "..." thing is the "Spread Operator". It's awesome!
 		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax
 		return ({ ...d, ...guildConf })

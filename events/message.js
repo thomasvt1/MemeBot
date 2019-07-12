@@ -1,5 +1,5 @@
 /* Copyright (c) 2019 thomasvt1 / MemeBot
-/* Original copyright (c) 2018 YorkAARGH (AnIdiotsGuide / guidebot)
+/* Original copyright (c) 2018 YorkAARGH (https://github.com/AnIdiotsGuide/guidebot) (AnIdiotsGuide / guidebot)
 /* All rights reserved.
 /*
 MIT License
@@ -36,7 +36,7 @@ module.exports = async (client, message) => {
 
 	// Grab the settings for this server from Enmap.
 	// If there is no guild, get default conf (DMs)
-	const settings = message.guild ? await client.getSettings(message.guild) : await client.settings.findOne({ _id: "default" })
+	const settings = await client.getSettings(message.guild)
 
 	// Checks if the bot was mentioned, with no message after it, returns the prefix.
 	const prefixMention = new RegExp(`^<@!?${client.user.id}>( |)$`)
@@ -83,26 +83,27 @@ module.exports = async (client, message) => {
 	message.author.permLevel = level
 
 	// If the command exists, **AND** the user has permission, run it.
-	client.logger.cmd(`[CMD] ${client.config.permLevels.find(l => l.level === level).name} ${message.author.username} (${message.author.id}) ran command ${cmd.help.name} with ${args[0] ? `args ${args[0]}` : "no args"}`)
-
 	const excludedcmds = ["top100", "leaderboard", "setname", "history", "timer"]
 	const exclude = excludedcmds.some(c => c === cmd.help.name)
 
 	if (cmd.help.category === "MemeEconomy" && !exclude) {
-		const settings = message.guild ? await client.getSettings(message.guild) : await client.settings.findOne({ _id: "default" })
+		const settings = await client.getSettings(message.guild)
 		let username = args[0] === undefined ? args[0] : args[0].replace(/^((\/|)u\/)/g, "")
 		let isusername
 		const check = await client.api.getLink(client, message.author.id)
 		let user
 		if (username !== undefined) {
 			user = await client.api.getInvestorProfile(username).catch(err => {
-				if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+				if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 				client.logger.error(err.stack)
 			})
 			if (user.id !== 0) isusername = true
 		}
 		if (username === undefined && check) {
-			user = await client.api.getInvestorProfile(check).catch(err => client.logger.error(err.stack))
+			user = await client.api.getInvestorProfile(check).catch(err => {
+				if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+				client.logger.error(err.stack)
+			})
 			username = user.name
 			isusername = false
 		}
@@ -111,19 +112,19 @@ module.exports = async (client, message) => {
 		if (username === undefined && !check) return message.channel.send(`:question: Please supply a Reddit username, or use \`${settings.prefix}setname <reddit username>\`.`)
 
 		const firm = await client.api.getFirmProfile(user.firm).catch(err => {
-			if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 			client.logger.error(err.stack)
 		})
 
 		const discord_id = await client.api.getRedditLink(client, username.toLowerCase())
 
 		const history = await client.api.getInvestorHistory(username.toLowerCase()).catch(err => {
-			if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 			client.logger.error(err.stack)
 		})
 
 		const firmmembers = await client.api.getFirmMembers(user.firm).catch(err => {
-			if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 			client.logger.error(err.stack)
 		})
 
@@ -132,8 +133,11 @@ module.exports = async (client, message) => {
 		args = arguments
 	}
 
-	const start = Math.trunc(Date.now() / 1000)
-	cmd.run(client, message, args, level)
-	const end = Math.trunc(Date.now() / 1000)
-	
+	const start = Date.now()
+	cmd.run(client, message, args, level).then(() => {
+		const end = Date.now()
+		const timediff = (end - start) / 1000
+
+		client.logger.cmd(`${client.config.permLevels.find(l => l.level === level).name} ${message.author.username} (${message.author.id}) ran command ${cmd.help.name} with ${args[0] ? `args ${args[0]}` : "no args"} (executed in ${timediff}s)`)
+	})
 }

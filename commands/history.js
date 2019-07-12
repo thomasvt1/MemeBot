@@ -6,19 +6,22 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 exports.run = async (client, message, args, _level) => {
-	const settings = message.guild ? await client.getSettings(message.guild) : await client.settings.findOne({ _id: "default" })
+	const settings = await client.getSettings(message.guild)
 	let isusername = true
 	let username = args[0] === undefined ? args[0] : args[0].replace(/^((\/|)u\/)/g, "")
 	const check = await client.api.getLink(client, message.author.id)
 	let user
 	if (username !== undefined) {
 		user = await client.api.getInvestorProfile(username).catch(err => {
-			if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 			client.logger.error(err.stack)
 		})
 	}
 	if (user === undefined && check) {
-		user = await client.api.getInvestorProfile(check).catch(err => client.logger.error(err.stack))
+		user = await client.api.getInvestorProfile(check).catch(err => {
+			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+			client.logger.error(err.stack)
+		})
 		username = user.name
 		isusername = false
 	}
@@ -27,7 +30,7 @@ exports.run = async (client, message, args, _level) => {
 	if (username === undefined && user.id === 0 && !check) return message.channel.send(`:question: Please supply a Reddit username, or use \`${settings.prefix}setname <reddit username>\`.`)
 
 	const firm = await client.api.getFirmProfile(user.firm).catch(err => {
-		if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+		if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 		client.logger.error(err.stack)
 	})
 
@@ -45,7 +48,7 @@ exports.run = async (client, message, args, _level) => {
 			amount = num_left
 		}
 		const investments = await client.api.getInvestorHistory(username, amount, page).catch(err => {
-			if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 			client.logger.error(err.stack)
 		})
 		history = history.concat(investments)
@@ -87,7 +90,7 @@ exports.run = async (client, message, args, _level) => {
 
 	const lastinvestment = history[investment - 1]
 
-	const lastpost = await client.api.r.getSubmission(lastinvestment.post).fetch().then((sub) => sub).catch(err => client.logger.error(err))
+	const lastpost = await client.api.r.getSubmission(lastinvestment.post).fetch().then((sub) => sub).catch(err => client.logger.error(err.stack))
 
 	const [factor] = await client.math.calculate_factor(lastinvestment.upvotes, lastinvestment.final_upvotes, user.networth)
 
@@ -96,10 +99,10 @@ exports.run = async (client, message, args, _level) => {
 	const lastinvested = moment.duration(lastinvestment.time - history[parseInt(investment) + 1].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
 	const maturedat = moment.unix(lastinvestment.time + 14400).format("ddd Do MMM YYYY [at] HH:mm [UTC]ZZ") // 14400 = 4 hours
 
-	const investments = await client.api.getInvestments(await lastpost.comments.fetchAll()).catch(err => client.logger.error(err))
+	const investments = await client.api.getInvestments(await lastpost.comments.fetchAll()).catch(err => client.logger.error(err.stack))
 
 	const broke_even = Math.round(client.math.calculateBreakEvenPoint(lastinvestment.upvotes))
-	const redditpfp = await client.api.r.getUser(username).fetch().then((usr) => usr.icon_img)
+	const redditpfp = await client.api.r.getUser(username).fetch().then((usr) => usr.icon_img).catch(err => client.logger.error(err.stack))
 
 	let text_upvotes = `**Initial upvotes:** ${lastinvestment.upvotes}\n`
 	text_upvotes += `**Final upvotes:** ${lastinvestment.final_upvotes}\n`
@@ -109,19 +112,15 @@ exports.run = async (client, message, args, _level) => {
 	text_profit += `**Profit:** ${client.api.numberWithCommas(Math.trunc(lastprofit))} M¢ (*${factor.toFixed(2)}%*)`
 
 	const opfirmid = await client.api.getInvestorProfile(lastpost.author.name).then(investor => investor.firm).catch(err => {
-		if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+		if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 		client.logger.error(err.stack)
 	})
 	const opfirm = opfirmid !== 0 ? await client.api.getFirmProfile(opfirmid).then(firm => firm.name).catch(err => {
-		if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+		if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 		client.logger.error(err.stack)
 	}) : false
-	const lower = opfirmid !== 0 ? opfirm.toLowerCase().replace(/ /g, "") : false
 
-	let opfirmemoji = ""
-	if (opfirmid !== 0) client.guilds.get("563439683309142016").emojis.forEach(async (e) => {
-		if (e.name === lower) opfirmemoji = `<:${e.identifier.toString()}>`
-	})
+	const opfirmemoji = client.firmEmoji(opfirm)
 
 	const stats = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")

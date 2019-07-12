@@ -1,6 +1,6 @@
 /*
 /* Copyright (c) 2019 thomasvt1 / MemeBot
-/* Original copyright (c) 2018 thecsw
+/* Original copyright (c) 2018 thecsw (https://github.com/thecsw/memeinvestor_bot/blob/master/src/formula.py)
 /* All rights reserved.
 */
 
@@ -141,8 +141,8 @@ math.calculateFirmPayout = (balance, size, execs, assocs, cfo, coo) => {
 	// 30 % paid to board members(CEO, COO, CFO)(30 % of total payroll)
 	const board_total = payout_amount * 0.3
 	let board_members = 1
-	if (cfo) board_members += 1
-	if (coo) board_members += 1
+	if (cfo !== "" && cfo !== "0") board_members += 1
+	if (coo !== "" && coo !== "0") board_members += 1
 	const board_amount = board_total / board_members
 
 	let remaining_amount = payout_amount - board_total

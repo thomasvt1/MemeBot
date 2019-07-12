@@ -20,10 +20,16 @@ exports.run = async (client, message, [name], _level) => {
 	if (profile.id === 0) return message.channel.send(":question: I couldn't find that MemeEconomy user.")
 
 	if (!check) {
-		const newlink = await client.api.setLink(client, message.author.id, profile.name.toLowerCase()).catch(err => client.logger.error(err.stack))
+		const newlink = await client.api.setLink(client, message.author.id, profile.name.toLowerCase()).catch(err => {
+			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+			client.logger.error(err.stack)
+		})
 		if (!newlink) return message.channel.send(":x: An error occurred while inserting. Please contact Thomasvt#2563 or Keanu73#2193.")
 	} else {
-		const update = await client.api.updateLink(client, message.author.id, name.toLowerCase()).catch(err => client.logger.error(err.stack))
+		const update = await client.api.updateLink(client, message.author.id, name.toLowerCase()).catch(err => {
+			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+			client.logger.error(err.stack)
+		})
 		if (!update) return message.channel.send(":x: An error occurred while updating. Please contact Thomasvt#2563 or Keanu73#2193.")
 	}
 

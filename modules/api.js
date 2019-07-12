@@ -25,6 +25,7 @@ const config = require("../config.js")
 const rp = require("request-promise")
 const snoowrap = require("snoowrap")
 const LRU = require("lru-cache")
+const logger = require("./Logger")
 
 const MAX_CACHE_TIME = 1500000
 const cache = new LRU({ max: 350, maxAge: MAX_CACHE_TIME }) // Max cache for 15 minutes.
@@ -37,7 +38,7 @@ api.r = new snoowrap({
 })
 
 api.doRequest = async (options, usecache = true, time = MAX_CACHE_TIME) => {
-	console.log(options.uri)
+	logger.cmd(options.uri)
 	if (usecache && cache.has(options.uri))
 		return cache.get(options.uri)
 

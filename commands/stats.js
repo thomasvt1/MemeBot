@@ -52,7 +52,7 @@ exports.run = async (client, message, [username, discord_id, user, history, firm
 
 	const lastinvested = moment.duration(moment().unix() - history[0].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
 
-	const currentpost = !history[0].done ? await client.api.r.getSubmission(history[0].post).fetch().then((sub) => sub).catch(err => console.error(err)) : false
+	const currentpost = !history[0].done ? await client.api.r.getSubmission(history[0].post).fetch().then((sub) => sub).catch(err => client.logger.error(err.stack)) : false
 
 	let factor
 	if (!history[0].done) {
@@ -65,12 +65,9 @@ exports.run = async (client, message, [username, discord_id, user, history, firm
 
 	const profitdifference = !history[0].done ? `\n(${forecastedprofit < 0 ? "-" : "+"}**${client.api.numberWithCommas(Math.trunc(forecastedprofit))}** M¢)` : ""
 
-	const redditpfp = await client.api.r.getUser(username).fetch().then((usr) => usr.icon_img)
+	const redditpfp = await client.api.r.getUser(username).fetch().then((usr) => usr.icon_img).catch(err => client.logger.error(err.stack))
 
-	let firmemoji = ""
-	client.guilds.get("563439683309142016").emojis.forEach(async (e) => {
-		if (e.name === firm.name.toLowerCase().replace(/ /g, "")) firmemoji = `<:${e.identifier.toString()}>`
-	})
+	const firmemoji = client.firmEmoji(firm.name)
 
 	const firmroles = {
 		"": "Floor Trader",
@@ -91,7 +88,7 @@ exports.run = async (client, message, [username, discord_id, user, history, firm
 		.addField("Completed investments", `${client.api.numberWithCommas(user.completed)}`, true)
 		.addField("Rank", `**\`#${user.rank}\`**`, true)
 	if (user.firm !== 0) stats.addField("Firm", `**\`${firmroles[user.firm_role]}\`** of **\`${firm.name}\`**`, true)
-		.addField("Average investment profit", `${profitprct.toFixed(2)}%`, true)
+	stats.addField("Average investment profit", `${profitprct.toFixed(2)}%`, true)
 		.addField("Average investments per day", avginvestments, true)
 		.addField("Investments in the past day", `${investments_today}`, true)
 		.addField("Last invested", `${lastinvested}`, true)

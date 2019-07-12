@@ -12,7 +12,7 @@ exports.run = async (client, message, [username, _discord_id, user, history, fir
 
 	if (!currentinvestment) return message.channel.send(`:exclamation: ${isusername ? "They" : "You"} last invested ${moment.duration(moment().unix() - history[0].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")}`)
 
-	const currentpost = currentinvestment ? await client.api.r.getSubmission(currentinvestment.post).fetch().then((sub) => sub).catch(err => console.error(err)) : false
+	const currentpost = currentinvestment ? await client.api.r.getSubmission(currentinvestment.post).fetch().then((sub) => sub).catch(err => client.logger.error(err.stack)) : false
 
 	// Fancy math to calculate investment return
 	let factor
@@ -44,17 +44,20 @@ exports.run = async (client, message, [username, _discord_id, user, history, fir
 
 	const investments = await client.api.getInvestments(await currentpost.comments.fetchAll())
 
-	const redditpfp = await client.api.r.getUser(currentpost.author.name).fetch().then((usr) => usr.icon_img)
+	const redditpfp = await client.api.r.getUser(currentpost.author.name).fetch().then((usr) => usr.icon_img).catch(err => client.logger.error(err.stack))
 	const discord_id = await client.api.getRedditLink(client, currentpost.author.name)
 
-	const opfirmid = await client.api.getInvestorProfile(currentpost.author.name).then(investor => investor.firm).catch(err => client.logger.error(err.stack))
-	const opfirm = opfirmid !== 0 ? await client.api.getFirmProfile(opfirmid).then(firm => firm.name).catch(err => client.logger.error(err.stack)) : false
+	const opfirmid = await client.api.getInvestorProfile(currentpost.author.name).then(investor => investor.firm).catch(err => {
+		if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+		client.logger.error(err.stack)
+	})
+	const opfirm = opfirmid !== 0 ? await client.api.getFirmProfile(opfirmid).then(firm => firm.name).catch(err => {
+		if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+		client.logger.error(err.stack)
+	}) : false
 	const lower = opfirmid !== 0 ? opfirm.toLowerCase().replace(/ /g, "") : false
 
-	let opfirmemoji = ""
-	if (opfirmid !== 0) client.guilds.get("563439683309142016").emojis.forEach(async (e) => {
-		if (e.name === lower) opfirmemoji = `<:${e.identifier.toString()}>`
-	})
+	const opfirmemoji = client.firmEmoji(firm.name)
 
 	const stats = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
