@@ -79,6 +79,18 @@ client.aliases = new Enmap()
 
 const init = async () => {
 
+	// Here we initialize the database and the schemas with it. If not possible, exit the bot, since you need it anyway.
+	const database = await require("./database/database").initialize(client.config.mongodb.url).catch(err => {
+		client.logger.error(`Failed to intialize Database: ${err}`)
+		process.exit(1)
+	})
+
+	// Bind the databases to the client for easy access.
+	client.settings = database.Guilds
+
+	// Same again.
+	client.names = database.Names
+
 	// Here we load **commands** into memory, as a collection, so they're accessible
 	// here and everywhere else.
 	const cmdFiles = await readdir("./commands/")
@@ -111,18 +123,6 @@ const init = async () => {
 
 	// Here we login the client.
 	client.login(client.config.token)
-
-	// Then we initialize the database and the schemas with it. If not possible, exit the bot, since you need it anyway.
-	const database = await require("./database/database").initialize(client.config.mongodb.url).catch(err => {
-		client.logger.error(`Failed to intialize Database: ${err}`)
-		process.exit(1)
-	})
-
-	// Bind the databases to the client for easy access.
-	client.settings = database.Guilds
-
-	// Same again.
-	client.names = database.Names
 	
 	// End top-level async/await function.
 }
