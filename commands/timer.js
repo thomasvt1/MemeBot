@@ -12,10 +12,20 @@ exports.run = async (client, message, args, _level) => {
 	let user
 	let isusername = true
 	if (username !== undefined) {
-		user = await client.api.getInvestorProfile(username).catch(err => {
-			if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-			client.logger.error(err.stack)
-		})
+		if (message.mentions.users.first()) {
+			const mentioncheck = await client.api.getLink(client, message.mentions.users.first().id)
+			user = await client.api.getInvestorProfile(mentioncheck).catch(err => {
+				if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+				client.logger.error(err.stack)
+			})
+			if (user.id === 0) return message.channel.send(":question: I couldn't find that Discord user in my database.")
+			username = user.name
+		} else {
+			user = await client.api.getInvestorProfile(username).catch(err => {
+				if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+				client.logger.error(err.stack)
+			})
+		}
 	}
 	if (user === undefined && check) {
 		user = await client.api.getInvestorProfile(check).catch(err => {

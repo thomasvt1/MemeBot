@@ -10,26 +10,22 @@ exports.run = async (client, message, args, _level) => {
 	let isusername = true
 	let username = args[0] === undefined ? args[0] : args[0].replace(/^((\/|)u\/)/g, "")
 	const check = await client.api.getLink(client, message.author.id)
-	let user
-	let mentioncheck = false
-	if (username !== undefined) {
-		const mention = await message.mentions.users.first().id
-		if (mention) {
-			mentioncheck = await client.api.getLink(client, mention)
+	let user = await client.api.getInvestorProfile(username).catch(err => {
+		if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+		client.logger.error(err.stack)
+	})
+	if (username !== undefined && user.id === 0) {
+		if (message.mentions.users.first()) {
+			const mentioncheck = await client.api.getLink(client, message.mentions.users.first().id)
 			user = await client.api.getInvestorProfile(mentioncheck).catch(err => {
 				if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 				client.logger.error(err.stack)
 			})
 			if (user.id === 0) return message.channel.send(":question: I couldn't find that Discord user in my database.")
 			username = user.name
-		} else {
-			user = await client.api.getInvestorProfile(username).catch(err => {
-				if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-				client.logger.error(err.stack)
-			})
 		}
 	}
-	if (user === undefined && check) {
+	if (user.id === 0 && check) {
 		user = await client.api.getInvestorProfile(check).catch(err => {
 			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 			client.logger.error(err.stack)
@@ -100,7 +96,7 @@ exports.run = async (client, message, args, _level) => {
 
 	if (!history[investment]) return message.channel.send(":exclamation: You specified an investment past your time!")
 
-	const lastinvestment = history[investment - 1]
+	const lastinvestment = history[!history[investment - 1].done ? investment : investment - 1]
 
 	const lastpost = await client.api.r.getSubmission(lastinvestment.post).fetch().then((sub) => sub).catch(err => client.logger.error(err.stack))
 
@@ -109,6 +105,7 @@ exports.run = async (client, message, args, _level) => {
 	const lastprofit = user.firm !== 0 ? Math.trunc(lastinvestment.profit - lastinvestment.profit * (firm.tax / 100)) : lastinvestment.profit
 
 	const lastinvested = moment.duration(lastinvestment.time - history[parseInt(investment) + 1].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
+	const investedat = moment.unix(lastinvestment.time).format("ddd Do MMM YYYY [at] HH:mm [UTC]ZZ")
 	const maturedat = moment.unix(lastinvestment.time + 14400).format("ddd Do MMM YYYY [at] HH:mm [UTC]ZZ") // 14400 = 4 hours
 
 	const investments = await client.api.getInvestments(await lastpost.comments.fetchAll()).catch(err => client.logger.error(err.stack))
@@ -144,7 +141,7 @@ exports.run = async (client, message, args, _level) => {
 		.addField("Average investment profit", `${profitprct.toFixed(2)}%`, false)
 		.addField("Investments on the day", `${investments_on_day}`, false)
 		.addField("Last invested", lastinvested, false)
-		.addField("Last investment", `[u/${lastpost.author.name}](https://reddit.com/u/${lastpost.author.name}) ${opfirmemoji}\n__**[${lastpost.title}](https://redd.it/${lastinvestment.post})**__\n\n**Matured at:** ${maturedat}\n**Amount of investments:** ${investments}\n\u200b`, true)
+		.addField("Last investment", `[u/${lastpost.author.name}](https://reddit.com/u/${lastpost.author.name}) ${opfirmemoji}\n__**[${lastpost.title}](https://redd.it/${lastinvestment.post})**__\n\n**Invested at:** ${investedat}\n**Matured at:** ${maturedat}\n**Amount of investments:** ${investments}\n\u200b`, true)
 		.addField("Upvotes", text_upvotes)
 		.addField("Profit", text_profit)
 		.setImage(lastpost.url)

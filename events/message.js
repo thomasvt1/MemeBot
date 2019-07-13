@@ -93,9 +93,8 @@ module.exports = async (client, message) => {
 		let user
 		let mentioncheck = false
 		if (username !== undefined) {
-			const mention = await message.mentions.users.first().id
-			if (mention) {
-				mentioncheck = await client.api.getLink(client, mention)
+			if (message.mentions.users.first()) {
+				mentioncheck = await client.api.getLink(client, message.mentions.users.first().id)
 				user = await client.api.getInvestorProfile(mentioncheck).catch(err => {
 					if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 					client.logger.error(err.stack)

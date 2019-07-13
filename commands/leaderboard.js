@@ -19,15 +19,13 @@ exports.run = async (client, message, args) => {
 	let username = args[0] === undefined ? args[0] : args[0].replace(/^((\/|)u\/)/g, "")
 	const check = await client.api.getLink(client, message.author.id)
 	let isusername = true
-	let mentioncheck = false
 	let user = await client.api.getInvestorProfile(username).catch(err => {
 		if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 		client.logger.error(err.stack)
 	})
 
-	const mention = await message.mentions.users.first().id
-	if (mention) {
-		mentioncheck = await client.api.getLink(client, mention)
+	if (message.mentions.users.first()) {
+		const mentioncheck = await client.api.getLink(client, message.mentions.users.first().id)
 		user = await client.api.getInvestorProfile(mentioncheck).catch(err => {
 			if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 			client.logger.error(err.stack)
@@ -144,7 +142,7 @@ exports.run = async (client, message, args) => {
 				break
 			avginvestments++
 		}
-		if (days < 1) avginvestments = "Payout too recent"
+		if (days < 1) avginvestments = "Too recent"
 		else {
 			avginvestments /= days
 			avginvestments = Math.trunc(avginvestments)

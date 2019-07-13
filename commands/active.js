@@ -29,6 +29,7 @@ exports.run = async (client, message, [username, _discord_id, user, history, fir
 	let maxprofit = currentinvestment.amount * factor_max / 100
 	if (user.firm !== 0) maxprofit -= maxprofit * (firm.tax / 100)
 
+	const investedat = moment.unix(currentinvestment.time).format("ddd Do MMM YYYY [at] HH:mm [UTC]ZZ")
 	const maturesin = currentinvestment ? moment.duration((currentinvestment.time + 14400) - moment().unix(), "seconds").format("[**]H[**] [hour] [and] [**]m[**] [minute]") : false // 14400 = 4 hours
 
 	const breakeven_point = Math.round(client.math.calculateBreakEvenPoint(currentinvestment.upvotes))
@@ -66,7 +67,7 @@ exports.run = async (client, message, [username, _discord_id, user, history, fir
 		.setURL(`https://meme.market/user.html?account=${username}`)
 		.setImage(currentpost.thumbnail)
 		.setThumbnail(discord_id ? client.users.get(discord_id).displayAvatarURL : redditpfp)
-		.addField("Current investment", `[u/${currentpost.author.name}](https://reddit.com/u/${currentpost.author.name}) ${opfirmemoji}\n**__[${currentpost.title}](https://redd.it/${currentinvestment.post})__**\n\n**Matures in:** ${maturesin}\n**Amount of investments:** ${investments}\n\u200b`)
+		.addField("Current investment", `[u/${currentpost.author.name}](https://reddit.com/u/${currentpost.author.name}) ${opfirmemoji}\n**__[${currentpost.title}](https://redd.it/${currentinvestment.post})__**\n\n**Invested at:** ${investedat}\n**Matures in:** ${maturesin}\n**Amount of investments:** ${investments}\n\u200b`)
 		.addField("Upvotes", text_upvotes)
 		.addField("Profit", text_profit)
 	return message.channel.send({ embed: stats })
