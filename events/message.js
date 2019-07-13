@@ -144,6 +144,7 @@ module.exports = async (client, message) => {
 	}
 
 	const start = Date.now()
+	client.logger.cmd(`${client.config.permLevels.find(l => l.level === level).name} ${message.author.username} (${message.author.id}) ran command ${cmd.help.name} with ${args[0] ? `args ${args[0]}` : "no args"} (started)`)
 	cmd.run(client, message, args, level).then(() => {
 		const end = Date.now()
 		const timediff = (end - start) / 1000
