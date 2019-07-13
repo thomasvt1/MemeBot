@@ -13,7 +13,7 @@ module.exports = async (client, investment) => {
 		// investment watch channel will equal as channel id
 		const settings = await client.getSettings(guild)
 
-		client.logger.log(`Guild ${guild.name} with owner ${guild.owner.user.tag} (${guild.ownerID}), channel ${settings.investmentChannel} with mentionEveryone ${settings.mentionEveryone}`)
+		client.logger.log(`Guild ${guild.name} (${guild.id}) with owner ${guild.owner.user.tag} (${guild.ownerID}), channel ${settings.investmentChannel} with mentionEveryone ${settings.mentionEveryone}`)
 
 		if (settings.investmentChannel === 0) return
 
