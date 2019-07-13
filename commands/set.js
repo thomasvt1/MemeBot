@@ -41,7 +41,6 @@ exports.run = async (client, message, [action, key, ...value], level) => { // es
 
 	// Retrieve current guild settings (merged) and overrides only.
 	const settings = await client.settings.findOne({ _id: message.guild.id })
-	const settingsObj = await client.getSettings(message.guild.id)
 	const defaults = await client.settings.findById("default")
 
 	// Edit an existing key value
@@ -98,6 +97,7 @@ exports.run = async (client, message, [action, key, ...value], level) => { // es
 	} else {
 		// Otherwise, the default action is to return the whole configuration;
 		const array = []
+		const settingsObj = await client.getSettings(message.guild)
 		Object.entries(settingsObj).forEach(([key, value]) => {
 			if (key !== "_id" && key !== "__v") array.push(`${key}${" ".repeat(20 - key.length)}::  ${value}`)
 		})

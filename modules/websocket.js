@@ -13,7 +13,7 @@ module.exports = async (client, investment) => {
 		// investment watch channel will equal as channel id
 		const settings = await client.getSettings(guild)
 
-		client.logger.log(`Guild ${guild.name} with owner ${client.users.get(guild.ownerID).name} (${guild.ownerID}), channel ${settings.investmentChannel} with mentionEveryone ${settings.mentionEveryone}`)
+		client.logger.log(`Guild ${guild.name} with owner ${guild.owner.user.tag} (${guild.ownerID}), channel ${settings.investmentChannel} with mentionEveryone ${settings.mentionEveryone}`)
 
 		if (settings.investmentChannel === 0) return
 
@@ -45,7 +45,8 @@ module.exports = async (client, investment) => {
 			.setTitle(`u/${investment.username} ${firmemoji}`)
 			.setURL(`https://meme.market/user.html?account=${investment.username}`)
 			.setThumbnail(submission.thumbnail)
-			.addField(`**__${submission.title}__**`, msg)
+			.setDescription(`[**__${submission.title}__**](https://redd.it/${investment.submid})\n
+${msg}`)
 		client.channels.get(settings.investmentChannel).send(mentioneveryone, { embed: investmentinfo })
 	})
 	return "Success"

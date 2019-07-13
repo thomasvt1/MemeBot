@@ -48,15 +48,18 @@ exports.run = async (client, message, [username, discord_id, user, history, firm
 		}
 
 		// Calculate average investments since last payout
-		let avginvestments = 0
+		avginvestments = 0
+		const days = moment().diff(moment.unix(firm.last_payout), "days")
 		for (const inv of history) {
 			if (inv.time < firm.last_payout)
 				break
 			avginvestments++
 		}
-		avginvestments /= Math.trunc(moment().diff(moment.unix(firm.last_payout), "days"))
-		avginvestments = Math.trunc(avginvestments)
-
+		if (days < 1) avginvestments = "Payout too recent"
+		else {
+			avginvestments /= days
+			avginvestments = Math.trunc(avginvestments)
+		}
 		weekratio = ((weekprofit / (user.networth - weekprofit)) * 100.0).toFixed(2)
 
 		lastinvested = moment.duration(moment().unix() - history[0].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects

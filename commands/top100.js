@@ -66,10 +66,11 @@ exports.run = async (client, message, [page], _level) => {
 				break
 			avginvestments++
 		}
-		
-		avginvestments /= Math.trunc(days)
-		avginvestments = Math.trunc(avginvestments)
-
+		if (days < 1) avginvestments = "Payout too recent"
+		else {
+			avginvestments /= Math.trunc(days)
+			avginvestments = Math.trunc(avginvestments)
+		}
 		const firmemoji = client.firmEmoji(firm.name)
 
 		const firmstr = firm.id !== 0 ? `\n👔 \`Firm:\` **${firmrole}** of **${firm.name}**` : ""

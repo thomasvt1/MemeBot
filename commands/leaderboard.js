@@ -126,14 +126,17 @@ exports.run = async (client, message, args) => {
 		}
 
 		let avginvestments = 0
+		const days = moment().diff(moment.unix(firm.last_payout), "days")
 		for (const inv of history) {
 			if (inv.time < firm.last_payout)
 				break
 			avginvestments++
 		}
-		avginvestments /= Math.trunc(moment().diff(moment.unix(firm.last_payout), "days"))
-		avginvestments = Math.trunc(avginvestments)
-
+		if (days < 1) avginvestments = "Payout too recent"
+		else {
+			avginvestments /= days
+			avginvestments = Math.trunc(avginvestments)
+		}
 		const payouts = {
 			"": payout.trader.amount,
 			"assoc": payout.assoc.amount,

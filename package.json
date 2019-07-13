@@ -16,9 +16,9 @@
   },
   "author": "Thomas van Tilburg <thomasvt@me.com> (https://thomasvt.xyz)",
   "contributors": [
-    "Keanu C. <keanu@keanu73.net> (https://github.com/Keanu73)"
+    "Keanu C. <keanu@keanu73.net> (https://keanu73.net)"
   ],
-  "license": "GPL-3.0-or-later",
+  "license": "GPL-3.0-only",
   "bugs": {
     "url": "https://github.com/thomasvt1/MemeBot/issues"
   },

@@ -8,10 +8,9 @@ const WebSocket = require("ws")
 // eslint-disable-next-line jsdoc/require-jsdoc
 function noop() {}
 
-class heartbeat {
-	constructor() {
-		this.isAlive = true
-	}
+// eslint-disable-next-line jsdoc/require-jsdoc
+function heartbeat() {
+	this.isAlive = true
 }
 
 const wss = new WebSocket.Server({ port: 3000 })
@@ -29,8 +28,7 @@ wss.on("connection", ws => {
 				timediff: 47,
 				investments: 8,
 				highinvestments: 8,
-				username: "CoolestNero",
-				famous: true
+				username: "CoolestNero"
 			})
 		)
 	}, 3000)
@@ -43,4 +41,4 @@ const interval = setInterval(function ping() {
 		ws.isAlive = false
 		ws.ping(noop)
 	})
-}, 10000)
+}, 30000)
