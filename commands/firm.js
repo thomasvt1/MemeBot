@@ -6,7 +6,7 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 const fs = require("fs")
-exports.run = async (client, message, [username, _discord_id, user, _history, firm, _firmmembers, isusername], _level) => {
+exports.run = async (client, message, [username, _discord_id, user, _history, firm, isusername], _level) => {
 	if (firm.id === 0) return message.channel.send(`:exclamation: ${isusername ? `${username} is` : "You are"} not in a firm!`)
 
 	// Here we have a promises variable to store all the API-related requests and

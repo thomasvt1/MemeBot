@@ -5,7 +5,7 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 require("moment-duration-format")
-exports.run = async (client, message, [username, _discord_id, user, history, firm, _firmmembers, isusername], _level) => {
+exports.run = async (client, message, [username, _discord_id, user, history, firm, isusername], _level) => {
 	if (!history || !history.length) return message.channel.send(`:exclamation: ${isusername ? "They" : "You"} haven't invested before!`)
 
 	const currentinvestment = !history[0].done ? history[0] : false // Simple ternary to check whether current investment is running

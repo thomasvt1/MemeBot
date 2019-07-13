@@ -5,45 +5,7 @@
 
 const moment = require("moment")
 const setTimeoutAt = require("safe-timers").setTimeoutAt
-exports.run = async (client, message, args, _level) => {
-	const settings = await client.getSettings(message.guild)
-	let username = args[0] === undefined ? args[0] : args[0].replace(/^((\/|)u\/)/g, "")
-	const check = await client.api.getLink(client, message.author.id)
-	let user
-	let isusername = true
-	if (username !== undefined) {
-		if (message.mentions.users.first()) {
-			const mentioncheck = await client.api.getLink(client, message.mentions.users.first().id)
-			user = await client.api.getInvestorProfile(mentioncheck).catch(err => {
-				if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-				client.logger.error(err.stack)
-			})
-			if (user.id === 0) return message.channel.send(":question: I couldn't find that Discord user in my database.")
-			username = user.name
-		} else {
-			user = await client.api.getInvestorProfile(username).catch(err => {
-				if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-				client.logger.error(err.stack)
-			})
-		}
-	}
-	if (user === undefined && check) {
-		user = await client.api.getInvestorProfile(check).catch(err => {
-			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-			client.logger.error(err.stack)
-		})
-		username = user.name
-		isusername = false
-	}
-
-	if (username && user.id === 0 && !check) return message.channel.send(":question: I couldn't find that MemeEconomy user.")
-	if (username === undefined && user.id === 0 && !check) return message.channel.send(`:question: Please supply a Reddit username, or use \`${settings.prefix}setname <reddit username>\`.`)
-
-	const history = await client.api.getInvestorHistory(username.toLowerCase()).catch(err => {
-		if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-		client.logger.error(err.stack)
-	})
-
+exports.run = async (client, message, [_username, _discord_id, _user, history, _firm, isusername], _level) => {
 	const currentinvestment = history[0]
 	if (currentinvestment.done) return message.channel.send(`:exclamation: ${isusername ? "They" : "You"} don't have an active investment!`)
 

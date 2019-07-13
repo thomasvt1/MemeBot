@@ -83,7 +83,7 @@ module.exports = async (client, message) => {
 	message.author.permLevel = level
 
 	// If the command exists, **AND** the user has permission, run it.
-	const excludedcmds = ["top100", "leaderboard", "setname", "history", "timer"]
+	const excludedcmds = ["top100", "leaderboard", "setname", "history"]
 	const exclude = excludedcmds.some(c => c === cmd.help.name)
 
 	if (cmd.help.category === "MemeEconomy" && !exclude) {
@@ -132,12 +132,7 @@ module.exports = async (client, message) => {
 			client.logger.error(err.stack)
 		})
 
-		const firmmembers = await client.api.getFirmMembers(user.firm).catch(err => {
-			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-			client.logger.error(err.stack)
-		})
-
-		const arguments = [username, discord_id, user, history, firm, firmmembers, isusername]
+		const arguments = [username, discord_id, user, history, firm, isusername]
 
 		args = arguments
 	}

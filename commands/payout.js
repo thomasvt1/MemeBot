@@ -5,7 +5,7 @@
 
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
-exports.run = async (client, message, [username, _discord_id, user, _history, firm, _firmmembers, isusername], _level) => {
+exports.run = async (client, message, [username, _discord_id, user, _history, firm, isusername], _level) => {
 	if (firm.id === 0) return message.channel.send(`:exclamation: ${isusername ? `${username} is` : "You are"} not in a firm!`)
 
 	const firmname = firm.name.endsWith("s") ? `${firm.name}'` : `${firm.name}'s`
@@ -15,12 +15,12 @@ exports.run = async (client, message, [username, _discord_id, user, _history, fi
 	client.guilds.get("563439683309142016").emojis.forEach(async (e) => {
 		if (e.name === firm.name.toLowerCase().replace(/ /g, "")) firmimage = e.url
 	})
-    
+
 	const floorrank = user.firm_role === "" ? "(Your Role)" : ""
 	const assocrank = user.firm_role === "assoc" ? "(Your Role)" : ""
 	const execrank = user.firm_role === "exec" ? "(Your Role)" : ""
 	const boardmems = `(${firm.cfo !== "" && firm.cfo !== "0" ? `${firm.cfo}, ` : ""}${firm.coo !== "" && firm.coo !== "0" ? `${firm.coo}, ` : ""}${firm.cfo !== "" && firm.cfo !== "0" || firm.coo !== "" && firm.coo !== "0" ? "and " : ""}${firm.ceo})`
-	
+
 	const floortraders = firm.size - firm.execs - firm.assocs
 
 	let boardmemc = 0
@@ -40,7 +40,7 @@ exports.run = async (client, message, [username, _discord_id, user, _history, fi
 		.addField("Last Payout", lastpayout, true)
 	if (floortraders > 0) firminfo.addField(`${floortraders} Floor Traders ${floorrank}`, `will get **${client.api.numberWithCommas(Math.trunc(payout.trader.amount))}** M¢ each\n(**${client.api.getSuffix(payout.trader.total)}** M¢ in total)`, false)
 	if (firm.assocs > 0) firminfo.addField(`${firm.assocs} Associates ${assocrank}`, `will get **${client.api.numberWithCommas(Math.trunc(payout.assoc.amount))}** M¢ each\n(**${client.api.getSuffix(payout.assoc.total)}** M¢ in total)`, false)
-	if (firm.execs > 0)	firminfo.addField(`${firm.execs} Executives ${execrank}`, `will get **${client.api.numberWithCommas(Math.trunc(payout.exec.amount))}** M¢ each\n(**${client.api.getSuffix(payout.exec.total)}** M¢ in total)`, false)
+	if (firm.execs > 0) firminfo.addField(`${firm.execs} Executives ${execrank}`, `will get **${client.api.numberWithCommas(Math.trunc(payout.exec.amount))}** M¢ each\n(**${client.api.getSuffix(payout.exec.total)}** M¢ in total)`, false)
 	if (boardmemc > 0) firminfo.addField(`Board Members ${boardmems}`, `will get **${client.api.numberWithCommas(Math.trunc(payout.board.amount))}** M¢ each\n(**${client.api.getSuffix(payout.board.total)}** M¢ in total)`, false)
 		.setThumbnail(firmimage)
 	return message.channel.send({ embed: firminfo })

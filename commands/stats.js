@@ -5,7 +5,7 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 require("moment-duration-format")
-exports.run = async (client, message, [username, discord_id, user, history, firm, _firmmembers, _isusername], _level) => {
+exports.run = async (client, message, [username, discord_id, user, history, firm, _isusername], _level) => {
 	let profitdifference
 	let profitprct
 	let avginvestments
@@ -75,7 +75,7 @@ exports.run = async (client, message, [username, discord_id, user, history, firm
 		let forecastedprofit = !history[0].done ? history[0].amount * factor / 100 : false
 		if (user.firm !== 0 && !history[0].done) forecastedprofit -= forecastedprofit * (firm.tax / 100)
 
-		profitdifference = !history[0].done ? `\n(${forecastedprofit < 0 ? "-" : "+"}**${client.api.numberWithCommas(Math.trunc(forecastedprofit))}** M¢)` : ""
+		profitdifference = !history[0].done ? `\n(${forecastedprofit < 0 ? "" : "+"}**${client.api.numberWithCommas(Math.trunc(forecastedprofit))}** M¢)` : ""
 	}
 
 	const redditpfp = await client.api.r.getUser(username).fetch().then((usr) => usr.icon_img).catch(err => client.logger.error(err.stack))
