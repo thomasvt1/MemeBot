@@ -17,7 +17,9 @@ module.exports = async (client, investment) => {
 
 		if (settings.investmentChannel === 0) return
 
-		if (!client.channels.get(settings.investmentChannel)) return client.users.get(guild.ownerID).send("Your #investment-watch channel is configured incorrectly!\nPlease use `&set edit investmentChannel <mention channel here>` to fix this problem.")
+		if (!client.channels.get(settings.investmentChannel)) {
+			return guild.owner.send("Your #investment-watch channel is configured incorrectly!\nPlease use `&set edit investmentChannel <mention channel here>` to fix this problem.")
+		}
 
 		const mentioneveryone = settings.mentionEveryone === true ? "@everyone" : ""
 
@@ -45,8 +47,7 @@ module.exports = async (client, investment) => {
 			.setTitle(`u/${investment.username} ${firmemoji}`)
 			.setURL(`https://meme.market/user.html?account=${investment.username}`)
 			.setThumbnail(submission.thumbnail)
-			.setDescription(`[**__${submission.title}__**](https://redd.it/${investment.submid})\n
-${msg}`)
+			.setDescription(`**__[${submission.title}](https://redd.it/${investment.submid})__**\n\n${msg}`)
 		client.channels.get(settings.investmentChannel).send(mentioneveryone, { embed: investmentinfo })
 	})
 	return "Success"

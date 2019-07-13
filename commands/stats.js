@@ -15,7 +15,7 @@ exports.run = async (client, message, [username, discord_id, user, history, firm
 	let weekratio
 	let currentpost
 
-	if (history.length) {
+	if (history && history.length) {
 		// Calculate profit %
 		profitprct = 0
 		for (let i = 0; i < history.length; i++) {
@@ -101,7 +101,7 @@ exports.run = async (client, message, [username, discord_id, user, history, firm
 		.addField("Completed investments", `${client.api.numberWithCommas(user.completed)}`, true)
 		.addField("Rank", `**\`#${user.rank}\`**`, true)
 	if (user.firm !== 0) stats.addField("Firm", `**\`${firmroles[user.firm_role]}\`** of **\`${firm.name}\`**`, true)
-	if (history.length) {
+	if (history && history.length) {
 		stats.addField("Average investment profit", `${profitprct.toFixed(2)}%`, true)
 			.addField("Average investments per day", avginvestments, true)
 			.addField("Investments in the past day", `${investments_today}`, true)

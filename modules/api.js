@@ -1,7 +1,12 @@
 /*
 /* api.numberWithCommas
 /* Copyright (c) 2019 thomasvt1 / MemeBot
-/* Original copyright (c) 2018 - 2019 dzervas
+/* Original copyright (c) 2018 - 2019 thecsw
+/* All rights reserved.
+/*
+/* api.getSuffix
+/* Copyright (c) 2019 thomasvt1 / MemeBot
+/* Original copyright (c) 2018 - 2019 thecsw
 /* All rights reserved.
 /*
 /* parseInvestmentAmount
@@ -63,7 +68,7 @@ api.getInvestorProfile = async (name) => {
 		* await api.getInvestorProfile("Keanu73")
 		*/
 	const options = {
-		uri: "https://meme.market/api/investor/" + name,
+		uri: "https://meme.market/api/investor/" + encodeURI(name),
 		json: true
 	}
 
@@ -82,7 +87,7 @@ api.getInvestorHistory = async (name, amount = 100, page = 0) => {
 	* await api.getInvestorHistory("Keanu73")
 	*/
 	const options = {
-		uri: `https://meme.market/api/investor/${name}/investments?per_page=${amount}&page=${page}`,
+		uri: `https://meme.market/api/investor/${encodeURI(name)}/investments?per_page=${amount}&page=${page}`,
 		json: true
 	}
 
@@ -201,7 +206,8 @@ function parseInvestmentAmount(str) {
 
 // Returns Map<string, string>
 api.getInvestments = async (comments) => {
-	let investments = 0
+	const investors = new Map()
+
 	let botreply = false
 
 	for (const reply of comments) {
@@ -217,15 +223,15 @@ api.getInvestments = async (comments) => {
 			const inv = investment.body.replace("!invest", "")
 
 			if (isNumber(inv)) {
-				investments++
+				investors.set(investment.author.name, inv)
 			} else {
 				const p_inv = parseInvestmentAmount(inv)
-				if (p_inv) investments++
+				if (p_inv) investors.set(investment.author.name, p_inv)
 			}
 		}
 	}
 
-	return investments
+	return investors.size
 }
 
 
