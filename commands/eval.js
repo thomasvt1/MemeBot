@@ -20,7 +20,7 @@ exports.run = async (client, message, args, level) => { // eslint-disable-line n
 	try {
 		const evaled = eval(code)
 		const clean = await client.clean(client, evaled)
-		if (!(clean.length <= 1980)) {
+		if (clean.length >= 1024) {
 			pastebin.createPaste(`// Eval results: \n//${moment().format("DD/MM/YYYY HH:mm:ss")}\n${clean}`, "MemeBot eval results", null, 1).then(r => {
 				const emb = new Discord.RichEmbed()
 					.setTitle("The eval results were too large")
@@ -55,7 +55,7 @@ exports.run = async (client, message, args, level) => { // eslint-disable-line n
 			message.channel.send({ embed: emb })
 		}
 	} catch (err) {
-		if (!(err.length <= 1980)) {
+		if (err.length >= 1024) {
 			pastebin.createPaste(`// Eval results: \n//${moment().format("DD/MM/YYYY HH:mm:ss")}\n${await client.clean(client, err)}`, "MemeBot eval results", null, 1).then(r => {
 				const emb = new Discord.RichEmbed()
 					.setTitle("The eval results were too large")
