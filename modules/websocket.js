@@ -18,7 +18,7 @@ module.exports = async (client, investment) => {
 		if (settings.investmentChannel === 0) return
 
 		if (!client.channels.get(settings.investmentChannel)) {
-			return guild.owner.send("Your #investment-watch channel is configured incorrectly!\nPlease use `&set edit investmentChannel <mention channel here>` to fix this problem.")
+			return guild.owner.send("Your #investment-watch channel is configured incorrectly!\nPlease use `&set edit investmentChannel <mention channel here>` to fix this problem.").catch(client.logger.error)
 		}
 
 		const mentioneveryone = settings.mentionEveryone === true ? "@everyone" : ""
