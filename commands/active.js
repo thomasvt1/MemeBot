@@ -57,7 +57,7 @@ exports.run = async (client, message, [username, _discord_id, user, history, fir
 		client.logger.error(err.stack)
 	}) : false
 
-	const opfirmemoji = client.firmEmoji(opfirm)
+	const opfirmemoji = opfirm ? client.firmEmoji(opfirm) : ""
 
 	const stats = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
