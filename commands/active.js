@@ -45,8 +45,8 @@ exports.run = async (client, message, [username, _discord_id, user, history, fir
 
 	const investments = await client.api.getInvestments(await currentpost.comments.fetchAll())
 
-	const redditpfp = await client.api.r.getUser(currentpost.author.name).fetch().then((usr) => usr.icon_img).catch(err => client.logger.error(err.stack))
 	const discord_id = await client.api.getRedditLink(client, currentpost.author.name)
+	const pfp = client.users.get(discord_id) ? client.users.get(discord_id).displayAvatarURL : await client.api.r.getUser(currentpost.author.name).fetch().then((usr) => usr.icon_img).catch(err => client.logger.error(err.stack))
 
 	const opfirmid = await client.api.getInvestorProfile(currentpost.author.name).then(investor => investor.firm).catch(err => {
 		if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
@@ -56,7 +56,6 @@ exports.run = async (client, message, [username, _discord_id, user, history, fir
 		if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 		client.logger.error(err.stack)
 	}) : false
-	const lower = opfirmid !== 0 ? opfirm.toLowerCase().replace(/ /g, "") : false
 
 	const opfirmemoji = client.firmEmoji(opfirm)
 
@@ -66,7 +65,7 @@ exports.run = async (client, message, [username, _discord_id, user, history, fir
 		.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
 		.setURL(`https://meme.market/user.html?account=${username}`)
 		.setImage(currentpost.thumbnail)
-		.setThumbnail(discord_id ? client.users.get(discord_id).displayAvatarURL : redditpfp)
+		.setThumbnail(pfp)
 		.addField("Current investment", `[u/${currentpost.author.name}](https://reddit.com/u/${currentpost.author.name}) ${opfirmemoji}\n**__[${currentpost.title}](https://redd.it/${currentinvestment.post})__**\n\n**Invested at:** ${investedat}\n**Matures in:** ${maturesin}\n**Amount of investments:** ${investments}\n\u200b`)
 		.addField("Upvotes", text_upvotes)
 		.addField("Profit", text_profit)
