@@ -10,6 +10,5 @@ module.exports = async (client, guild) => {
 
 	client.user.setPresence({ game: { name: `MemeEconomy for ${client.guilds.size} servers ❤️`, type: "WATCHING" }, status: "online" })
 
-	const settings = await client.settings.findOne({ _id: guild.id })
-	if (settings) await settings.remove()
+	await client.settings.findByIdAndRemove(guild.id).catch(err => client.logger.error(err.stack))
 }
