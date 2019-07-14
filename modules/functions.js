@@ -1,6 +1,5 @@
 /* Copyright (c) 2019 thomasvt1 / MemeBot
 /* Original copyright (c) 2018 YorkAARGH (https://github.com/AnIdiotsGuide/guidebot)
-/* Last modified by Keanu73 <keanu@keanu73.net> on 2019-06-30
 /* All rights reserved.
 /*
 MIT License

@@ -24,8 +24,9 @@ exports.run = async (client, message, args) => {
 		client.logger.error(err.stack)
 	})
 
-	if (message.mentions.users.first()) {
-		const mentioncheck = await client.api.getLink(client, message.mentions.users.first().id)
+	let mentioncheck = false
+	if (username !== undefined && user.id === 0 && message.mentions.users.first()) {
+		mentioncheck = await client.api.getLink(client, message.mentions.users.first().id)
 		user = await client.api.getInvestorProfile(mentioncheck).catch(err => {
 			if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 			client.logger.error(err.stack)
@@ -34,17 +35,19 @@ exports.run = async (client, message, args) => {
 		username = user.name
 	}
 
-	if (user.id === 0 && check) {
+	if (username === undefined && check) {
 		user = await client.api.getInvestorProfile(check).catch(err => {
-			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+			if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 			client.logger.error(err.stack)
 		})
 		username = user.name
 		isusername = false
 	}
 
-	if (username && user.id === 0 && !check) return message.channel.send(":question: I couldn't find that MemeEconomy user.")
-	if (username === undefined && user.id === 0 && !check) return message.channel.send(`:question: Please supply a Reddit username, or use \`${settings.prefix}setname <reddit username>\`.`)
+	if (isusername && user.id === 0 && !check) return message.channel.send(":question: I couldn't find that MemeEconomy user.")
+	if (!isusername && user.id === 0 && !check) return message.channel.send(`:question: Please supply a Reddit username, or use \`${settings.prefix}setname <reddit username>\`.`)
+
+	if (user.firm === 0) return message.channel.send(`${isusername ? `${username} is` : "You're"} not in a firm!`)
 
 	const firm = await client.api.getFirmProfile(user.firm).catch(err => {
 		if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")

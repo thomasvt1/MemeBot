@@ -16,17 +16,17 @@ exports.run = async (client, message, [username, _discord_id, user, _history, fi
 		if (e.name === firm.name.toLowerCase().replace(/ /g, "")) firmimage = e.url
 	})
 
-	const floorrank = user.firm_role === "" ? "(Your Role)" : ""
-	const assocrank = user.firm_role === "assoc" ? "(Your Role)" : ""
-	const execrank = user.firm_role === "exec" ? "(Your Role)" : ""
+	const floorrank = user.firm_role === "" ? `${isusername ? `${username}'s` : "Your"} Role` : ""
+	const assocrank = user.firm_role === "assoc" ? `${isusername ? `${username}'s` : "Your"} Role` : ""
+	const execrank = user.firm_role === "exec" ? `${isusername ? `${username}'s` : "Your"} Role` : ""
 	const boardmems = `(${firm.cfo !== "" && firm.cfo !== "0" ? `${firm.cfo}, ` : ""}${firm.coo !== "" && firm.coo !== "0" ? `${firm.coo}, ` : ""}${firm.cfo !== "" && firm.cfo !== "0" || firm.coo !== "" && firm.coo !== "0" ? "and " : ""}${firm.ceo})`
-
-	const floortraders = firm.size - firm.execs - firm.assocs
 
 	let boardmemc = 0
 	if (firm.cfo !== "" && firm.cfo !== "0") boardmemc += 1
 	if (firm.coo !== "" && firm.coo !== "0") boardmemc += 1
 	if (firm.ceo !== "" && firm.ceo !== "0") boardmemc += 1
+
+	const floortraders = firm.size - boardmemc - firm.execs - firm.assocs
 
 	const payout = await client.math.calculateFirmPayout(firm.balance, firm.size, firm.execs, firm.assocs, firm.cfo !== "" && firm.cfo !== "0" ? firm.cfo : false, firm.coo !== "" && firm.coo !== "0" ? firm.coo : false)
 

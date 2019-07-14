@@ -57,7 +57,7 @@ exports.run = async (client, message, [action, key, ...value], level) => { // es
 
 		if (key === "investmentChannel" && message.mentions.channels.first()) joinedValue = message.mentions.channels.first().id
 
-		if (key === "investmentChannel" && !client.channels.get(joinedValue)) return message.reply("The channel you specified doesn't exist!")
+		if (key === "investmentChannel" && !client.channels.get(joinedValue) && joinedValue !== "0") return message.reply("The channel you specified doesn't exist!")
 
 		if (key === "mentionEveryone" && joinedValue !== "true" && joinedValue !== "false") return message.reply("`mentionEveryone` can only be true or false.")
 

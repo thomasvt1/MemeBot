@@ -31,11 +31,20 @@ exports.run = async (client, message, [username, discord_id, user, history, firm
 		// Calculate this week's profit
 		weekprofit = 0
 		let i = 0
-		while (i < history.length && history[i].time > firm.last_payout) {
-			let profit = history[i].profit
-			if (user.firm !== 0) profit -= profit * (history[i].firm_tax / 100)
-			weekprofit += profit
-			i++
+		if (firm.id !== 0) {
+			while (i < history.length && history[i].time > firm.last_payout) {
+				let profit = history[i].profit
+				if (user.firm !== 0) profit -= profit * (history[i].firm_tax / 100)
+				weekprofit += profit
+				i++
+			}
+		} else {
+			while (i < history.length && history[i].time > firm.last_payout) {
+				let profit = history[i].profit
+				if (user.firm !== 0) profit -= profit * (history[i].firm_tax / 100)
+				weekprofit += profit
+				i++
+			}
 		}
 
 		// Calculate amount of investments today

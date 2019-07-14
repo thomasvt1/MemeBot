@@ -4,8 +4,6 @@
 */
 
 const { RichEmbed } = require("discord.js")
-const moment = require("moment")
-const fs = require("fs")
 exports.run = async (client, message, [username, _discord_id, user, _history, firm, isusername], _level) => {
 	if (firm.id === 0) return message.channel.send(`:exclamation: ${isusername ? `${username} is` : "You are"} not in a firm!`)
 

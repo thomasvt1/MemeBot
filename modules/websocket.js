@@ -29,14 +29,14 @@ module.exports = async (client, investment) => {
 
 	client.guilds.forEach(async (guild) => {
 		// investment watch channel will equal as channel id
-		const settings = await client.getSettings(guild)
+		const settings = await client.settings.findById(guild.id)
 
 		client.logger.log(`Guild ${guild.name} (${guild.id}) with owner ${guild.owner.user.tag} (${guild.ownerID}), channel ${settings.investmentChannel} with mentionEveryone ${settings.mentionEveryone}`)
 
-		if (settings.investmentChannel === 0) return
+		if (settings.investmentChannel === "0") return
 
-		if (!client.channels.get(settings.investmentChannel) && settings.investmentChannel !== 0) {
-			settings.investmentChannel = 0
+		if (!client.channels.get(settings.investmentChannel)) {
+			settings.investmentChannel = "0"
 			await settings.save()
 			if (!guild.owner) return client.logger.error(`Unable to reach guild owner ${guild.owner.user.tag} (${guild.ownerID})`)
 			return guild.owner.send(`Your #investment-watch channel was configured incorrectly!\nPlease use \`${settings.prefix}set edit investmentChannel <mention channel here>\` to fix this problem in your ${guild.name} server.\nFor now, investment watch in your server has been disabled to prevent any further errors and DMs.`).catch(client.logger.error)
