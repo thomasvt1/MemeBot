@@ -27,20 +27,22 @@
     "@sentry/node": "^5.5.0",
     "chalk": "^2.4.2",
     "discord.js": "^11.5.1",
-    "enmap": "^5.0.0",
+    "enmap": "^5.0.1",
     "lru-cache": "^5.1.1",
     "moment": "^2.24.0",
     "moment-duration-format": "^2.3.2",
-    "mongoose": "^5.6.2",
+    "mongoose": "^5.6.5",
     "pastebin-js": "^1.0.2",
     "request-promise": "^4.2.4",
     "safe-timers": "^1.1.0",
-    "snoowrap": "^1.16.0",
+    "snoowrap": "^1.17.0",
     "tunnel-agent": "^0.6.0",
-    "ws": "^7.0.0"
+    "universal-analytics": "^0.4.20",
+    "uuid-by-string": "^2.1.5",
+    "ws": "^7.1.1"
   },
   "devDependencies": {
-    "eslint": "^5.16.0",
-    "eslint-plugin-jsdoc": "^8.0.1"
+    "eslint": "^6.0.1",
+    "eslint-plugin-jsdoc": "^15.5.3"
   }
 }

@@ -15,6 +15,9 @@ const config = {
 	websocket: {
 		url: "wss://meme.ws.thomasvt.xyz"
 	},
+
+	// Google Analytics
+	trackingID: "",
 	
 	//MongoDB for storing reddit usernames and guild settings
 	mongodb: {

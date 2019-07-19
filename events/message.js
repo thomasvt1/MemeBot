@@ -29,6 +29,8 @@ SOFTWARE.
 // Note that due to the binding of client to every event, every event
 // goes `client, other, args` when this function is run.
 
+const analytics = require("../modules/analytics.js")
+
 module.exports = async (client, message) => {
 	// It's good practice to ignore other bots. This also makes your bot ignore itself
 	// and not get into a spam loop (we call that "botception").
@@ -137,6 +139,10 @@ module.exports = async (client, message) => {
 
 	const start = Date.now()
 	client.logger.cmd(`${client.config.permLevels.find(l => l.level === level).name} ${message.author.username} (${message.author.id}) ran command ${cmd.help.name} with ${args[0] ? `args ${args[0]}` : "no args"} (started)`)
+
+	if (client.config.trackingID && client.config.trackingID.length != 0)
+		analytics.logCommand(client, message, cmd.help.name)
+
 	cmd.run(client, message, args, level).then(() => {
 		const end = Date.now()
 		const timediff = (end - start) / 1000
