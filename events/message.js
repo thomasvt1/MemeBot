@@ -113,6 +113,7 @@ module.exports = async (client, message) => {
 						client.logger.error(err.stack)
 					})
 					username = user.name
+					isusername = false
 				} else {
 					user = await client.api.getInvestorProfile(username).catch(err => {
 						if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
