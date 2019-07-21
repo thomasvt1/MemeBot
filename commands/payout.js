@@ -5,8 +5,8 @@
 
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
-exports.run = async (client, message, [username, _discord_id, user, _history, firm, isusername], _level) => {
-	if (firm.id === 0) return message.channel.send(`:exclamation: ${isusername ? `${username} is` : "You are"} not in a firm!`)
+exports.run = async (client, message, _args, [user, firm, isusername], _level) => {
+	if (firm.id === 0) return message.channel.send(`:exclamation: ${isusername ? `${user.name} is` : "You are"} not in a firm!`)
 
 	const firmname = firm.name.endsWith("s") ? `${firm.name}'` : `${firm.name}'s`
 	const lastpayout = moment.duration((new Date().getTime() / 1000) - firm.last_payout, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]")
@@ -16,9 +16,9 @@ exports.run = async (client, message, [username, _discord_id, user, _history, fi
 		if (e.name === firm.name.toLowerCase().replace(/ /g, "")) firmimage = e.url
 	})
 
-	const floorrank = user.firm_role === "" ? `${isusername ? `${username}'s` : "Your"} Role` : ""
-	const assocrank = user.firm_role === "assoc" ? `${isusername ? `${username}'s` : "Your"} Role` : ""
-	const execrank = user.firm_role === "exec" ? `${isusername ? `${username}'s` : "Your"} Role` : ""
+	const floorrank = user.firm_role === "" ? `${isusername ? `${user.name}'s` : "Your"} Role` : ""
+	const assocrank = user.firm_role === "assoc" ? `${isusername ? `${user.name}'s` : "Your"} Role` : ""
+	const execrank = user.firm_role === "exec" ? `${isusername ? `${user.name}'s` : "Your"} Role` : ""
 	const boardmems = `(${firm.cfo !== "" && firm.cfo !== "0" ? `${firm.cfo}, ` : ""}${firm.coo !== "" && firm.coo !== "0" ? `${firm.coo}, ` : ""}${firm.cfo !== "" && firm.cfo !== "0" || firm.coo !== "" && firm.coo !== "0" ? "and " : ""}${firm.ceo})`
 
 	let boardmemc = 0
@@ -50,7 +50,8 @@ exports.conf = {
 	enabled: true,
 	guildOnly: false,
 	aliases: [],
-	permLevel: "User"
+	permLevel: "User",
+	info: ["user", "firm", "isusername"]
 }
 
 exports.help = {

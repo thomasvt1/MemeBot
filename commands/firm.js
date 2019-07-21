@@ -4,8 +4,8 @@
 */
 
 const { RichEmbed } = require("discord.js")
-exports.run = async (client, message, [username, _discord_id, user, _history, firm, isusername], _level) => {
-	if (firm.id === 0) return message.channel.send(`:exclamation: ${isusername ? `${username} is` : "You are"} not in a firm!`)
+exports.run = async (client, message, _args, [user, firm, isusername], _level) => {
+	if (firm.id === 0) return message.channel.send(`:exclamation: ${isusername ? `${user.name} is` : "You are"} not in a firm!`)
 
 	// Here we have a promises variable to store all the API-related requests and
 	//  execute all at once for efficiency using Promise.all().
@@ -113,12 +113,13 @@ exports.conf = {
 	enabled: true,
 	guildOnly: false,
 	aliases: [],
-	permLevel: "User"
+	permLevel: "User",
+	info: ["user", "firm", "isusername"]
 }
 
 exports.help = {
 	name: "firm",
 	category: "MemeEconomy",
 	description: "Presents various statistics about a firm.",
-	usage: "inactive <reddit username> (uses set default)"
+	usage: "firm <reddit username> (uses set default)"
 }

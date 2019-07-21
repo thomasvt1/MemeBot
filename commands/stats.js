@@ -5,7 +5,7 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 require("moment-duration-format")
-exports.run = async (client, message, [username, discord_id, user, history, firm, _isusername], _level) => {
+exports.run = async (client, message, _args, [user, discord_id, history, firm], _level) => {
 	let profitdifference
 	let profitprct
 	let avginvestments
@@ -87,7 +87,7 @@ exports.run = async (client, message, [username, discord_id, user, history, firm
 		profitdifference = !history[0].done ? `\n(${forecastedprofit < 0 ? "" : "+"}**${client.api.numberWithCommas(Math.trunc(forecastedprofit))}** M¢)` : ""
 	}
 
-	const redditpfp = await client.api.r.getUser(username).fetch().then((usr) => usr.icon_img).catch(err => client.logger.error(err.stack))
+	const redditpfp = await client.api.r.getUser(user.name).fetch().then((usr) => usr.icon_img).catch(err => client.logger.error(err.stack))
 
 	const firmemoji = client.firmEmoji(firm.name)
 
@@ -127,7 +127,8 @@ exports.conf = {
 	enabled: true,
 	guildOnly: false,
 	aliases: [],
-	permLevel: "User"
+	permLevel: "User",
+	info: ["user", "discord_id", "history", "firm"]
 }
 
 exports.help = {

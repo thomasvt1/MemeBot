@@ -5,7 +5,7 @@
 
 const moment = require("moment")
 const setTimeoutAt = require("safe-timers").setTimeoutAt
-exports.run = async (client, message, [_username, _discord_id, _user, history, _firm, isusername], _level) => {
+exports.run = async (client, message, [history, isusername], _level) => {
 	const currentinvestment = history[0]
 	if (currentinvestment.done) return message.channel.send(`:exclamation: ${isusername ? "They" : "You"} don't have an active investment!`)
 
@@ -21,7 +21,8 @@ exports.conf = {
 	enabled: true,
 	guildOnly: false,
 	aliases: [],
-	permLevel: "User"
+	permLevel: "User",
+	info: ["history", "isusername"]
 }
 
 exports.help = {

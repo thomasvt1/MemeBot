@@ -55,7 +55,7 @@ module.exports = async (client, message) => {
 	// e.g. if we have the message "+say Is this the real life?" , we'll get the following:
 	// command = say
 	// args = ["Is", "this", "the", "real", "life?"]
-	let args = message.content.slice(settings.prefix.length).trim().split(/ +/g)
+	const args = message.content.slice(settings.prefix.length).trim().split(/ +/g)
 	const command = args.shift().toLowerCase()
 
 	// If the member on a guild is invisible or not cached, fetch them.
@@ -83,27 +83,34 @@ module.exports = async (client, message) => {
 	message.author.permLevel = level
 
 	// If the command exists, **AND** the user has permission, run it.
-	const excludedcmds = ["top100", "leaderboard", "setname", "history"]
+	const excludedcmds = ["top100", "setname"]
 	const exclude = excludedcmds.some(c => c === cmd.help.name)
+	let info = cmd.conf.info
 
 	if (cmd.help.category === "MemeEconomy" && !exclude) {
+		//const arguments = [user, discord_id, history, firm, isusername]
+		const arguments = []
+
 		let username = args[0] === undefined ? args[0] : args[0].replace(/^((\/|)u\/)/g, "")
 		let isusername = true
 		const check = await client.api.getLink(client, message.author.id)
-		let user = await client.api.getInvestorProfile(username).catch(err => {
-			if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-			client.logger.error(err.stack)
-		})
-
-		let mentioncheck = false
-		if (username !== undefined && user.id === 0 && message.mentions.users.first()) {
-			mentioncheck = await client.api.getLink(client, message.mentions.users.first().id)
-			user = await client.api.getInvestorProfile(mentioncheck).catch(err => {
-				if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-				client.logger.error(err.stack)
-			})
-			if (user.id === 0) return message.channel.send(":question: I couldn't find that Discord user in my database.")
-			username = user.name
+		let user
+		if (username !== undefined) {
+			if (message.mentions.users.first()) {
+				const mention = await client.api.getLink(client, message.mentions.users.first().id)
+				user = await client.api.getInvestorProfile(mention).catch(err => {
+					if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+					client.logger.error(err.stack)
+				})
+				if (user.id === 0) return message.channel.send(":question: I couldn't find that Discord user in my database.")
+				username = user.name
+			} else {
+				user = await client.api.getInvestorProfile(username).catch(err => {
+					if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+					client.logger.error(err.stack)
+				})
+				username = user.name
+			}
 		}
 
 		if (username === undefined && check) {
@@ -115,32 +122,64 @@ module.exports = async (client, message) => {
 			isusername = false
 		}
 
+		if (user.id === 0 && username !== undefined && check) {
+			user = await client.api.getInvestorProfile(check).catch(err => {
+				if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+				client.logger.error(err.stack)
+			})
+			username = user.name
+			isusername = false
+		}
+
 		if (isusername && user.id === 0 && !check) return message.channel.send(":question: I couldn't find that MemeEconomy user.")
 		if (!isusername && user.id === 0 && !check) return message.channel.send(`:question: Please supply a Reddit username, or use \`${settings.prefix}setname <reddit username>\`.`)
 
-		const firm = await client.api.getFirmProfile(user.firm).catch(err => {
-			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-			client.logger.error(err.stack)
-		})
+		if (info.some(i => i === "user")) {
+			arguments.push(user)
+		}
 
-		const discord_id = await client.api.getRedditLink(client, username.toLowerCase())
+		if (info.some(i => i === "discord_id")) {
+			arguments.push(await client.api.getRedditLink(client, username).catch(err => client.logger.error(err.stack)))
+		}
 
-		const history = await client.api.getInvestorHistory(username.toLowerCase()).catch(err => {
-			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-			client.logger.error(err.stack)
-		})
+		if (info.some(i => i === "history")) {
+			arguments.push(await client.api.getInvestorHistory(username).catch(err => {
+				if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+				client.logger.error(err.stack)
+			}))
+		}
 
-		const arguments = [username, discord_id, user, history, firm, isusername]
+		if (info.some(i => i === "firm")) {
+			arguments.push(await client.api.getFirmProfile(user.firm).catch(err => {
+				if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+				client.logger.error(err.stack)
+			}))
+		}
 
-		args = arguments
+		if (info.some(i => i === "isusername")) {
+			arguments.push(isusername)
+		}
+
+		await Promise.all(arguments)
+
+		info = arguments
 	}
 
 	const start = Date.now()
 	client.logger.cmd(`${client.config.permLevels.find(l => l.level === level).name} ${message.author.username} (${message.author.id}) ran command ${cmd.help.name} with ${args[0] ? `args ${args[0]}` : "no args"} (started)`)
-	cmd.run(client, message, args, level).then(() => {
-		const end = Date.now()
-		const timediff = (end - start) / 1000
+	if (cmd.help.category === "MemeEconomy" && !exclude) {
+		cmd.run(client, message, args, info, level).then(() => {
+			const end = Date.now()
+			const timediff = (end - start) / 1000
 
-		client.logger.cmd(`${client.config.permLevels.find(l => l.level === level).name} ${message.author.username} (${message.author.id}) ran command ${cmd.help.name} with ${args[0] ? `args ${args[0]}` : "no args"} (executed in ${timediff}s)`)
-	})
+			client.logger.cmd(`${client.config.permLevels.find(l => l.level === level).name} ${message.author.username} (${message.author.id}) ran command ${cmd.help.name} with ${args[0] ? `args ${args[0]}` : "no args"} (executed in ${timediff}s)`)
+		})
+	} else {
+		cmd.run(client, message, args, level).then(() => {
+			const end = Date.now()
+			const timediff = (end - start) / 1000
+
+			client.logger.cmd(`${client.config.permLevels.find(l => l.level === level).name} ${message.author.username} (${message.author.id}) ran command ${cmd.help.name} with ${args[0] ? `args ${args[0]}` : "no args"} (executed in ${timediff}s)`)
+		})
+	}
 }

@@ -4,55 +4,17 @@
 */
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
-exports.run = async (client, message, args) => {
+exports.run = async (client, message, args, [user, firm, isusername]) => {
 	// arguments: <name> <all, traders, assocs, exec, board> <best/worst> <networth, activity, contribution, investments> <page>
 
 	// Here we have a promises variable to store all the API-related requests and
 	//  execute all at once for efficiency using Promise.all().
 	const promises = []
 
-	// Here we have the username check code found in most of the other commands
-	// but is mainly in message.js. It checks if a username is passed and all of that
-	// stuff so that you can check your own stats and other people's.
 	const perPage = 20
 	const settings = await client.getSettings(message.guild)
-	let username = args[0] === undefined ? args[0] : args[0].replace(/^((\/|)u\/)/g, "")
-	const check = await client.api.getLink(client, message.author.id)
-	let isusername = true
-	let user = await client.api.getInvestorProfile(username).catch(err => {
-		if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-		client.logger.error(err.stack)
-	})
 
-	let mentioncheck = false
-	if (username !== undefined && user.id === 0 && message.mentions.users.first()) {
-		mentioncheck = await client.api.getLink(client, message.mentions.users.first().id)
-		user = await client.api.getInvestorProfile(mentioncheck).catch(err => {
-			if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-			client.logger.error(err.stack)
-		})
-		if (user.id === 0) return message.channel.send(":question: I couldn't find that Discord user in my database.")
-		username = user.name
-	}
-
-	if (username === undefined && check) {
-		user = await client.api.getInvestorProfile(check).catch(err => {
-			if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-			client.logger.error(err.stack)
-		})
-		username = user.name
-		isusername = false
-	}
-
-	if (isusername && user.id === 0 && !check) return message.channel.send(":question: I couldn't find that MemeEconomy user.")
-	if (!isusername && user.id === 0 && !check) return message.channel.send(`:question: Please supply a Reddit username, or use \`${settings.prefix}setname <reddit username>\`.`)
-
-	if (user.firm === 0) return message.channel.send(`${isusername ? `${username} is` : "You're"} not in a firm!`)
-
-	const firm = await client.api.getFirmProfile(user.firm).catch(err => {
-		if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-		client.logger.error(err.stack)
-	})
+	if (user.firm === 0) return message.channel.send(`${isusername ? `${user.name} is` : "You're"} not in a firm!`)
 
 	// This is where the main command code starts.
 	// Here we pass the firm's parameters to then calculate the formula
@@ -73,7 +35,7 @@ exports.run = async (client, message, args) => {
 	let modifier = ""
 	let type = ""
 	let typestr = ""
-	let page = check ? args[4] : args[3]
+	let page = isusername ? args[4] : args[3]
 
 	if (ranks[rankarg]) rank = ranks[rankarg]
 
@@ -244,7 +206,8 @@ exports.conf = {
 	enabled: true,
 	guildOnly: false,
 	aliases: ["lb"],
-	permLevel: "User"
+	permLevel: "User",
+	info: ["user", "firm", "isusername"]
 }
 
 exports.help = {

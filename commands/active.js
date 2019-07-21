@@ -5,7 +5,7 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 require("moment-duration-format")
-exports.run = async (client, message, [username, _discord_id, user, history, firm, isusername], _level) => {
+exports.run = async (client, message, _args, [user, history, firm, isusername], _level) => {
 	if (!history || !history.length) return message.channel.send(`:exclamation: ${isusername ? "They" : "You"} haven't invested before!`)
 
 	const currentinvestment = !history[0].done ? history[0] : false // Simple ternary to check whether current investment is running
@@ -63,7 +63,7 @@ exports.run = async (client, message, [username, _discord_id, user, history, fir
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
 		.setColor("GOLD")
 		.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
-		.setURL(`https://meme.market/user.html?account=${username}`)
+		.setURL(`https://meme.market/user.html?account=${user.name}`)
 		.setImage(currentpost.thumbnail)
 		.setThumbnail(pfp)
 		.addField("Current investment", `[u/${currentpost.author.name}](https://reddit.com/u/${currentpost.author.name}) ${opfirmemoji}\n**__[${currentpost.title}](https://redd.it/${currentinvestment.post})__**\n\n**Invested at:** ${investedat}\n**Matures in:** ${maturesin}\n**Amount of investments:** ${investments}\n\u200b`)
@@ -76,7 +76,8 @@ exports.conf = {
 	enabled: true,
 	guildOnly: false,
 	aliases: [],
-	permLevel: "User"
+	permLevel: "User",
+	info: ["user", "history", "firm", "isusername"]
 }
 
 exports.help = {

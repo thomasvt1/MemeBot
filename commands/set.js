@@ -109,12 +109,12 @@ exports.conf = {
 	enabled: true,
 	guildOnly: true,
 	aliases: ["setting", "settings", "conf"],
-	permLevel: "Server Owner"
+	permLevel: "Server Admin"
 }
 
 exports.help = {
 	name: "set",
 	category: "System",
 	description: "View or change settings for your server.",
-	usage: "set <view/get/edit> <key> <value>"
+	usage: "set <none/get/edit> <none/key> <none/value>"
 }

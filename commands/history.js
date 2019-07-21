@@ -5,47 +5,16 @@
 
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
-exports.run = async (client, message, args, _level) => {
-	const settings = await client.getSettings(message.guild)
-	let isusername = true
-	let username = args[0] === undefined ? args[0] : args[0].replace(/^((\/|)u\/)/g, "")
-	const check = await client.api.getLink(client, message.author.id)
-	let user = await client.api.getInvestorProfile(username).catch(err => {
-		if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-		client.logger.error(err.stack)
-	})
-	if (username !== undefined && user.id === 0) {
-		if (message.mentions.users.first()) {
-			const mentioncheck = await client.api.getLink(client, message.mentions.users.first().id)
-			user = await client.api.getInvestorProfile(mentioncheck).catch(err => {
-				if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-				client.logger.error(err.stack)
-			})
-			if (user.id === 0) return message.channel.send(":question: I couldn't find that Discord user in my database.")
-			username = user.name
-		}
-	}
-	if (user.id === 0 && check) {
-		user = await client.api.getInvestorProfile(check).catch(err => {
-			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-			client.logger.error(err.stack)
-		})
-		username = user.name
-		isusername = false
-	}
+exports.run = async (client, message, args, [user, discord_id, firm, isusername], _level) => {
+	const investment = isusername ? args[1] : args[0]
 
-	if (username && user.id === 0 && !check) return message.channel.send(":question: I couldn't find that MemeEconomy user.")
-	if (username === undefined && user.id === 0 && !check) return message.channel.send(`:question: Please supply a Reddit username, or use \`${settings.prefix}setname <reddit username>\`.`)
+	if (investment === undefined) return message.channel.send(":exclamation: You haven't specified how many investments to go back!")
 
-	const firm = await client.api.getFirmProfile(user.firm).catch(err => {
-		if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-		client.logger.error(err.stack)
-	})
+	if (isNaN(investment)) return message.channel.send(":thinking: Is this a real number?")
 
-	const discord_id = await client.api.getRedditLink(client, username.toLowerCase())
-
+	const promises = []
 	let history = []
-	let num_left = user.completed
+	let num_left = investment
 	let page = 0
 	let amount = 0
 
@@ -55,18 +24,15 @@ exports.run = async (client, message, args, _level) => {
 		} else {
 			amount = num_left
 		}
-		const investments = await client.api.getInvestorHistory(username, amount, page).catch(err => {
+		promises.push(client.api.getInvestorHistory(user.name, amount, page).then(h => history = history.concat(h)).catch(err => {
 			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 			client.logger.error(err.stack)
-		})
-		history = history.concat(investments)
+		}))
 		num_left -= amount
 		if (num_left > 0) page += 1
 	}
 
-	const investment = isusername ? args[1] : args[0]
-
-	if (investment === undefined) return message.channel.send(":exclamation: You haven't specified how many investments to go back!")
+	await Promise.all(promises)
 
 	if (!history || !history.length) return message.channel.send(":exclamation: You haven't invested before!")
 
@@ -92,8 +58,6 @@ exports.run = async (client, message, args, _level) => {
 		investments_on_day++
 	}
 
-	if (isNaN(investment) || investment === undefined) return message.channel.send(":thinking: Is this a real number?")
-
 	if (!history[investment]) return message.channel.send(":exclamation: You specified an investment past your time!")
 
 	const lastinvestment = history[!history[investment - 1].done ? investment : investment - 1]
@@ -111,7 +75,7 @@ exports.run = async (client, message, args, _level) => {
 	const investments = await client.api.getInvestments(await lastpost.comments.fetchAll()).catch(err => client.logger.error(err.stack))
 
 	const broke_even = Math.round(client.math.calculateBreakEvenPoint(lastinvestment.upvotes))
-	const redditpfp = await client.api.r.getUser(username).fetch().then((usr) => usr.icon_img).catch(err => client.logger.error(err.stack))
+	const redditpfp = await client.api.r.getUser(user.name).fetch().then((usr) => usr.icon_img).catch(err => client.logger.error(err.stack))
 
 	let text_upvotes = `**Initial upvotes:** ${lastinvestment.upvotes}\n`
 	text_upvotes += `**Final upvotes:** ${lastinvestment.final_upvotes}\n`
@@ -134,9 +98,9 @@ exports.run = async (client, message, args, _level) => {
 	const stats = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
 		.setColor("GOLD")
-		.setFooter(`${investment} investment${investment == 1 ? "" : "s"} ago | Made by Thomas van Tilburg and Keanu73 with ❤️`, "https://i.imgur.com/1t8gmE7.png")
-		.setTitle(`u/${username}`)
-		.setURL(`https://meme.market/user.html?account=${username}`)
+		.setFooter(`${investment} investment${investment === 1 ? "" : "s"} ago | Made by Thomas van Tilburg and Keanu73 with ❤️`, "https://i.imgur.com/1t8gmE7.png")
+		.setTitle(`u/${user.name}`)
+		.setURL(`https://meme.market/user.html?account=${user.name}`)
 		.addField("Completed investments", user.completed - investment, false)
 		.addField("Average investment profit", `${profitprct.toFixed(2)}%`, false)
 		.addField("Investments on the day", `${investments_on_day}`, false)
@@ -154,7 +118,8 @@ exports.conf = {
 	enabled: true,
 	guildOnly: false,
 	aliases: [],
-	permLevel: "User"
+	permLevel: "User",
+	info: ["user", "discord_id", "firm", "isusername"]
 }
 
 exports.help = {
