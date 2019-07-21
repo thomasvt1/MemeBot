@@ -17,13 +17,13 @@ analytics.logCommand = async (client, message, command) => {
 	const track = ua(getTrackingID(client), getUuid(message.author.id), { strictCidFormat: false })
 	const params = { // https://github.com/peaksandpies/universal-analytics/blob/HEAD/AcceptableParams.md
 		dp: command,
-		dr: message.guild.name,
+		dr: message.guild ? message.guild.name : message.author.username,
 		cid: getUuid(message.author.id),
-		ua: message.guild.name,
+		ua: message.guild ? message.guild.name : message.author.username,
 		an: "memebot"
 	}
 
-	console.log(params)
+	client.logger.log(`Google Analytics: ${params}`)
 	try {
 		track.pageview(params).send()
 	} catch (exception) {
