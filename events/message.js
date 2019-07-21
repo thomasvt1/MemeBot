@@ -107,24 +107,23 @@ module.exports = async (client, message) => {
 				if (user.id === 0) return message.channel.send(":question: I couldn't find that Discord user in my database.")
 				username = user.name
 			} else {
-				user = await client.api.getInvestorProfile(username).catch(err => {
-					if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-					client.logger.error(err.stack)
-				})
-				username = user.name
+				if (check) {
+					user = await client.api.getInvestorProfile(check).catch(err => {
+						if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+						client.logger.error(err.stack)
+					})
+					username = user.name
+				} else {
+					user = await client.api.getInvestorProfile(username).catch(err => {
+						if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+						client.logger.error(err.stack)
+					})
+					username = user.name
+				}
 			}
 		}
 
 		if (username === undefined && check) {
-			user = await client.api.getInvestorProfile(check).catch(err => {
-				if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-				client.logger.error(err.stack)
-			})
-			username = user.name
-			isusername = false
-		}
-
-		if (user.id === 0 && username !== undefined && check) {
 			user = await client.api.getInvestorProfile(check).catch(err => {
 				if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 				client.logger.error(err.stack)
