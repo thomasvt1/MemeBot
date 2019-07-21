@@ -60,17 +60,16 @@ exports.run = async (client, message, [page], _level) => {
 		const lastinvested = history[0] ? moment.duration(moment().unix() - history[0].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") : "Never"		
 
 		let avginvestments = 0
-		const days = moment().diff(moment.unix(firm.last_payout), "days")
+		const weekago = moment().subtract(7, "days").unix()
 		for (const inv of history) {
-			if (inv.time < firm.last_payout)
+			if (inv.time < weekago)
 				break
 			avginvestments++
 		}
-		if (days < 1) avginvestments = "Payout too recent"
-		else {
-			avginvestments /= Math.trunc(days)
-			avginvestments = Math.trunc(avginvestments)
-		}
+
+		avginvestments /= 7
+		avginvestments = Math.trunc(avginvestments)
+		
 		const firmemoji = client.firmEmoji(firm.name)
 
 		const firmstr = firm.id !== 0 ? `\n👔 \`Firm:\` **${firmrole}** of **${firm.name}**` : ""

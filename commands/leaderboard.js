@@ -101,17 +101,16 @@ exports.run = async (client, message, args, [user, firm, isusername]) => {
 		}
 
 		let avginvestments = 0
-		const days = moment().diff(moment.unix(firm.last_payout), "days")
+		const weekago = moment().subtract(7, "days").unix()
 		for (const inv of history) {
-			if (inv.time < firm.last_payout)
+			if (inv.time < weekago)
 				break
 			avginvestments++
 		}
-		if (days < 1) avginvestments = "Too recent"
-		else {
-			avginvestments /= days
-			avginvestments = Math.trunc(avginvestments)
-		}
+
+		avginvestments /= 7
+		avginvestments = Math.trunc(avginvestments)
+
 		const payouts = {
 			"": payout.trader.amount,
 			"assoc": payout.assoc.amount,
