@@ -93,37 +93,32 @@ module.exports = async (client, message) => {
 		//const arguments = [user, discord_id, history, firm, isusername]
 		const inf = []
 
+		// Filter username with regex so that someone doesn't put u/ for the hell of it.
 		let username = args[0] === undefined ? args[0] : args[0].replace(/^((\/|)u\/)/g, "")
 		let isusername = true
 		const check = await client.api.getLink(client, message.author.id)
-		let user
-		if (username !== undefined) {
-			if (message.mentions.users.first()) {
-				const mention = await client.api.getLink(client, message.mentions.users.first().id)
-				user = await client.api.getInvestorProfile(mention).catch(err => {
-					if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-					client.logger.error(err.stack)
-				})
-				if (user.id === 0) return message.channel.send(":question: I couldn't find that Discord user in my database.")
-				username = user.name
-			} else {
-				if (check) {
-					user = await client.api.getInvestorProfile(check).catch(err => {
-						if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-						client.logger.error(err.stack)
-					})
-					username = user.name
-					isusername = false
-				} else {
-					user = await client.api.getInvestorProfile(username).catch(err => {
-						if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-						client.logger.error(err.stack)
-					})
-					username = user.name
-				}
-			}
+		// We check if the user with the username exists. It might just be the arg of a command.
+		// Who cares.
+		let user = await client.api.getInvestorProfile(username).catch(err => {
+			if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+			client.logger.error(err.stack)
+		})
+
+		if (username !== undefined && message.mentions.users.first()) {
+			// Did they mean to run the command on someone else in their Discord?
+			// We check the setname DB for them.
+			const mention = await client.api.getLink(client, message.mentions.users.first().id)
+			user = await client.api.getInvestorProfile(mention).catch(err => {
+				if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+				client.logger.error(err.stack)
+			})
+			if (user.id === 0) return message.channel.send(":question: I couldn't find that Discord user in my database.")
+			// So it seems they do exist.
+			username = user.name
 		}
 
+		// So they didn't include a username but have set their name?
+		// Jolly-ho, then!
 		if (username === undefined && check) {
 			user = await client.api.getInvestorProfile(check).catch(err => {
 				if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
@@ -135,6 +130,9 @@ module.exports = async (client, message) => {
 
 		if (isusername && user.id === 0 && !check) return message.channel.send(":question: I couldn't find that MemeEconomy user.")
 		if (!isusername && user.id === 0 && !check) return message.channel.send(`:question: Please supply a Reddit username, or use \`${settings.prefix}setname <reddit username>\`.`)
+
+		// Let's just remove their username for simplicity.
+		if (isusername) args.shift()
 
 		if (info.some(i => i === "user")) {
 			inf.push(user)

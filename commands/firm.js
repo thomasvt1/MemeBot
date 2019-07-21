@@ -8,7 +8,7 @@ exports.run = async (client, message, _args, [user, firm, isusername], _level) =
 	if (firm.id === 0) return message.channel.send(`:exclamation: ${isusername ? `${user.name} is` : "You are"} not in a firm!`)
 
 	// Here we have a promises variable to store all the API-related requests and
-	//  execute all at once for efficiency using Promise.all().
+	// execute all at once for efficiency using Promise.all().
 	const promises = []
 
 	// Here we gather up all of the firm members by keeping track of
@@ -38,6 +38,7 @@ exports.run = async (client, message, _args, [user, firm, isusername], _level) =
 	}
 
 	for (let i = 0; i < firmmembers.length; i++) {
+		// We use promise hacks here just so you don't wait for ages.
 		promises.push(client.api.getInvestorHistory(firmmembers[i].name, 100).then(history => {
 			investments = investments.concat(history)
 			firmmembers[i].history = history
@@ -49,6 +50,9 @@ exports.run = async (client, message, _args, [user, firm, isusername], _level) =
 
 	await Promise.all(promises)
 
+	// We calculate average investment profit since payout.
+	// I might change it to just the last week to not confuse people and make it
+	// look more accurate.
 	for (let i = 0; i < investments.length; i++) {
 		if (investments[i].done === true && investments[i].time > firm.last_payout) {
 			profitprct += (investments[i].profit - investments[i].profit * (investments[i].firm_tax / 100)) / investments[i].amount * 100 // investor profit ratio

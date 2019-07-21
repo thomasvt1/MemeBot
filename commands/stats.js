@@ -31,20 +31,13 @@ exports.run = async (client, message, _args, [user, discord_id, history, firm], 
 		// Calculate this week's profit
 		weekprofit = 0
 		let i = 0
-		if (firm.id !== 0) {
-			while (i < history.length && history[i].time > firm.last_payout) {
-				let profit = history[i].profit
-				if (user.firm !== 0) profit -= profit * (history[i].firm_tax / 100)
-				weekprofit += profit
-				i++
-			}
-		} else {
-			while (i < history.length && history[i].time > firm.last_payout) {
-				let profit = history[i].profit
-				if (user.firm !== 0) profit -= profit * (history[i].firm_tax / 100)
-				weekprofit += profit
-				i++
-			}
+		// If user is in firm, calculate it since last payout, else, do it in the past week
+		const week = user.firm !== 0 ? firm.last_payout : moment().subtract(7, "days").unix()
+		while (i < history.length && history[i].time > week) {
+			let profit = history[i].profit
+			if (user.firm !== 0) profit -= profit * (history[i].firm_tax / 100)
+			weekprofit += profit
+			i++
 		}
 
 		// Calculate amount of investments today
@@ -64,16 +57,20 @@ exports.run = async (client, message, _args, [user, discord_id, history, firm], 
 				break
 			avginvestments++
 		}
-		
+
 		avginvestments /= 7
 		avginvestments = Math.trunc(avginvestments)
 
+		// Here we just do some hacky math to spit out a profit ratio.
 		weekratio = ((weekprofit / (user.networth - weekprofit)) * 100.0).toFixed(2)
 
+		// Self-explanatory
 		lastinvested = moment.duration(moment().unix() - history[0].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
 
+		// Fetch current investment from reddit
 		currentpost = !history[0].done ? await client.api.r.getSubmission(history[0].post).fetch().then((sub) => sub).catch(err => client.logger.error(err.stack)) : false
 
+		// Calculate the estimated profit that is added onto your networth
 		let factor
 		if (!history[0].done) {
 			const array = await client.math.calculate_factor(history[0].upvotes, currentpost.score, user.networth)

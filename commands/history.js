@@ -6,7 +6,7 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 exports.run = async (client, message, args, [user, discord_id, firm, isusername], _level) => {
-	const investment = isusername ? args[1] : args[0]
+	const investment = args[0]
 
 	if (investment === undefined) return message.channel.send(":exclamation: You haven't specified how many investments to go back!")
 

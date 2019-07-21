@@ -31,7 +31,7 @@ module.exports = (client) => {
 	/*
 	FIRM EMOJI FUNCTION
 
-	Here we just take the firm's name, lowercase it and format it, then look for it in the MemeBot guild.
+	Here we just take the firm's name, lowercase it and truncate spaces, then look for it in the MemeBot guild.
 
 	*/
 

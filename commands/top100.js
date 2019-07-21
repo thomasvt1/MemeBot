@@ -6,6 +6,8 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 exports.run = async (client, message, [page], _level) => {
+	// Here we have a promises variable to store all the API-related requests and
+	// execute all at once for efficiency using Promise.all().
 	const promises = []
 
 	const perPage = 20
@@ -17,8 +19,10 @@ exports.run = async (client, message, [page], _level) => {
 		if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 		client.logger.error(err.stack)
 	})
+	// We need an offset so we can display the rank positions correctly.
 	const offset = page === 1 ? 1 : (perPage * (page - 1)) + 1
 
+	// Standard breadboard of firmroles.
 	const firmroles = {
 		"": "Floor Trader",
 		assoc: "Associate",
@@ -33,11 +37,12 @@ exports.run = async (client, message, [page], _level) => {
 		.setColor("GOLD")
 		.setFooter(`Page ${page} of ${pages} | Made by Thomas van Tilburg and Keanu73 with ❤️`, "https://i.imgur.com/1t8gmE7.png")
 		.setTitle("Top 100 Investors of /r/MemeEconomy")
-		.setThumbnail("https://i.imgur.com/Z31RUqu.png")
+		.setThumbnail(client.user.avatarURL)
 		.setURL("https://meme.market/leaderboards.html?season=1")
 
 	for (let i = 0; i < perPage; i++) {
 		const investor = top100[i]
+		// Use promise hacks to perform all web requests at once. Faster runtime.
 		promises.push(client.api.getFirmProfile(investor.firm).then(firm => top100[i].firm = firm).catch(err => {
 			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 			client.logger.error(err.stack)
@@ -49,6 +54,7 @@ exports.run = async (client, message, [page], _level) => {
 		}))
 	}
 
+	// And.. fin.
 	await Promise.all(promises)
 
 	for (let i = 0; i < perPage; i++) {
@@ -69,9 +75,11 @@ exports.run = async (client, message, [page], _level) => {
 
 		avginvestments /= 7
 		avginvestments = Math.trunc(avginvestments)
-		
+
+		// We get their firm emoji from the MemeBot guild, which has most firm emojis formatted by the firm name but lowercased and spaces truncated.
 		const firmemoji = client.firmEmoji(firm.name)
 
+		// Using fancy emojis like in $leaderboard, more readability..
 		const firmstr = firm.id !== 0 ? `\n👔 \`Firm:\` **${firmrole}** of **${firm.name}**` : ""
 		stats.addField(`\`${i + offset}.\` u/${investor.name} ${firmemoji}`, `
 💰 \`Net worth:\` **${client.api.getSuffix(investor.networth)} M¢**${firmstr}

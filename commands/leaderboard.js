@@ -23,39 +23,56 @@ exports.run = async (client, message, args, [user, firm, isusername]) => {
 
 	// Here we use some ugly hacks to make the rest of the code more dynamic
 	// so that it returns either the same value or a nicely formatted value.
+	// I am yet to find a nicer solution.
 	const ranks = { all: "all", traders: "traders", assocs: "assoc", execs: "exec", board: { cfo: "cfo", coo: "coo", ceo: "ceo" } }
 	const modifiers = { best: "best", worst: "worst" }
 	const types = { networth: "networth", activity: "activity", contribution: "contribution", investments: "investments" }
 	const typestrs = { networth: "Net Worth", activity: "Last Invested", contribution: "Contribution", investments: "Average Investments" }
-	// Here we check if the user passed a username or not.
-	const rankarg = isusername ? args[1] : args[0]
-	const modifierarg = isusername ? args[2] : args[1]
-	const typearg = isusername ? args[3] : args[2]
+	// Here we check if the user passed a username or not and map the arguments accordingly.
+	const rankarg = args[0]
+	const modifierarg = args[1]
+	const typearg = args[2]
 	let rank = ""
 	let modifier = ""
 	let type = ""
 	let typestr = ""
-	let page = isusername ? args[4] : args[3]
+	let page = args[3]
 
-	if (ranks[rankarg]) rank = ranks[rankarg]
+	// Cue the orchestra of if statements.
+	// We check if the argument indexes into the object
+	// in a simple and dynamic way.
+	if (ranks[rankarg])
+		rank = ranks[rankarg]
+	else
+		return message.channel.send(`:exclamation: Invalid rank type! Refer to ${settings.prefix}help leaderboard.`)
 
-	if (!ranks[rankarg]) return message.channel.send(`:exclamation: Invalid rank type! Refer to ${settings.prefix}help leaderboard.`)
+	if (modifiers[modifierarg])
+		modifier = modifiers[modifierarg]
+	else
+		return message.channel.send(`:exclamation: Invalid modifier! Refer to ${settings.prefix}help leaderboard.`)
 
-	if (modifiers[modifierarg]) modifier = modifiers[modifierarg]
-
-	if (!modifiers[modifierarg]) return message.channel.send(`:exclamation: Invalid modifier! Refer to ${settings.prefix}help leaderboard.`)
-
-	if (types[typearg]) type = types[typearg]
-
-	if (!types[typearg]) return message.channel.send(`:exclamation: Invalid specifier type! Refer to ${settings.prefix}help leaderboard.`)
+	if (types[typearg])
+		type = types[typearg]
+	else
+		return message.channel.send(`:exclamation: Invalid specifier type! Refer to ${settings.prefix}help leaderboard.`)
 
 	if (typestrs[typearg]) typestr = typestrs[typearg]
 
+	// isNaN means is Not a Number.
+	// It's one of those weird finicky JavaScript things.
 	if (page && isNaN(page)) return message.channel.send(":thinking: Is this a real number?")
 
 	if (page && page < 1) return message.channel.send(`:exclamation: There is no page ${page}!`)
 
 	if (!page) page = 1
+
+	// Here we index all of the firm members,
+	// again using all-at-once promise hacks,
+	// and then we assign info to each object
+	// just for convenience later.
+
+	// We then filter the firm members according to which rank type the user
+	// requested, and we then sort it according to the user's request.
 	let members = []
 	let num_left = firm.size
 	let fpage = 0
@@ -152,6 +169,9 @@ exports.run = async (client, message, args, [user, firm, isusername]) => {
 		if (modifier === "worst") firmmembers.sort((a, b) => a.avginvestments - b.avginvestments)
 	}
 
+	// Karate chop the array into pages, since Discord only allows
+	// a max of 25 fields in one embed. We use 20 just to cram all the
+	// info in, otherwise we'd go over the character limit, sadly.
 	firmmembers = firmmembers.slice(begin, offset)
 
 	const firmranks = {
@@ -171,11 +191,16 @@ exports.run = async (client, message, args, [user, firm, isusername]) => {
 		ceo: "CEO"
 	}
 
+	// Grab firm image and persuade said firm owners to submit their logo to me.
+	// Mwahahaha.
 	let firmimage = "https://cdn.discordapp.com/emojis/588029928063107230.png"
 	client.guilds.get("563439683309142016").emojis.forEach(async (e) => {
 		if (e.name === firm.name.toLowerCase().replace(/ /g, "")) firmimage = e.url
 	})
 
+	// Here the code is.. somewhat lovey-dovey.
+	// Simplicity all around. If you don't understand
+	// any of it, think again. (Note: the question mark and colon thingies are called ternary operators. Super useful.)
 	const stats = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
 		.setColor("GOLD")
@@ -184,6 +209,7 @@ exports.run = async (client, message, args, [user, firm, isusername]) => {
 		.setURL(`https://meme.market/firm.html?firm=${firm.id}`)
 		.setThumbnail(firmimage)
 
+	// Let's make sure we don't miss any members out of the embed..
 	await firmmembers
 	for (let i = 0; i < firmmembers.length; i++) {
 		const investor = firmmembers[i]

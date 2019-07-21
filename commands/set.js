@@ -54,9 +54,9 @@ exports.run = async (client, message, [action, key, ...value], level) => { // es
 		if (joinedValue.length < 1) return message.reply("Please specify a new value")
 		// User must specify a different value than the current one.
 		if (joinedValue === settings.get(key)) return message.reply("This setting already has that value!")
-
+		// Do the hard work that the user doesn't have to do.
 		if (key === "investmentChannel" && message.mentions.channels.first()) joinedValue = message.mentions.channels.first().id
-
+		// Validation. Always good.
 		if (key === "investmentChannel" && !client.channels.get(joinedValue) && joinedValue !== "0") return message.reply("The channel you specified doesn't exist!")
 
 		if (key === "mentionEveryone" && joinedValue !== "true" && joinedValue !== "false") return message.reply("`mentionEveryone` can only be true or false.")
@@ -97,7 +97,9 @@ exports.run = async (client, message, [action, key, ...value], level) => { // es
 	} else {
 		// Otherwise, the default action is to return the whole configuration;
 		const array = []
+		// Get the lean object of the MongoDB document as we don't need to modify it.
 		const settingsObj = await client.getSettings(message.guild)
+		// Simplicity.
 		Object.entries(settingsObj).forEach(([key, value]) => {
 			if (key !== "_id" && key !== "__v") array.push(`${key}${" ".repeat(20 - key.length)}::  ${value}`)
 		})
