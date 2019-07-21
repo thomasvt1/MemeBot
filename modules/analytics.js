@@ -23,7 +23,7 @@ analytics.logCommand = async (client, message, command) => {
 		an: "memebot"
 	}
 
-	client.logger.log(`Google Analytics: ${params}`)
+	client.logger.log(`Google Analytics: ${JSON.stringify(params)}`)
 	try {
 		track.pageview(params).send()
 	} catch (exception) {
