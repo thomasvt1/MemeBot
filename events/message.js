@@ -117,9 +117,20 @@ module.exports = async (client, message) => {
 			username = user.name
 		}
 
+		// So we think they include a username when
+		// they haven't. Just default to their own.
+		if (username !== undefined && user.id === 0 && check) {
+			user = await client.api.getInvestorProfile(check).catch(err => {
+				if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+				client.logger.error(err.stack)
+			})
+			username = user.name
+			isusername = false
+		}
+
 		// So they didn't include a username but have set their name?
 		// Jolly-ho, then!
-		if (username === undefined && check) {
+		if (username === undefined && user.id === 0 && check) {
 			user = await client.api.getInvestorProfile(check).catch(err => {
 				if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 				client.logger.error(err.stack)

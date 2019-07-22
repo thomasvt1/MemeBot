@@ -138,11 +138,15 @@ exports.run = async (client, message, args, [user, firm, isusername]) => {
 		}
 		const userpayout = payouts[members[e].firm_role]
 
-		members[i].avginvestments = avginvestments
-		members[i].timediff = history[0] ? Math.trunc(new Date().getTime() / 1000) - history[0].time : "Never"
-		members[i].contribution = Math.trunc(weekcontrib)
-		members[i].networth = networth
-		members[i].difference = ((weekcontrib - userpayout) / userpayout) * 100.0
+		const assignValues = async () => {
+			members[i].avginvestments = avginvestments
+			members[i].timediff = history[0] ? Math.trunc(new Date().getTime() / 1000) - history[0].time : "Never"
+			members[i].contribution = Math.trunc(weekcontrib)
+			members[i].networth = networth
+			members[i].difference = ((weekcontrib - userpayout) / userpayout) * 100.0
+		}
+
+		await assignValues()
 	}
 
 	const begin = page === 1 ? 0 : (perPage * page) - perPage

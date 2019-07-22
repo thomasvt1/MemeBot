@@ -17,15 +17,7 @@ module.exports = async client => {
 
 let ws // The websocket client
 
-/**
- * 
- * @description Starts the websocket server, binds events to proper locations.
- * 
- * @example 
- * startWebsocket(client)
- * 
- * @param {object} client - The Discord.js client object.
- */
+/* eslint-disable jsdoc/require-jsdoc */
 function startWebSocket(client) {
 	ws = new WebSocket(client.config.websocket.url)
 
@@ -55,13 +47,7 @@ function startWebSocket(client) {
 	})
 }
 
-/**
- * 
- * @description Stops the connection from being terminated and sets it again until another ping is sent.
- * 
- * @example
- * ws.on("ping", heartbeat)
- */
+/* eslint-disable jsdoc/require-jsdoc */
 function heartbeat() {
 	clearTimeout(this.pingTimeout)
 	// Use `WebSocket#terminate()` and not `WebSocket#close()`. Delay should be

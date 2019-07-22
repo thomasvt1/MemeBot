@@ -15,6 +15,7 @@ exports.run = async (client, message, _args, [user, history, firm, isusername], 
 	const currentpost = currentinvestment ? await client.api.r.getSubmission(currentinvestment.post).fetch().then((sub) => sub).catch(err => client.logger.error(err.stack)) : false
 
 	// Fancy math to calculate investment return
+	// using sigmoids
 	let factor
 	let factor_max
 	if (currentinvestment) {
@@ -23,6 +24,7 @@ exports.run = async (client, message, _args, [user, history, firm, isusername], 
 		factor_max = array[1]
 	}
 
+	// Include firm tax for a more accurate number..
 	let forecastedprofit = currentinvestment.amount * factor / 100
 	if (user.firm !== 0) forecastedprofit -= forecastedprofit * (firm.tax / 100)
 

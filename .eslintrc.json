@@ -13,6 +13,7 @@
   "rules": {
     "no-console": "off",
     "no-unused-vars": "off",
+    "require-atomic-updates": "off",
     "semi": [
       "error",
       "never"

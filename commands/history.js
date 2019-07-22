@@ -5,13 +5,14 @@
 
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
-exports.run = async (client, message, args, [user, discord_id, firm, isusername], _level) => {
+exports.run = async (client, message, args, [user, discord_id, firm], _level) => {
 	const investment = args[0]
 
 	if (investment === undefined) return message.channel.send(":exclamation: You haven't specified how many investments to go back!")
 
 	if (isNaN(investment)) return message.channel.send(":thinking: Is this a real number?")
 
+	// Promise hacks...
 	const promises = []
 	let history = []
 	let num_left = investment
@@ -60,10 +61,13 @@ exports.run = async (client, message, args, [user, discord_id, firm, isusername]
 
 	if (!history[investment]) return message.channel.send(":exclamation: You specified an investment past your time!")
 
+	// Here we use some hacky logic to make sure
+	// we are looking at PAST investments and not current ones.
 	const lastinvestment = history[!history[investment - 1].done ? investment : investment - 1]
 
 	const lastpost = await client.api.r.getSubmission(lastinvestment.post).fetch().then((sub) => sub).catch(err => client.logger.error(err.stack))
 
+	// Calculate investment return..
 	const [factor] = await client.math.calculate_factor(lastinvestment.upvotes, lastinvestment.final_upvotes, user.networth)
 
 	const lastprofit = user.firm !== 0 ? Math.trunc(lastinvestment.profit - lastinvestment.profit * (firm.tax / 100)) : lastinvestment.profit
@@ -119,7 +123,7 @@ exports.conf = {
 	guildOnly: false,
 	aliases: [],
 	permLevel: "User",
-	info: ["user", "discord_id", "firm", "isusername"]
+	info: ["user", "discord_id", "firm"]
 }
 
 exports.help = {

@@ -6,7 +6,7 @@ const { RichEmbed, version } = require("discord.js")
 const moment = require("moment")
 require("moment-duration-format")
 
-exports.run = async (client, message, _args, _level) => {
+exports.run = (client, message, _args, _level) => { // eslint-disable-line no-unused-vars
 	const duration = moment.duration(client.uptime).format(" D [days], H [hrs], m [mins], s [secs]")
 	const bot = moment(client.user.createdTimestamp).format("dddd MMMM Do YYYY, [at] HH:mm [UTC]ZZ")
 	const stats = new RichEmbed()
@@ -28,8 +28,8 @@ exports.conf = {
 }
 
 exports.help = {
-	name: "statistics",
+	name: "info",
 	category: "Miscellaneous",
-	description: "Gives some useful bot statistics",
-	usage: "statistics"
+	description: "Tells you how the bot morphed and its' invite link.",
+	usage: "info"
 }

@@ -16,11 +16,13 @@ exports.run = async (client, message, _args, [user, firm, isusername], _level) =
 		if (e.name === firm.name.toLowerCase().replace(/ /g, "")) firmimage = e.url
 	})
 
+	// Display the user's or your role.
 	const floorrank = user.firm_role === "" ? `${isusername ? `${user.name}'s` : "Your"} Role` : ""
 	const assocrank = user.firm_role === "assoc" ? `${isusername ? `${user.name}'s` : "Your"} Role` : ""
 	const execrank = user.firm_role === "exec" ? `${isusername ? `${user.name}'s` : "Your"} Role` : ""
 	const boardmems = `(${firm.cfo !== "" && firm.cfo !== "0" ? `${firm.cfo}, ` : ""}${firm.coo !== "" && firm.coo !== "0" ? `${firm.coo}, ` : ""}${firm.cfo !== "" && firm.cfo !== "0" || firm.coo !== "" && firm.coo !== "0" ? "and " : ""}${firm.ceo})`
 
+	// Accurately count board members to have a more accurate payout number.
 	let boardmemc = 0
 	if (firm.cfo !== "" && firm.cfo !== "0") boardmemc += 1
 	if (firm.coo !== "" && firm.coo !== "0") boardmemc += 1
