@@ -6,16 +6,18 @@
 const { RichEmbed } = require("discord.js")
 const moment = require("moment")
 exports.run = async (client, message, args, [user, discord_id, firm], _level) => {
-	const investment = args[0]
+	let investment = args[0]
 
 	if (investment === undefined) return message.channel.send(":exclamation: You haven't specified how many investments to go back!")
 
 	if (isNaN(investment)) return message.channel.send(":thinking: Is this a real number?")
 
+	investment = parseInt(investment)
+	
 	// Promise hacks...
 	const promises = []
 	let history = []
-	let num_left = investment
+	let num_left = investment + 2
 	let page = 0
 	let amount = 0
 

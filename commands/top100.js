@@ -16,7 +16,7 @@ exports.run = async (client, message, [page], _level) => {
 
 	if (!page) page = 1
 	const top100 = await client.api.getTop100(perPage, page - 1).then(body => body).catch(err => {
-		if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+		if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 		client.logger.error(err.stack)
 	})
 	// We need an offset so we can display the rank positions correctly.
@@ -48,7 +48,7 @@ exports.run = async (client, message, [page], _level) => {
 			client.logger.error(err.stack)
 		}))
 
-		promises.push(client.api.getInvestorHistory(investor.name.toLowerCase()).then(history => top100[i].history = history).catch(err => {
+		promises.push(client.api.getInvestorHistory(investor.name).then(history => top100[i].history = history).catch(err => {
 			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 			client.logger.error(err.stack)
 		}))

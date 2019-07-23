@@ -85,7 +85,7 @@ exports.run = async (client, message, _args, [user, discord_id, history, firm], 
 
 	const redditpfp = await client.api.r.getUser(user.name).fetch().then((usr) => usr.icon_img).catch(err => client.logger.error(err.stack))
 
-	const firmemoji = client.firmEmoji(firm.name)
+	const firmemoji = firm.id !== 0 ? client.firmEmoji(firm.name) : ""
 
 	const firmroles = {
 		"": "Floor Trader",
