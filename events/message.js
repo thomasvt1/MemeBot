@@ -161,10 +161,10 @@ module.exports = async (client, message) => {
 		}
 
 		if (info.some(i => i === "firm")) {
-			inf.push(await client.api.getFirmProfile(user.firm).catch(err => {
+			inf.push(user.firm ? await client.api.getFirmProfile(user.firm).catch(err => {
 				if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 				client.logger.error(err.stack)
-			}))
+			}) : { id: 0 })
 		}
 
 		if (info.some(i => i === "isusername")) {

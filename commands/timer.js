@@ -6,9 +6,10 @@
 const moment = require("moment")
 const setTimeoutAt = require("safe-timers").setTimeoutAt
 exports.run = async (client, message, _args, [history, isusername], _level) => {
-	const currentinvestment = history[0]
-	if (currentinvestment.done) return message.channel.send(`:exclamation: ${isusername ? "They" : "You"} don't have an active investment!`)
+	if (!history) return message.channel.send(`:exclamation: ${isusername ? "They" : "You"} haven't invested before!`)
+	if (history && history[0].done) return message.channel.send(`:exclamation: ${isusername ? "They" : "You"} don't have an active investment!`)
 
+	const currentinvestment = history[0]
 	const timediff = currentinvestment.time + 14400
 	const timeout = timediff * 1000
 	const maturesin = moment.duration(timediff - moment().unix(), "seconds").format("[**]H[**] [hour] [and] [**]m[**] [minutes]")

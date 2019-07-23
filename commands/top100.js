@@ -16,7 +16,7 @@ exports.run = async (client, message, [page], _level) => {
 
 	if (!page) page = 1
 	const top100 = await client.api.getTop100(perPage, page - 1).then(body => body).catch(err => {
-		if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+		if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 		client.logger.error(err.stack)
 	})
 	// We need an offset so we can display the rank positions correctly.
@@ -43,10 +43,10 @@ exports.run = async (client, message, [page], _level) => {
 	for (let i = 0; i < perPage; i++) {
 		const investor = top100[i]
 		// Use promise hacks to perform all web requests at once. Faster runtime.
-		promises.push(client.api.getFirmProfile(investor.firm).then(firm => top100[i].firm = firm).catch(err => {
+		promises.push(investor.firm ? client.api.getFirmProfile(investor.firm).then(firm => top100[i].firm = firm).catch(err => {
 			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 			client.logger.error(err.stack)
-		}))
+		}) : top100[i].firm = { id: 0 })
 
 		promises.push(client.api.getInvestorHistory(investor.name).then(history => top100[i].history = history).catch(err => {
 			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
@@ -77,7 +77,7 @@ exports.run = async (client, message, [page], _level) => {
 		avginvestments = Math.trunc(avginvestments)
 
 		// We get their firm emoji from the MemeBot guild, which has most firm emojis formatted by the firm name but lowercased and spaces truncated.
-		const firmemoji = client.firmEmoji(firm.name)
+		const firmemoji = firm.id !== 0 ? client.firmEmoji(firm.name) : ""
 
 		// Using fancy emojis like in $leaderboard, more readability..
 		const firmstr = firm.id !== 0 ? `\n👔 \`Firm:\` **${firmrole}** of **${firm.name}**` : ""
