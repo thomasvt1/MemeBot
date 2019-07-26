@@ -102,7 +102,7 @@ module.exports = async (client, message) => {
 		// We check if the user with the username exists. It might just be the arg of a command.
 		// Who cares.
 		let user = await client.api.getInvestorProfile(username).catch(err => {
-			if (err.statusCode && err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 			if (err.statusCode && err.statusCode === 400) user = { "id": 0, "name": "", "balance": 0, "completed": 0, "broke": 0, "badges": null, "firm": 0, "firm_role": "", "networth": 0, "rank": 0 }
 			client.logger.error(err.stack)
 		})
@@ -112,7 +112,7 @@ module.exports = async (client, message) => {
 			// We check the setname DB for them.
 			const mention = await client.api.getLink(client, message.mentions.users.first().id)
 			user = await client.api.getInvestorProfile(mention).catch(err => {
-				if (err.statusCode && err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+				if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 				if (err.statusCode && err.statusCode === 400) user = { "id": 0, "name": "", "balance": 0, "completed": 0, "broke": 0, "badges": null, "firm": 0, "firm_role": "", "networth": 0, "rank": 0 }
 				client.logger.error(err.stack)
 			})
@@ -125,7 +125,7 @@ module.exports = async (client, message) => {
 		// they haven't. Just default to their own.
 		if (username !== undefined && user.id === 0 && check) {
 			user = await client.api.getInvestorProfile(check).catch(err => {
-				if (err.statusCode && err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+				if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 				if (err.statusCode && err.statusCode === 400) user = { "id": 0, "name": "", "balance": 0, "completed": 0, "broke": 0, "badges": null, "firm": 0, "firm_role": "", "networth": 0, "rank": 0 }
 				client.logger.error(err.stack)
 			})
