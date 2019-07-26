@@ -21,7 +21,7 @@ exports.run = (client, message, _args, _level) => { // eslint-disable-line no-un
 }
 
 exports.conf = {
-	enabled: true,
+	enabled: false,
 	guildOnly: false,
 	aliases: [],
 	permLevel: "User"

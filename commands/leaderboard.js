@@ -111,7 +111,7 @@ exports.run = async (client, message, args, [user, firm, isusername]) => {
 		let weekcontrib = 0
 		let e = 0
 		let networth = type === "networth" ? members[i].networth : members[i].balance
-		while (e < history.length && history[e].time > firm.last_payout) {
+		while (history.length && e < history.length && history[e].time > firm.last_payout) {
 			if (!history[e].done && type !== "networth") networth += history[e].amount
 			weekcontrib += history[e].profit * (history[e].firm_tax / 100)
 			e++
