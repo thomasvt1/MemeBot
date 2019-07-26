@@ -136,7 +136,7 @@ exports.run = async (client, message, args, [user, firm, isusername]) => {
 			"cfo": payout.board.amount,
 			"ceo": payout.board.amount
 		}
-		const userpayout = payouts[members[e].firm_role]
+		const userpayout = payouts[members[i].firm_role]
 
 		const assignValues = async () => {
 			members[i].avginvestments = avginvestments
