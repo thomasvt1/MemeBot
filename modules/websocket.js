@@ -39,7 +39,7 @@ module.exports = async (client, investment) => {
 			settings.investmentChannel = "0"
 			await settings.save()
 			if (!guild.owner) return client.logger.error(`Unable to reach guild owner ${guild.owner.user.tag} (${guild.ownerID})`)
-			return guild.owner.send(`Your #investment-watch channel was configured incorrectly!\nPlease use \`${settings.prefix}set edit investmentChannel <mention channel here>\` to fix this problem in your ${guild.name} server.\nFor now, investment watch in your server has been disabled to prevent any further errors and DMs.`).catch(client.logger.error)
+			return guild.owner.send(`Your #investment-watch channel was configured incorrectly!\nPlease use \`${settings.prefix}set edit investmentChannel <mention channel here>\` to fix this problem in your ${guild.name} server.\nFor now, investment watch in your server has been disabled to prevent any further errors and DMs.`).catch(err => client.logger.error(`Error with ${guild.owner.user.tag} (${guild.ownerID}) on server ${guild.name} (${guild.id}): ${err.stack}`))
 		}
 
 		const mentioneveryone = settings.mentionEveryone === true ? "@everyone" : ""
