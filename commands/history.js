@@ -17,7 +17,7 @@ exports.run = async (client, message, args, [user, discord_id, firm], _level) =>
 	// Promise hacks...
 	const promises = []
 	let history = []
-	let num_left = investment + 2
+	let num_left = user.completed
 	let page = 0
 	let amount = 0
 
@@ -27,7 +27,7 @@ exports.run = async (client, message, args, [user, discord_id, firm], _level) =>
 		} else {
 			amount = num_left
 		}
-		promises.push(client.api.getInvestorHistory(user.name, amount, page).then(h => history = history.concat(h)).catch(err => {
+		promises.push(client.api.getInvestorHistory(user.name, 100, page).then(h => history = history.concat(h)).catch(err => {
 			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 			client.logger.error(err.stack)
 		}))
@@ -39,9 +39,15 @@ exports.run = async (client, message, args, [user, discord_id, firm], _level) =>
 
 	if (!history || !history.length) return message.channel.send(":exclamation: You haven't invested before!")
 
+	if (history[0].done) investment += 1
+
+	const len = !history[0].done ? history.length - 1 : history.length
+
+	if (!history[investment]) return message.channel.send(":exclamation: You've went way past your time!")
+
 	// Calculate profit %
 	let profitprct = 0
-	for (let i = 0; i < history.length; i++) {
+	for (let i = investment; i < len; i++) {
 		if (history[i].done === true) {
 			let profit = history[i].profit
 			if (user.firm !== 0) profit -= profit * (history[i].firm_tax / 100)
@@ -49,13 +55,13 @@ exports.run = async (client, message, args, [user, discord_id, firm], _level) =>
 		}
 	}
 
-	profitprct /= history.length // Calculate average % return
+	profitprct /= len // Calculate average % return
 
 
 	// Calculate amount of investments then
 	let investments_on_day = 0
-	for (let i = 0; i < history.length; i++) {
-		const timediff = Math.trunc((history[investment - 1].time - history[i].time) / 36e2) // 36e3 will result in hours between date objects
+	for (let i = investment; i < len; i++) {
+		const timediff = Math.trunc((history[investment].time - history[i].time) / 36e2) // 36e3 will result in hours between date objects
 		if (timediff > 24)
 			break
 		investments_on_day++
@@ -63,9 +69,7 @@ exports.run = async (client, message, args, [user, discord_id, firm], _level) =>
 
 	if (!history[investment]) return message.channel.send(":exclamation: You specified an investment past your time!")
 
-	// Here we use some hacky logic to make sure
-	// we are looking at PAST investments and not current ones.
-	const lastinvestment = history[!history[investment - 1].done ? investment : investment - 1]
+	const lastinvestment = history[investment]
 
 	const lastpost = await client.api.r.getSubmission(lastinvestment.post).fetch().then((sub) => sub).catch(err => client.logger.error(err.stack))
 
@@ -74,7 +78,8 @@ exports.run = async (client, message, args, [user, discord_id, firm], _level) =>
 
 	const lastprofit = user.firm !== 0 ? Math.trunc(lastinvestment.profit - lastinvestment.profit * (firm.tax / 100)) : lastinvestment.profit
 
-	const lastinvested = moment.duration(lastinvestment.time - history[parseInt(investment) + 1].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") // 36e3 will result in hours between date objects
+	// Make sure that we count the first investment they've ever done
+	const lastinvested = history[parseInt(investment) + 1] ? moment.duration(lastinvestment.time - history[parseInt(investment) + 1].time, "seconds").format("[**]Y[**] [year], [**]D[**] [day], [**]H[**] [hour] [and] [**]m[**] [minutes] [ago]") : "Never" // 36e3 will result in hours between date objects
 	const investedat = moment.unix(lastinvestment.time).format("ddd Do MMM YYYY [at] HH:mm [UTC]ZZ")
 	const maturedat = moment.unix(lastinvestment.time + 14400).format("ddd Do MMM YYYY [at] HH:mm [UTC]ZZ") // 14400 = 4 hours
 
@@ -90,16 +95,20 @@ exports.run = async (client, message, args, [user, discord_id, firm], _level) =>
 	let text_profit = `**Invested:** ${client.api.numberWithCommas(lastinvestment.amount)} M¢\n`
 	text_profit += `**Profit:** ${client.api.numberWithCommas(Math.trunc(lastprofit))} M¢ (*${factor.toFixed(2)}%*)`
 
-	const opfirmid = await client.api.getInvestorProfile(lastpost.author.name).then(investor => investor.firm).catch(err => {
-		if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-		client.logger.error(err.stack)
-	})
-	const opfirm = opfirmid !== 0 ? await client.api.getFirmProfile(opfirmid).then(firm => firm.name).catch(err => {
-		if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-		client.logger.error(err.stack)
-	}) : false
+	let opfirmemoji = ""
 
-	const opfirmemoji = client.firmEmoji(opfirm)
+	if (lastpost.author.name !== "[deleted]") {
+		const opfirmid = await client.api.getInvestorProfile(lastpost.author.name).then(investor => investor.firm).catch(err => {
+			if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+			client.logger.error(err.stack)
+		})
+		const opfirm = await client.api.getFirmProfile(opfirmid).then(firm => firm.name).catch(err => {
+			if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+			client.logger.error(err.stack)
+		})
+
+		opfirmemoji = client.firmEmoji(opfirm)
+	}
 
 	const stats = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
@@ -133,4 +142,13 @@ exports.help = {
 	category: "MemeEconomy",
 	description: "Goes back however many investments and displays statistics",
 	usage: "history <reddit username> <number of investments back> (uses set default)"
+}
+
+function sleep(milliseconds) {
+	var start = new Date().getTime()
+	for (var i = 0; i < 1e7; i++) {
+		if ((new Date().getTime() - start) > milliseconds) {
+			break
+		}
+	}
 }

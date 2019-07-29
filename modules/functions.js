@@ -37,10 +37,12 @@ module.exports = (client) => {
 
 	client.firmEmoji = (name) => {
 		let emoji = ""
-		name = name.toLowerCase().replace(/ /g, "")
-		client.guilds.get("563439683309142016").emojis.forEach(async (e) => {
-			if (e.name === name) emoji = `<:${e.identifier.toString()}>`
-		})
+		if (typeof name === "string") {
+			name = name.toLowerCase().replace(/ /g, "")
+			client.guilds.get("563439683309142016").emojis.forEach(async (e) => {
+				if (e.name === name) emoji = `<:${e.identifier.toString()}>`
+			})
+		}
 		return emoji
 	}
 
