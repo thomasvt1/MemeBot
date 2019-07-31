@@ -17,6 +17,7 @@ exports.run = async (client, message, _args, [user, firm, isusername], _level) =
 	let firmmembers = []
 	let investments = []
 	let profitprct = 0
+	let profitdifference = 0
 
 	let num_left = firm.size
 	let page = 0
@@ -51,10 +52,27 @@ exports.run = async (client, message, _args, [user, firm, isusername], _level) =
 
 	await Promise.all(promises)
 
+	for (let i = 0; i < investments.length; i++) {
+		if (!investments[i].done)
+			promises.push(client.api.r.getSubmission(investments[i].post).fetch().then(sub => investments[i].currentpost = sub).catch(err => client.logger.error(err.stack)))
+	}
+
+	await Promise.all(promises)
+
 	// We calculate average investment profit since 7 days ago (a week ago).
 	for (let i = 0; i < investments.length; i++) {
 		if (investments[i].done === true && investments[i].time > moment().subtract(7, "days").unix()) {
 			profitprct += (investments[i].profit - investments[i].profit * (investments[i].firm_tax / 100)) / investments[i].amount * 100 // investor profit ratio
+		}
+
+		if (!investments[i].done) {
+			const currentpost = investments[i].currentpost
+
+			// Calculate the estimated profit that will be added onto firm's balance
+			const array = await client.math.calculate_factor(investments[i].upvotes, currentpost.score, user.networth)
+			const factor = array[0]
+			const forecastedprofit = (investments[i].amount * factor / 100) * (firm.tax / 100)
+			profitdifference += forecastedprofit
 		}
 	}
 
@@ -92,6 +110,8 @@ exports.run = async (client, message, _args, [user, firm, isusername], _level) =
 
 	const firmrole = firmroles[user.firm_role]
 
+	const profitdiff = `\n(${profitdifference < 0 ? "" : "+"}**${ client.api.numberWithCommas(Math.trunc(profitdifference))}** M¢)`
+
 	// When my PR is implemented, replace "Completed investments" with "Rank" (in leaderboard) (it was below average investment profit)
 
 	const firminfo = new RichEmbed()
@@ -100,7 +120,7 @@ exports.run = async (client, message, _args, [user, firm, isusername], _level) =
 		.setFooter("Made by Thomas van Tilburg and Keanu73 with ❤️", "https://i.imgur.com/1t8gmE7.png")
 		.setTitle(firm.name)
 		.setURL(`https://meme.market/firm.html?firm=${user.firm}`)
-		.addField("Balance", `**${client.api.numberWithCommas(firm.balance)}** M¢`, true)
+		.addField("Balance", `**${client.api.numberWithCommas(firm.balance)}** M¢ ${profitdiff}`, true)
 		.addField("Average investment profit", `${profitprct.toFixed(3)}%`, true)
 		.addField(yourrole, firmrole, true)
 		.addField("CEO", `[u/${firm.ceo}](https://meme.market/user.html?account=${firm.ceo})`, true)
