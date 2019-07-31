@@ -139,8 +139,8 @@ api.getTop100Firms = async (amount = 25, page) => {
 	return api.doRequest(options)
 }
 
-api.getRedditLink = async (client, reddit_name) => {
-	const link = await client.names.findOne({ reddit_name: reddit_name }).lean()
+api.getRedditLink = async (client, name) => {
+	const link = await client.names.findOne({ reddit_name: name }).lean()
 
 	if (!link) return false
 
