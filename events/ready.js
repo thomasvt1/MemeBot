@@ -16,8 +16,8 @@ module.exports = async client => {
 }
 
 let ws // The websocket client
+let tries = 0 // Log how many tries have been made reconnecting
 
-/* eslint-disable jsdoc/require-jsdoc */
 function startWebSocket(client) {
 	ws = new WebSocket(client.config.websocket.url)
 
@@ -37,6 +37,8 @@ function startWebSocket(client) {
 	ws.on("open", heartbeat)
 	ws.on("ping", heartbeat)
 	ws.on("close", function clear() {
+		if (tries >= 3) return client.logger.log("Investment Watch: Disconnecting after 3 tries..")
+		tries += 1
 		clearTimeout(this.pingTimeout)
 		client.logger.log("Investment Watch: Connection Closed, Reconnecting...")
 		setTimeout(() => {
@@ -47,7 +49,6 @@ function startWebSocket(client) {
 	})
 }
 
-/* eslint-disable jsdoc/require-jsdoc */
 function heartbeat() {
 	clearTimeout(this.pingTimeout)
 	// Use `WebSocket#terminate()` and not `WebSocket#close()`. Delay should be

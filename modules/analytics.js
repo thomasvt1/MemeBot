@@ -8,7 +8,6 @@ const getUuid = require("uuid-by-string")
 
 const analytics = {}
 
-// eslint-disable-next-line jsdoc/require-jsdoc
 function getTrackingID(client) {
 	return client.config.trackingID
 }

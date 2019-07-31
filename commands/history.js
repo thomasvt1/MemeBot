@@ -14,8 +14,6 @@ exports.run = async (client, message, args, [user, discord_id, firm], _level) =>
 
 	investment = parseInt(investment)
 	
-	// Promise hacks...
-	const promises = []
 	let history = []
 	let num_left = user.completed
 	let page = 0
@@ -27,19 +25,19 @@ exports.run = async (client, message, args, [user, discord_id, firm], _level) =>
 		} else {
 			amount = num_left
 		}
-		promises.push(client.api.getInvestorHistory(user.name, 100, page).then(h => history = history.concat(h)).catch(err => {
+		const h = await client.api.getInvestorHistory(user.name, 100, page).catch(err => {
 			if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 			client.logger.error(err.stack)
-		}))
+		})
+		history = history.concat(h)
 		num_left -= amount
 		if (num_left > 0) page += 1
 	}
 
-	await Promise.all(promises)
-
 	if (!history || !history.length) return message.channel.send(":exclamation: You haven't invested before!")
 
-	if (history[0].done) investment += 1
+	if (!history[0].done) investment += 1
+	else investment -= 1
 
 	const len = !history[0].done ? history.length - 1 : history.length
 
@@ -113,7 +111,7 @@ exports.run = async (client, message, args, [user, discord_id, firm], _level) =>
 	const stats = new RichEmbed()
 		.setAuthor(client.user.username, client.user.avatarURL, "https://github.com/thomasvt1/MemeBot")
 		.setColor("GOLD")
-		.setFooter(`${investment} investment${investment === 1 ? "" : "s"} ago | Made by Thomas van Tilburg and Keanu73 with ❤️`, "https://i.imgur.com/1t8gmE7.png")
+		.setFooter(`${!history[0].done ? investment - 1 : investment + 1 } investment${(investment + 1) === 1 ? "" : "s"} ago | Made by Thomas van Tilburg and Keanu73 with ❤️`, "https://i.imgur.com/1t8gmE7.png")
 		.setTitle(`u/${user.name}`)
 		.setURL(`https://meme.market/user.html?account=${user.name}`)
 		.addField("Completed investments", user.completed - investment, false)

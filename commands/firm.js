@@ -4,6 +4,7 @@
 */
 
 const { RichEmbed } = require("discord.js")
+const moment = require("moment")
 exports.run = async (client, message, _args, [user, firm, isusername], _level) => {
 	if (firm.id === 0) return message.channel.send(`:exclamation: ${isusername ? `${user.name} is` : "You are"} not in a firm!`)
 
@@ -50,11 +51,9 @@ exports.run = async (client, message, _args, [user, firm, isusername], _level) =
 
 	await Promise.all(promises)
 
-	// We calculate average investment profit since payout.
-	// I might change it to just the last week to not confuse people and make it
-	// look more accurate.
+	// We calculate average investment profit since 7 days ago (a week ago).
 	for (let i = 0; i < investments.length; i++) {
-		if (investments[i].done === true && investments[i].time > firm.last_payout) {
+		if (investments[i].done === true && investments[i].time > moment().subtract(7, "days").unix()) {
 			profitprct += (investments[i].profit - investments[i].profit * (investments[i].firm_tax / 100)) / investments[i].amount * 100 // investor profit ratio
 		}
 	}

@@ -5,10 +5,8 @@
 
 const WebSocket = require("ws")
 
-// eslint-disable-next-line jsdoc/require-jsdoc
 function noop() {}
 
-// eslint-disable-next-line jsdoc/require-jsdoc
 function heartbeat() {
 	this.isAlive = true
 }

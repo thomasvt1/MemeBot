@@ -147,8 +147,8 @@ module.exports = async (client, message) => {
 			isusername = false
 		}
 
+		if (username === undefined && !check) return message.channel.send(`:question: Please supply a Reddit username, or use \`${settings.prefix}setname <reddit username>\`.`)
 		if (isusername && user.id === 0 && !check) return message.channel.send(":question: I couldn't find that MemeEconomy user.")
-		if (!isusername && user.id === 0 && !check) return message.channel.send(`:question: Please supply a Reddit username, or use \`${settings.prefix}setname <reddit username>\`.`)
 
 		// Let's just remove their username for simplicity.
 		if (isusername) args.shift()
@@ -162,7 +162,7 @@ module.exports = async (client, message) => {
 		}
 
 		if (info.some(i => i === "history")) {
-			inf.push(await client.api.getInvestorHistory(username).catch(err => {
+			inf.push(await client.api.getInvestorHistory(username, 0, 100, false).catch(err => {
 				if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 				client.logger.error(err.stack)
 			}))
@@ -186,8 +186,8 @@ module.exports = async (client, message) => {
 
 	const parameters = [client, message, args, level]
 	if (cmd.help.category === "MemeEconomy" && !exclude) parameters.splice(3, 0, info)
-	const start = Date.now()
 	client.logger.cmd(`${client.config.permLevels.find(l => l.level === level).name} ${message.author.username} (${message.author.id}) ran command ${cmd.help.name} with ${args[0] ? `args ${args[0]}` : "no args"} (started)`)
+	const start = Date.now()
 	cmd.run.apply(null, parameters).then(() => {
 		const end = Date.now()
 		const timediff = (end - start) / 1000
