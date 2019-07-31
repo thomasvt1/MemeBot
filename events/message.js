@@ -162,7 +162,7 @@ module.exports = async (client, message) => {
 		}
 
 		if (info.some(i => i === "history")) {
-			inf.push(await client.api.getInvestorHistory(username, 0, 100, false).catch(err => {
+			inf.push(await client.api.getInvestorHistory(username, 100, 0, false).catch(err => {
 				if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 				client.logger.error(err.stack)
 			}))
