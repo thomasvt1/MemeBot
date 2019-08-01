@@ -50,6 +50,7 @@ function startWebSocket(client) {
 }
 
 function heartbeat() {
+        tries = 0
 	clearTimeout(this.pingTimeout)
 	// Use `WebSocket#terminate()` and not `WebSocket#close()`. Delay should be
 	// equal to the interval at which your server sends out pings plus a
