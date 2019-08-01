@@ -12,18 +12,19 @@ module.exports = async client => {
 	// Make the bot "play the game" which is the help command with default prefix.
 	client.user.setPresence({ game: { name: `MemeEconomy for ${client.guilds.size} servers ❤️`, type: "WATCHING" }, status: "online" })
 
-	startWebSocket(client)
+	if (client.config.websocket.enabled) {
+		startWebSocket(client)
+	}
 }
 
 let ws // The websocket client
-let tries = 0 // Log how many tries have been made reconnecting
 
 function startWebSocket(client) {
 	ws = new WebSocket(client.config.websocket.url)
 
 	ws.addEventListener("error", (err) => {
-		client.logger.error(`WebSocket: ${err.message}\nPlease configure your WebSocket server in ./config.js!`)
-		ws.close(404)
+		client.logger.error(`WebSocket: ${err.message}\nYour URL is invalid! Please configure and then restart the bot!`)
+		ws.terminate()
 	})
 
 	ws.on("message", async (data) => {
@@ -37,8 +38,6 @@ function startWebSocket(client) {
 	ws.on("open", heartbeat)
 	ws.on("ping", heartbeat)
 	ws.on("close", function clear() {
-		if (tries >= 3) return client.logger.log("Investment Watch: Disconnecting after 3 tries..")
-		tries += 1
 		clearTimeout(this.pingTimeout)
 		client.logger.log("Investment Watch: Connection Closed, Reconnecting...")
 		setTimeout(() => {
@@ -50,7 +49,6 @@ function startWebSocket(client) {
 }
 
 function heartbeat() {
-        tries = 0
 	clearTimeout(this.pingTimeout)
 	// Use `WebSocket#terminate()` and not `WebSocket#close()`. Delay should be
 	// equal to the interval at which your server sends out pings plus a

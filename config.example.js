@@ -13,6 +13,7 @@ const config = {
 
 	// Websocket settings for #investment-watch
 	websocket: {
+		enabled: true,
 		url: "wss://meme.ws.thomasvt.xyz"
 	},
 
