@@ -108,20 +108,29 @@ module.exports = async (client, message) => {
 				// Did they mean to run the command on someone else in their Discord?
 				// We check the setname DB for them.
 				const mention = await client.api.getLink(client, message.mentions.users.first().id)
-				user = await client.api.getInvestorProfile(mention).catch(err => {
-					if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
-					client.logger.error(err.stack)
-				})
-				if (user.id === 0) return message.channel.send(":question: I couldn't find that Discord user in my database.")
-				// So it seems they do exist.
-				username = user.name
+				if (mention) {
+					user = await client.api.getInvestorProfile(mention).catch(err => {
+						if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+						client.logger.error(err.stack)
+					})
+					if (user.id === 0) return message.channel.send(":question: I couldn't find that Discord user in my database.")
+					// So it seems they do exist.
+					username = user.name
+				} else {
+					return message.channel.send(":exclamation: The user you mentioned hasn't set their name!")
+				}
 			} else {
 				// Alright, it seems their username is valid.
-				user = await client.api.getInvestorProfile(username).catch(err => {
+				// We have to check for user mention regex as the user might not be in the server...
+				const userregex = /<@!?[0-9]+>/g
+				if (userregex.test(username)) return message.channel.send(":exclamation: The user you mentioned isn't in the server!")
+				user = await client.api.getInvestorProfile(username).then(u => {
+					username = u.name
+					return u
+				}).catch (err => {
 					if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 					client.logger.error(err.stack)
 				})
-				username = user.name
 			}
 		}
 
@@ -154,7 +163,7 @@ module.exports = async (client, message) => {
 		if (isusername) args.shift()
 
 		if (info.some(i => i === "user")) {
-			inf.push(user)
+			inf.push(await user)
 		}
 
 		if (info.some(i => i === "discord_id")) {

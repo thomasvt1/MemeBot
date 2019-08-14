@@ -68,7 +68,7 @@ api.getInvestorProfile = async (name) => {
 		* await api.getInvestorProfile("Keanu73")
 		*/
 	const options = {
-		uri: "https://meme.market/api/investor/" + encodeURI(name),
+		uri: "https://meme.market/api/investor/" + encodeURIComponent(name),
 		json: true
 	}
 
@@ -87,7 +87,7 @@ api.getInvestorHistory = async (name, amount = 100, page = 0, usecache = true) =
 	* await api.getInvestorHistory("Keanu73")
 	*/
 	const options = {
-		uri: `https://meme.market/api/investor/${encodeURI(name)}/investments?per_page=${amount}&page=${page}`,
+		uri: `https://meme.market/api/investor/${encodeURIComponent(name)}/investments?per_page=${amount}&page=${page}`,
 		json: true
 	}
 
