@@ -158,7 +158,8 @@ module.exports = async (client, message) => {
 		}
 
 		if (info.some(i => i === "discord_id")) {
-			inf.push(await client.api.getRedditLink(client, username.toLowerCase()).catch(err => client.logger.error(err.stack)))
+			const id = await client.api.getRedditLink(client, username.toLowerCase()).catch(err => client.logger.error(err.stack))
+			inf.push(id)
 		}
 
 		if (info.some(i => i === "history")) {

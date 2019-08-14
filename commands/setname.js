@@ -19,7 +19,7 @@ exports.run = async (client, message, [name], _level) => {
 	if (linkcheck) return message.channel.send(`:exclamation: Someone (<@${linkcheck}>) already has this username.`)
 
 	const profile = await client.api.getInvestorProfile(name).catch(err => {
-		if (err.statusCode !== 200) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+		if (err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 		client.logger.error(err.stack)
 	})
 	if (profile.id === 0) return message.channel.send(":question: I couldn't find that MemeEconomy user.")
