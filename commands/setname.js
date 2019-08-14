@@ -12,6 +12,8 @@ exports.run = async (client, message, [name], _level) => {
 	if (name === undefined && check) return message.channel.send(`:question: You haven't given me what you want to change your name to, ${check}.`)
 	if (name.length < 3) return message.channel.send(":thinking: Something tells me that is not a Reddit username")
 
+	name = name.replace(/^((\/|)u\/)/g, "")
+
 	// Does someone else have this username set? Let's annoy them by mentioning them that someone's tried to impersonate them.
 	const linkcheck = await client.api.getRedditLink(client, name).catch(err => client.logger.error(err.stack))
 	if (linkcheck) return message.channel.send(`:exclamation: Someone (<@${linkcheck}>) already has this username.`)
