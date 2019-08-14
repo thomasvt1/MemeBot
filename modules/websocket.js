@@ -12,9 +12,19 @@ module.exports = async (client, investment) => {
 
 	const submission = await client.api.r.getSubmission(investment.submid).fetch().then((sub) => sub).catch(err => client.logger.error(err.stack))
 
-	const user = await client.api.getInvestorProfile(investment.username).catch(err => client.logger.error(err.stack))
+	let user = await client.api.getInvestorProfile(investment.username).catch(err => {
+		if (err.statusCode && err.statusCode === 502) user = setTimeout(async () => {
+			user = await client.api.getInvestorProfile(investment.username).catch(error => client.logger.error(error.stack))
+		})
+		client.logger.error(err.stack)
+	})
 
-	const firm = await client.api.getFirmProfile(user.firm).catch(err => client.logger.error(err.stack))
+	const firm = await client.api.getFirmProfile(user.firm).catch(err => {
+		if (err.statusCode && err.statusCode === 502) user = setTimeout(async () => {
+			user = await client.api.getFirmProfile(user.firm).catch(error => client.logger.error(error.stack))
+		})
+		client.logger.error(err.stack)
+	})
 
 	//const famous = famousmemers.some(c => investment.username === c.toLowerCase()) ? "<:famousmemer:582821955489628166>" : ""
 
