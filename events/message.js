@@ -92,6 +92,14 @@ module.exports = async (client, message) => {
 	let info = cmd.conf.info
 
 	if (cmd.help.category === "MemeEconomy" && !exclude) {
+		// First, query the API to make sure it's actually up.
+		let error = false
+		await client.api.getInvestorProfile("Keanu73").catch(err => {
+			if (err.statusCode && err.statusCode === 502 || err.statusCode && err.statusCode == 504) error = true
+		})
+
+		if (error) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+
 		//const arguments = [user, discord_id, history, firm, isusername]
 		const inf = []
 
