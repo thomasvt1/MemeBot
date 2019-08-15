@@ -12,23 +12,27 @@ module.exports = async (client, investment) => {
 
 	const submission = await client.api.r.getSubmission(investment.submid).fetch().then((sub) => sub).catch(err => client.logger.error(err.stack))
 
-	let user = await client.api.getInvestorProfile(investment.username).catch(err => {
-		if (err.statusCode && err.statusCode === 502) user = setTimeout(async () => {
-			user = await client.api.getInvestorProfile(investment.username).catch(error => client.logger.error(error.stack))
+	let user
+	let firm
+	let firmemoji = ""
+
+	// First, query the API to make sure it's actually up.
+	const query = promiseTimeout(client.api.getInvestorProfile(investment.username), 5000).then(async p => {
+		user = p
+
+		firm = await client.api.getFirmProfile(user.firm).catch(err => {
+			if (err.statusCode && err.statusCode === 502) user = setTimeout(async () => {
+				user = await client.api.getFirmProfile(user.firm).catch(error => client.logger.error(error.stack))
+			})
+			client.logger.error(err.stack)
 		})
-		client.logger.error(err.stack)
+
+		//const famous = famousmemers.some(c => investment.username === c.toLowerCase()) ? "<:famousmemer:582821955489628166>" : ""
+
+		firmemoji = firm.id !== 0 ? client.firmEmoji(firm.name) : ""
+	}).catch(err => {
+		client.logger.error(err)
 	})
-
-	const firm = await client.api.getFirmProfile(user.firm).catch(err => {
-		if (err.statusCode && err.statusCode === 502) user = setTimeout(async () => {
-			user = await client.api.getFirmProfile(user.firm).catch(error => client.logger.error(error.stack))
-		})
-		client.logger.error(err.stack)
-	})
-
-	//const famous = famousmemers.some(c => investment.username === c.toLowerCase()) ? "<:famousmemer:582821955489628166>" : ""
-
-	const firmemoji = firm.id !== 0 ? client.firmEmoji(firm.name) : ""
 
 	const timeposted = moment.duration(investment.timediff, "seconds").format("[**]m[**] [minutes] [ago], [**]s[**] [seconds] [ago]")
 
@@ -65,4 +69,26 @@ module.exports = async (client, investment) => {
 		client.channels.get(settings.investmentChannel).send(mentioneveryone, { embed: investmentinfo })
 	})
 	return "Success"
+}
+
+const promiseTimeout = function (promise, ms) {
+
+	let id
+	const timeout = new Promise((resolve, reject) => {
+		id = setTimeout(() => {
+			reject("Timed out in " + ms + "ms.")
+		}, ms)
+	})
+
+	return Promise.race([
+		promise,
+		timeout
+	]).then((result) => {
+		clearTimeout(id)
+
+		/**
+		 * ... we also need to pass the result back
+		 */
+		return result
+	})
 }

@@ -79,7 +79,7 @@ module.exports = async (client, message) => {
 		return message.channel.send("This command is unavailable via private message. Please run this command in a guild.")
 
 	if (!cmd.conf.enabled) return
-	
+
 	if (level < client.levelCache[cmd.conf.permLevel]) return
 
 	// To simplify message arguments, the author's level is now put on level (not member so it is supported in DMs)
@@ -93,13 +93,16 @@ module.exports = async (client, message) => {
 
 	if (cmd.help.category === "MemeEconomy" && !exclude) {
 		// First, query the API to make sure it's actually up.
+
 		let error = false
-		await client.api.getInvestorProfile("Keanu73").catch(err => {
-			if (err.statusCode && err.statusCode === 502 || err.statusCode && err.statusCode == 504) error = true
-			client.logger.error(err.stack)
+		await promiseTimeout(client.api.getInvestorProfile("Keanu73"), 5000).catch(err => {
+			client.logger.error(err)
+			error = true
 		})
 
 		if (error) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
+
+		// Then we go onto running the command.
 
 		//const arguments = [user, discord_id, history, firm, isusername]
 		const inf = []
@@ -136,7 +139,7 @@ module.exports = async (client, message) => {
 				user = await client.api.getInvestorProfile(username).then(u => {
 					username = u.name
 					return u
-				}).catch (err => {
+				}).catch(err => {
 					if (err.statusCode && err.statusCode !== 200 && err.statusCode !== 400) return message.channel.send(":exclamation: The meme.market API is currently down, please wait until it comes back up.")
 					client.logger.error(err.stack)
 				})
@@ -214,5 +217,27 @@ module.exports = async (client, message) => {
 			analytics.logCommand(client, message, cmd.help.name)
 
 		client.logger.cmd(`${client.config.permLevels.find(l => l.level === level).name} ${message.author.username} (${message.author.id}) ran command ${cmd.help.name} with ${args[0] ? `args ${args[0]}` : "no args"} (executed in ${timediff}s)`)
+	})
+}
+
+const promiseTimeout = function (promise, ms) {
+
+	let id
+	const timeout = new Promise((resolve, reject) => {
+		id = setTimeout(() => {
+			reject("Timed out in " + ms + "ms.")
+		}, ms)
+	})
+
+	return Promise.race([
+		promise,
+		timeout
+	]).then((result) => {
+		clearTimeout(id)
+
+		/**
+		 * ... we also need to pass the result back
+		 */
+		return result
 	})
 }
