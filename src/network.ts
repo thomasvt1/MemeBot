@@ -41,7 +41,7 @@ async function get(url: string): Promise<any> {
 }
 
 /**
- * @description Creates suffix for the capi
+ * @description Checks the status code of the response
  * @param {Number} status The HTTP response code
  * @return {boolean} If the status code is good.
  */
