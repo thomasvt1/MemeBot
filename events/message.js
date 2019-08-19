@@ -95,7 +95,7 @@ module.exports = async (client, message) => {
 		// First, query the API to make sure it's actually up.
 
 		let error = false
-		await promiseTimeout(client.api.getInvestorProfile("Keanu73"), 5000).catch(err => {
+		await promiseTimeout(client.api.getInvestorProfile("Keanu73"), 8000).catch(err => {
 			client.logger.error(err)
 			error = true
 		})

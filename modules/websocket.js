@@ -12,27 +12,24 @@ module.exports = async (client, investment) => {
 
 	const submission = await client.api.r.getSubmission(investment.submid).fetch().then((sub) => sub).catch(err => client.logger.error(err.stack))
 
-	let user
-	let firm
+	// First, query the API to make sure it's actually up.
+	let error = false
+	const user = await promiseTimeout(client.api.getInvestorProfile(investment.username), 8000).catch(err => {
+		client.logger.error(err)
+		error = true
+	})
+
 	let firmemoji = ""
 
-	// First, query the API to make sure it's actually up.
-	const query = promiseTimeout(client.api.getInvestorProfile(investment.username), 5000).then(async p => {
-		user = p
+	if (!error) {
 
-		firm = await client.api.getFirmProfile(user.firm).catch(err => {
-			if (err.statusCode && err.statusCode === 502) user = setTimeout(async () => {
-				user = await client.api.getFirmProfile(user.firm).catch(error => client.logger.error(error.stack))
-			})
-			client.logger.error(err.stack)
-		})
+		const firm = await client.api.getFirmProfile(user.firm).catch(err => client.logger.error(err.stack))
 
 		//const famous = famousmemers.some(c => investment.username === c.toLowerCase()) ? "<:famousmemer:582821955489628166>" : ""
 
 		firmemoji = firm.id !== 0 ? client.firmEmoji(firm.name) : ""
-	}).catch(err => {
-		client.logger.error(err)
-	})
+		
+	}
 
 	const timeposted = moment.duration(investment.timediff, "seconds").format("[**]m[**] [minutes] [ago], [**]s[**] [seconds] [ago]")
 
